@@ -7,6 +7,7 @@
     "dev": "vite",
     "dev:backend": "npm run dev --prefix backend",
     "dev:all": "concurrently \"npm run dev:backend\" \"npm run dev\"",
+    "swa": "swa start --config swa-cli.config.json --config-name dev",
     "build": "tsc -b && vite build",
     "build:backend": "npm run build --prefix backend",
     "lint": "eslint .",

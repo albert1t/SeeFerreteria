@@ -1,0 +1,18 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Azure/static-web-apps-cli/main/schema/swa-cli.config.schema.json",
+  "configurations": {
+    "dev": {
+      "devServerUrl": "http://localhost:5173",
+      "apiUrl": "http://localhost:3001",
+      "outputLocation": "dist",
+      "appLocation": ".",
+      "verbose": "info"
+    },
+    "build": {
+      "outputLocation": "dist",
+      "appLocation": ".",
+      "apiLocation": "backend/src",
+      "verbose": "info"
+    }
+  }
+}

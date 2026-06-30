@@ -52,8 +52,6 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(form.imagen || null);
 
-  const selectedFamilia = familias.find((f) => f.id === form.familiaId);
-
   const saveMut = useMutation({
     mutationFn: () =>
       recambio
@@ -129,7 +127,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
       </div>
       <div>
         <label style={labelStyle}>Métrica</label>
-        <input style={inputStyle} value={form.metrica ?? ''} onChange={(e) => upd('metrica', e.target.value)} placeholder="Ej: M8x30, 1/2\", 35mm²" />
+        <input style={inputStyle} value={form.metrica ?? ''} onChange={(e) => upd('metrica', e.target.value)} placeholder='Ej: M8x30, 1/2", 35mm²' />
       </div>
       {([['unidadEmbalaje', 'Unidad de embalaje'], ['plazoEntrega', 'Plazo de entrega']] as const).map(([k, lbl]) => (
         <div key={k}>
