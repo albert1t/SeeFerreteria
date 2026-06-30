@@ -1,0 +1,148 @@
+/* ========== MOBILE RESPONSIVE ========== */
+/* Overrides inline styles via !important — original desktop code untouched */
+
+@media (max-width: 768px) {
+  /* -- HEADER -- */
+  header {
+    height: 52px !important;
+    padding: 0 0.6rem !important;
+    gap: 6px !important;
+  }
+
+  /* Hide nav links */
+  header nav {
+    display: none !important;
+  }
+
+  /* Hide user name/role, keep buttons */
+  header > div:last-child > div {
+    display: none !important;
+  }
+
+  /* Smaller logo */
+  header > a img {
+    width: 36px !important;
+    height: 36px !important;
+  }
+  header span {
+    font-size: 15px !important;
+  }
+
+  /* Search bar compact */
+  header > div:first-of-type {
+    max-width: 120px !important;
+  }
+  header input[placeholder*="Buscar"] {
+    font-size: 12px !important;
+    padding: 5px 26px 5px 10px !important;
+  }
+  header input[placeholder*="Buscar"] + span {
+    font-size: 13px !important;
+    right: 8px !important;
+  }
+
+  /* QR button compact */
+  header button[title*="QR"] {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+
+  /* Salir button compact */
+  header > div:last-child > button:last-child {
+    font-size: 10px !important;
+    padding: 4px 7px !important;
+  }
+
+  /* New Recambio button compact */
+  header > div:last-child > button:first-child {
+    font-size: 11px !important;
+    padding: 4px 8px !important;
+  }
+
+  /* -- MAIN CONTAINER -- */
+  div[style*="height: calc(100vh - 64px)"] {
+    padding: 0.6rem !important;
+  }
+
+  /* -- ALMACEN PAGE TITLE -- */
+  h2 {
+    font-size: 16px !important;
+  }
+
+  /* -- OVERVIEW PANEL CARDS -- */
+  /* Reduce card width on mobile */
+  .scrollbar-horizontal div[style*="cursor: pointer"] {
+    min-width: 260px !important;
+    width: 260px !important;
+    padding: 0.4rem !important;
+  }
+
+  /* -- DETAIL GRID CELLS -- */
+  /* Target grid cells (divs inside grid containers) */
+  div[style*="overflow-y: auto"][style*="overflow-x: hidden"] > div[style*="display: grid"] > div {
+    padding: 0.4rem !important;
+    border-radius: 8px !important;
+  }
+
+  /* -- CUBETAMINI (mini grid) -- */
+  .scrollbar-horizontal div[style*="display: grid"] > div {
+    border-radius: 2px !important;
+  }
+
+  /* -- MODAL -- */
+  /* Full width modal on small screens */
+  div[style*="position: fixed"][style*="z-index: 1000"] > div {
+    max-width: calc(100% - 0.5rem) !important;
+    padding: 1rem !important;
+  }
+  div[style*="position: fixed"][style*="z-index: 1000"] h2 {
+    font-size: 15px !important;
+  }
+
+  /* -- FICHA TECNICA -- */
+  /* 2-col grids → single column */
+  div[style*="grid-template-columns: 1fr 1fr"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Image in FichaTecnica */
+  img[alt][style*="border-radius: 10"] {
+    width: 80px !important;
+    height: 80px !important;
+  }
+
+  /* -- PEDIDOS PAGE -- */
+  /* Filters row */
+  div[style*="padding: 1.5rem"] div[style*="flex-wrap: wrap"] select,
+  div[style*="padding: 1.5rem"] div[style*="flex-wrap: wrap"] input {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* Pedido cards more compact */
+  div[style*="padding: 1.5rem"] div[style*="flex-direction: column"][style*="gap: 12"] > div {
+    padding: 1rem !important;
+  }
+
+  /* -- SEARCH RESULTS -- */
+  /* Larger touch targets */
+  div[style*="position: absolute"][style*="z-index: 200"] > div {
+    padding: 12px 14px !important;
+  }
+}
+
+/* Small phones */
+@media (max-width: 400px) {
+  header > div:first-of-type {
+    max-width: 90px !important;
+  }
+  header input[placeholder*="Buscar"] {
+    font-size: 11px !important;
+    padding: 4px 22px 4px 8px !important;
+  }
+
+  .scrollbar-horizontal div[style*="cursor: pointer"] {
+    min-width: 220px !important;
+    width: 220px !important;
+  }
+}
