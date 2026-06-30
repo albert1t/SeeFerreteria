@@ -1,0 +1,2 @@
+ALTER TABLE Recambios ADD metrica NVARCHAR(100);
+GO
