@@ -67,8 +67,7 @@ export function AlmacenPage() {
   const [confirmSwap, setConfirmSwap] = useState<{ r1: Recambio; r2: Recambio } | null>(null);
   const [showPanelPicker, setShowPanelPicker] = useState(false);
   const [pickPanelName, setPickPanelName] = useState<string | null>(null);
-  const [targetPanelCubetas, setTargetPanelCubetas] = useState<Recambio[]>([]);
-  const [pickPanels, setPickPanels] = useState<{ panel: string; ocupados: number; total: number }[]>([]);
+  const [targetPanelCubetas, setTargetPanelCubetas] = useState<any[]>([]);
   const [loadingPickPanel, setLoadingPickPanel] = useState(false);
   const panelListRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -528,7 +527,7 @@ export function AlmacenPage() {
       </Modal>
 
       {/* Panel picker modal for move-to-panel */}
-      <Modal open={showPanelPicker} onClose={() => { setShowPanelPicker(false); setPickPanelName(null); setTargetPanelCubetas([]); }}>
+      <Modal open={showPanelPicker} onClose={() => { setShowPanelPicker(false); setPickPanelName(null); setTargetPanelCubetas([]); }} title="Mover a panel">
         <div style={{ minWidth: 420, maxWidth: 560 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1rem' }}>
             {pickPanelName && (
@@ -546,7 +545,7 @@ export function AlmacenPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 8 }}>
               {paneles.map((p) => {
                 const dims = getPanelDimensions(p.panel);
-                const ocupados = p.recambios?.length ?? 0;
+                const ocupados = p.totalRecambios ?? 0;
                 const total = dims.total;
                 return (
                   <button
@@ -602,7 +601,7 @@ export function AlmacenPage() {
                     paddingRight: 4,
                   }}>
                     {(() => {
-                      const cells: JSX.Element[] = [];
+                      const cells: React.ReactElement[] = [];
                       for (let row = 1; row <= dims.rows; row++) {
                         for (let col = 1; col <= dims.cols; col++) {
                           const key = `${col},${row}`;
@@ -620,7 +619,7 @@ export function AlmacenPage() {
                                     setPickPanelName(null);
                                     setTargetPanelCubetas([]);
                                   } else {
-                                    showToast('Esa posición ya está ocupada. Usa el intercambio entre recambios del mismo panel.', 'warning');
+                                    showToast('Esa posición ya está ocupada. Usa el intercambio entre recambios del mismo panel.', 'info');
                                   }
                                   return;
                                 }
