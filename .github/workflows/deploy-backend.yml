@@ -15,17 +15,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Check secret exists
-        run: |
-          if [ -z "${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}" ]; then
-            echo "SECRET IS EMPTY OR MISSING"
-            exit 1
-          else
-            echo "Secret found, length: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE != '' }}"
-          fi
-
       - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
+        uses: azure/webapps-deploy@v2
         with:
           app-name: see-ferreteria-api
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
