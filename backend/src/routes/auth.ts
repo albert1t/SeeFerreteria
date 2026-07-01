@@ -22,7 +22,7 @@ router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res, 
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 8 * 60 * 60 * 1000,
     });
 
@@ -40,7 +40,7 @@ router.post('/register', loginLimiter, validateBody(registerSchema), async (req,
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 8 * 60 * 60 * 1000,
     });
 
@@ -58,7 +58,7 @@ router.post('/msal-login', validateBody(msalLoginSchema), async (req, res, next)
     res.cookie(COOKIE_NAME, token, {
       httpOnly: true,
       secure: env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 8 * 60 * 60 * 1000,
     });
 
