@@ -31,8 +31,8 @@ jobs:
         run: |
           mkdir deploy-pkg
           cp -r backend/dist deploy-pkg/
+          cp -r backend/node_modules deploy-pkg/
           cp backend/package.json deploy-pkg/
-          cp backend/package-lock.json deploy-pkg/
 
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
