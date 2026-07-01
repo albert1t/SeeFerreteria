@@ -15,9 +15,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Build
+        run: npm run build
+        working-directory: backend
+
+      - name: Prepare deployment package
+        run: |
+          mkdir deploy-pkg
+          cp -r backend/dist deploy-pkg/
+          cp backend/package.json deploy-pkg/
+          cp backend/package-lock.json deploy-pkg/
+
       - name: Deploy to Azure App Service
         uses: azure/webapps-deploy@v2
         with:
           app-name: see-ferreteria-api
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: backend
+          package: deploy-pkg
