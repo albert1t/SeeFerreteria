@@ -72,20 +72,25 @@
   }
 
   /* -- MAIN CONTAINER -- */
-  div[style*="height: calc(100vh - 64px)"] {
-    height: calc(100vh - 52px) !important;
+  .almacen-page-root {
+    height: calc(100dvh - 52px) !important;
     padding: 0.6rem !important;
+  }
+
+  /* -- TITLE ROW -- */
+  .almacen-title-row {
+    margin-bottom: 0.5rem !important;
   }
 
   /* -- ALMACEN PAGE TITLE -- */
   h2 {
-    font-size: 16px !important;
+    font-size: 15px !important;
   }
 
   /* -- OVERVIEW PANEL CARDS -- */
   .scrollbar-horizontal div[style*="cursor: pointer"] {
-    min-width: 260px !important;
-    width: 260px !important;
+    min-width: 240px !important;
+    width: 240px !important;
     padding: 0.4rem !important;
   }
 
@@ -104,6 +109,39 @@
   div[style*="overflow-y: auto"][style*="overflow-x: hidden"] > div[style*="display: grid"] > div {
     padding: 0.4rem !important;
     border-radius: 8px !important;
+  }
+
+  /* -- PANEL DETAIL GRID (vista de un panel concreto) -- */
+  .panel-detail-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 6px !important;
+  }
+  .panel-detail-cell {
+    min-height: 130px !important;
+    padding: 0.5rem !important;
+    border-radius: 8px !important;
+    gap: 4px !important;
+  }
+  .panel-detail-cell img {
+    width: 56px !important;
+    height: 56px !important;
+  }
+  /* imagen placeholder (div cuadrado) */
+  .panel-detail-cell > div > div[style*="width: 90"],
+  .panel-detail-cell > div > div[style*="fontSize: 28"] {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 20px !important;
+  }
+  /* referencia CMH */
+  .panel-detail-cell > div > div[style*="fontSize: 14"] {
+    font-size: 12px !important;
+  }
+  /* nombre */
+  .panel-detail-cell > div > div[style*="fontSize: 12"] {
+    font-size: 10px !important;
+    height: auto !important;
+    -webkit-line-clamp: 2 !important;
   }
 
   /* -- CUBETAMINI (mini grid) -- */

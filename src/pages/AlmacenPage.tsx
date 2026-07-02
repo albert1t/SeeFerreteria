@@ -227,8 +227,8 @@ export function AlmacenPage() {
   return (
     <>
       {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo recambio...'} />}
-      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+      <div className="almacen-page-root" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
+      <div className="almacen-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexShrink: 0 }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {panelSeleccionado ? `Panel ${panelSeleccionado}` : 'Almacén — Vista General'}
@@ -427,7 +427,10 @@ export function AlmacenPage() {
           const gridGap = isA1toA5 ? 6 : isA6toA9 ? 8 : 12;
           return (
             <div style={{ overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0, paddingBottom: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: `repeat(${dims.cols}, 1fr)`, gap: gridGap, width: '100%' }}>
+              <div
+                className="panel-detail-grid"
+                style={{ display: 'grid', gridTemplateColumns: `repeat(${dims.cols}, 1fr)`, gap: gridGap, width: '100%' }}
+              >
                 {Array.from({ length: dims.rows }, (_, rowIdx) =>
                   Array.from({ length: dims.cols }, (_, colIdx) => {
                     const col = colIdx + 1;
@@ -464,6 +467,7 @@ export function AlmacenPage() {
                             setFichaAbierta(r);
                           }
                         }}
+                        className="panel-detail-cell"
                         style={{
                           background: r ? (r.oculto ? 'rgba(196, 26, 26, 0.10)' : 'rgba(26,110,196,0.12)') : 'rgba(255,255,255,0.02)',
                           border: selectedForSwap?.id === r?.id ? '2px solid #f0c040' : r ? (r.oculto ? '1px dashed rgba(196, 26, 26, 0.45)' : '1px solid rgba(77,184,255,0.35)') : '1px dashed rgba(255,255,255,0.08)',
