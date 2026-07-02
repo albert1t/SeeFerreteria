@@ -73,7 +73,7 @@ export function Layout() {
             cursor: 'pointer',
           }}>
             <img
-              src="/src/assets/logoCMH_transparent.png"
+              src="https://ferreteriastorageacc.blob.core.windows.net/simpleblob/assets/logoCMH_transparent.png"
               width={60}
               height={60}
               alt="Logo"

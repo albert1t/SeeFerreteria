@@ -106,7 +106,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 8 }}>
             <span style={badgeStyle('info')}>{r.referenciaCMH}</span>
             {r.marca && <span style={badgeStyle('ghost')}>{r.marca}</span>}
-            <span style={badgeStyle('ghost')}>{r.panel} · C{r.col}F{r.row}</span>
+            <span style={badgeStyle('ghost')}>P: {r.panel} · C: {r.col} · F: {r.row}</span>
             {r.oculto && <span style={badgeStyle('Finalizado')}>Oculto</span>}
           </div>
           {r.descripcion && <div style={{ fontSize: 13, color: '#7aade0' }}>{r.descripcion}</div>}

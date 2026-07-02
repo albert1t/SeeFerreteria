@@ -97,7 +97,7 @@ export function LoginPage() {
     }}>
       <div style={{ width: '100%', maxWidth: 420, padding: '0 1rem' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-          <div style={{ fontSize: 50 }}><img src="/src/assets/logoCMH_transparent1.png" width={150} height={85} alt="Logo" /></div>
+          <div style={{ fontSize: 50 }}><img src="https://ferreteriastorageacc.blob.core.windows.net/simpleblob/assets/logoCMH_transparent1.png" width={150} height={85} alt="Logo" /></div>
           <h1 style={{ color: '#4db8ff', fontWeight: 800, fontSize: 28, margin: 0, letterSpacing: '0.05em' }}>FERRETERÍA</h1>
           <p style={{ color: '#4a7aaa', fontSize: 14, margin: '6px 0 0' }}>Sistema de Gestión de Recambios</p>
         </div>

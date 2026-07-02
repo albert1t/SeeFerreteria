@@ -279,7 +279,7 @@ export function AlmacenPage() {
                   <span style={{ color: '#e8a84d', fontWeight: 600 }}>
                     {selectedForSwap.referenciaCMH}
                     <span style={{ fontWeight: 400, opacity: 0.6, marginLeft: 6 }}>
-                      ({selectedForSwap.panel} C{selectedForSwap.col}F{selectedForSwap.row})
+                      (P: {selectedForSwap.panel} · C: {selectedForSwap.col} · F: {selectedForSwap.row})
                     </span>
                   </span>
                   <span style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
@@ -520,13 +520,13 @@ export function AlmacenPage() {
                                 {r.nombre}
                               </div>
                               <div style={{ fontSize: 10, color: '#4a7aaa', background: 'rgba(77,184,255,0.06)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto' }}>
-                                C{col}F{row}
+                                {col}/{row}
                               </div>
                             </div>
                           </>
                         ) : (
                           <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 4 }}>
-                            <span style={{ fontWeight: 600 }}>C{col}F{row}</span>
+                            <span style={{ fontWeight: 600 }}>{col}/{row}</span>
                             <span style={{ fontSize: 10, opacity: 0.6 }}>Vacío</span>
                           </div>
                         )}
@@ -548,11 +548,11 @@ export function AlmacenPage() {
             </p>
             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem' }}>
               <div style={{ fontWeight: 700, color: '#4db8ff' }}>{confirmSwap.r1.referenciaCMH}</div>
-              <div style={{ fontSize: 12, color: '#7aade0' }}>{confirmSwap.r1.panel} C{confirmSwap.r1.col}F{confirmSwap.r1.row} → {confirmSwap.r2.panel} C{confirmSwap.r2.col}F{confirmSwap.r2.row}</div>
+              <div style={{ fontSize: 12, color: '#7aade0' }}>P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row} → P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row}</div>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '0.75rem', marginBottom: '1.5rem' }}>
               <div style={{ fontWeight: 700, color: '#4db8ff' }}>{confirmSwap.r2.referenciaCMH}</div>
-              <div style={{ fontSize: 12, color: '#7aade0' }}>{confirmSwap.r2.panel} C{confirmSwap.r2.col}F{confirmSwap.r2.row} → {confirmSwap.r1.panel} C{confirmSwap.r1.col}F{confirmSwap.r1.row}</div>
+              <div style={{ fontSize: 12, color: '#7aade0' }}>P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row} → P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row}</div>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button style={btnStyle('ghost')} onClick={() => setConfirmSwap(null)}>Cancelar</button>
@@ -735,7 +735,7 @@ export function AlmacenPage() {
                               }}
                             >
                               <span style={{ fontWeight: 600, fontSize: 11, color: isSelf ? '#e8a84d' : ocupante ? '#7aade0' : '#2ecc40' }}>
-                                C{col}F{row}
+                                {col}/{row}
                               </span>
                               {ocupante ? (
                                 <span style={{ fontSize: 9, color: '#4a7aaa', lineHeight: 1.2, wordBreak: 'break-word' }}>
