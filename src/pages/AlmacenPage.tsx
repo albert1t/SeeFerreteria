@@ -325,11 +325,12 @@ export function AlmacenPage() {
                       background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(77,184,255,0.15)',
                       borderRadius: 10, padding: '0.6rem', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s',
                       minWidth: cardWidth, width: cardWidth, minHeight: 0, display: 'flex', flexDirection: 'column',
+                      overflow: 'hidden',
                     }}
                     onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(77,184,255,0.4)'; }}
                     onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(77,184,255,0.15)'; }}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12, textAlign: 'center' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12, textAlign: 'center', width: '100%', overflow: 'hidden' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                         <div style={{ fontSize: 12, fontWeight: 700, color: '#4db8ff' }}>{p.panel}</div>
                       </div>
@@ -370,6 +371,7 @@ export function AlmacenPage() {
                         </div>
                       ) : (
                         <div
+                          className="panel-familia-label"
                           onClick={(e) => { e.stopPropagation(); setEditingPanel(p.panel); }}
                           style={{
                             fontSize: 11,
@@ -380,9 +382,13 @@ export function AlmacenPage() {
                             borderRadius: 6,
                             background: 'rgba(255,255,255,0.05)',
                             cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            minWidth: 0,
+                            width: '100%',
+                            boxSizing: 'border-box',
+                            textAlign: 'center',
                           }}
                         >
                           {getPanelTitleLabel(p.panel)}
