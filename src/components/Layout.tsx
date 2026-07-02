@@ -83,8 +83,8 @@ export function Layout() {
           </div>
         </NavLink>
 
-        <SearchBar onSelect={(r) => { setFichaRecambio(r); closeMenu(); }} placeholder={isMobile ? 'Buscar recambio' : undefined} />
-        <button style={navBtn} onClick={() => setQrOpen(true)} title="Buscar por QR">QR</button>
+        <SearchBar onSelect={(r) => { setFichaRecambio(r); closeMenu(); }} placeholder={isMobile ? 'Búsqueda' : undefined} />
+        <button className="qr-btn" style={navBtn} onClick={() => setQrOpen(true)} title="Buscar por QR">QR</button>
 
         <nav className="desktop-only" style={{ display: 'flex', gap: 6 }}>
           <NavLink to="/" end onClick={() => setPanelSeleccionado(null)} style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}) })}>
