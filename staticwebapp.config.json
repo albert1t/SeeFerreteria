@@ -1,7 +1,7 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*"]
+    "exclude": ["/api/*", "/images/*"]
   },
   "responseOverrides": {
     "401": {
