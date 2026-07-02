@@ -49,7 +49,7 @@ export async function findAll(filters: {
     request.input('panel', sql.NVarChar(10), filters.panel);
   }
   if (filters.busqueda) {
-    where += ' AND (r.nombre LIKE @busqueda OR r.referenciaCMH LIKE @busqueda OR r.referenciaCliente LIKE @busqueda)';
+    where += ' AND (r.nombre LIKE @busqueda OR r.referenciaCMH LIKE @busqueda OR r.referenciaCliente LIKE @busqueda OR r.codigo LIKE @busqueda)';
     request.input('busqueda', sql.NVarChar(200), `%${filters.busqueda}%`);
   }
 
@@ -223,19 +223,40 @@ export async function swapPositions(id1: number, id2: number): Promise<void> {
   const r2 = await findById(id2);
   if (!r1 || !r2) throw new Error('Recambio no encontrado');
 
-  await pool.request()
-    .input('id1', sql.Int, id1)
-    .input('p1', sql.NVarChar(10), r1.panel)
-    .input('c1', sql.TinyInt, r1.col)
-    .input('r1b', sql.TinyInt, r1.row)
-    .input('id2', sql.Int, id2)
-    .input('p2', sql.NVarChar(10), r2.panel)
-    .input('c2', sql.TinyInt, r2.col)
-    .input('r2b', sql.TinyInt, r2.row)
-    .query(`
-      UPDATE Recambios SET panel = @p2, col = @c2, [row] = @r2b, updatedAt = SYSUTCDATETIME() WHERE id = @id1;
-      UPDATE Recambios SET panel = @p1, col = @c1, [row] = @r1b, updatedAt = SYSUTCDATETIME() WHERE id = @id2;
-    `);
+  // Usamos una transacción para evitar violación de la constraint UNIQUE (panel, col, row)
+  // La posición temporal usa col=99 que está fuera del rango normal (1-6/5)
+  // SQL Server no tiene CHECK en col/row que lo impida en esta BD
+  const transaction = pool.transaction();
+  await transaction.begin();
+
+  try {
+    // 1. Mover r1 a una posición temporal única
+    await transaction.request()
+      .input('id1', sql.Int, id1)
+      .input('tmpRow', sql.TinyInt, id1 % 15 + 1)
+      .query(`UPDATE Recambios SET panel = 'ZZ', col = 1, [row] = @tmpRow, updatedAt = SYSUTCDATETIME() WHERE id = @id1`);
+
+    // 2. Mover r2 a la posición original de r1
+    await transaction.request()
+      .input('id2', sql.Int, id2)
+      .input('p1', sql.NVarChar(10), r1.panel)
+      .input('c1', sql.TinyInt, r1.col)
+      .input('r1b', sql.TinyInt, r1.row)
+      .query(`UPDATE Recambios SET panel = @p1, col = @c1, [row] = @r1b, updatedAt = SYSUTCDATETIME() WHERE id = @id2`);
+
+    // 3. Mover r1 (en temporal) a la posición original de r2
+    await transaction.request()
+      .input('id1', sql.Int, id1)
+      .input('p2', sql.NVarChar(10), r2.panel)
+      .input('c2', sql.TinyInt, r2.col)
+      .input('r2b', sql.TinyInt, r2.row)
+      .query(`UPDATE Recambios SET panel = @p2, col = @c2, [row] = @r2b, updatedAt = SYSUTCDATETIME() WHERE id = @id1`);
+
+    await transaction.commit();
+  } catch (err) {
+    await transaction.rollback();
+    throw err;
+  }
 }
 
 export async function getPanelOccupancy(panel: string): Promise<{ col: number; row: number; recambioId: number | null }[]> {

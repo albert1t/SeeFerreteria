@@ -5,9 +5,10 @@ import type { Recambio } from '../types';
 
 interface SearchBarProps {
   onSelect: (recambio: Recambio) => void;
+  placeholder?: string;
 }
 
-export function SearchBar({ onSelect }: SearchBarProps) {
+export function SearchBar({ onSelect, placeholder = 'Buscar por nombre o referencia...' }: SearchBarProps) {
   const [q, setQ] = useState('');
   const [debounced, setDebounced] = useState('');
 
@@ -19,7 +20,7 @@ export function SearchBar({ onSelect }: SearchBarProps) {
   const { data: results = [] } = useQuery({
     queryKey: ['recambios', 'search', debounced],
     queryFn: () => recambiosApi.searchRecambios(debounced),
-    enabled: debounced.length >= 2,
+    enabled: debounced.length >= 1,
   });
 
   return (
@@ -33,7 +34,7 @@ export function SearchBar({ onSelect }: SearchBarProps) {
       <input
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Buscar por nombre o referencia..."
+        placeholder={placeholder}
         style={{
           width: '100%', padding: '8px 40px 8px 16px',
           background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(77,184,255,0.3)',

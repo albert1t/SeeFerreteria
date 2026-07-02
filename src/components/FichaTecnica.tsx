@@ -210,74 +210,91 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
       {tab === 'nuevo' && (
         <div>
           {!pedidoTipo ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <p style={{ color: '#7aade0', fontSize: 13, margin: '0 0 0.5rem' }}>Selecciona el tipo de pedido:</p>
-              <button
-                onClick={() => crearPedido('Reposición')}
-                disabled={createPedidoMut.isPending}
-                style={{ ...btnStyle('primary'), justifyContent: 'flex-start', padding: '1rem 1.25rem' }}
-              >
-                <span style={{ fontSize: 20 }}>🔄</span>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700 }}>Reposición</div>
-                  <div style={{ fontSize: 11, opacity: 0.8 }}>Pedido automático · {r.nReposicion} unidades</div>
-                </div>
-              </button>
-              <button onClick={() => setPedidoTipo('Solicitud')} style={{ ...btnStyle('success'), justifyContent: 'flex-start', padding: '1rem 1.25rem' }}>
-                <span style={{ fontSize: 20 }}>📋</span>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700 }}>Solicitud</div>
-                  <div style={{ fontSize: 11, opacity: 0.8 }}>Especificar cantidad y plazo</div>
-                </div>
-              </button>
-              <button onClick={() => setPedidoTipo('Solicitud Express')} style={{ ...btnStyle('express'), justifyContent: 'flex-start', padding: '1rem 1.25rem' }}>
-                <span style={{ fontSize: 20 }}>⚡</span>
-                <div style={{ textAlign: 'left' }}>
-                  <div style={{ fontWeight: 700 }}>Solicitud Express</div>
-                  <div style={{ fontSize: 11, opacity: 0.8 }}>Prioritario · Máxima urgencia</div>
-                </div>
-              </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <p style={{ color: '#7aade0', fontSize: 12, margin: '0 0 2px' }}>Selecciona el tipo de pedido:</p>
+              {([
+                { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${r.nReposicion} uds. · Plazo: ${r.plazoEntrega || '—'}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
+                { tipo: 'Solicitud' as PedidoTipo, label: 'Personalizado', desc: 'Cantidad y plazo a definir', color: '#4dff9b', bgCard: '#0a2a1a', borderColor: '#1a5a3a' },
+                { tipo: 'Solicitud Express' as PedidoTipo, label: 'Urgente', desc: 'Prioritario · entrega inmediata', color: '#ff6b6b', bgCard: '#2a0a0a', borderColor: '#5a2020' },
+              ]).map((opt) => (
+                <button
+                  key={opt.tipo}
+                  onClick={() => opt.tipo === 'Reposición' ? crearPedido(opt.tipo) : setPedidoTipo(opt.tipo)}
+                  disabled={createPedidoMut.isPending}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 14, padding: 0,
+                    background: opt.bgCard, border: `1px solid ${opt.borderColor}`, borderRadius: 12,
+                    cursor: 'pointer', transition: 'all 0.15s', textAlign: 'left', width: '100%',
+                    opacity: createPedidoMut.isPending ? 0.6 : 1, overflow: 'hidden',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = opt.color; e.currentTarget.style.boxShadow = `0 4px 16px ${opt.color}20`; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = opt.borderColor; e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)'; }}
+                >
+                  {/* Left accent bar */}
+                  <div style={{ width: 4, alignSelf: 'stretch', background: opt.color, flexShrink: 0 }} />
+                  {/* Text */}
+                  <div style={{ flex: 1, padding: '12px 0' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                      <span style={{ fontWeight: 700, fontSize: 15, color: '#e8eef6' }}>{opt.tipo}</span>
+                      <span style={{ fontSize: 10, color: opt.color, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>{opt.label}</span>
+                    </div>
+                    <div style={{ fontSize: 12, color: '#7aade0', marginTop: 2 }}>{opt.desc}</div>
+                  </div>
+                  {/* Action chevron */}
+                  <div style={{
+                    padding: '0 16px', fontSize: 20, color: opt.color, flexShrink: 0, fontWeight: 300,
+                  }}>
+                    {opt.tipo === 'Reposición' ? '→' : '›'}
+                  </div>
+                </button>
+              ))}
             </div>
           ) : (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1rem' }}>
                 <span style={badgeStyle(pedidoTipo)}>{pedidoTipo}</span>
-                <button onClick={() => setPedidoTipo(null)} style={{ background: 'none', border: 'none', color: '#7aade0', cursor: 'pointer', fontSize: 12 }}>← Cambiar tipo</button>
+                <button onClick={() => setPedidoTipo(null)} style={{
+                  background: 'none', border: 'none', color: '#7aade0', cursor: 'pointer', fontSize: 12,
+                  padding: 0, textDecoration: 'underline', textUnderlineOffset: 3,
+                }}>
+                  Cambiar tipo
+                </button>
               </div>
               {pedidoTipo !== 'Reposición' && (
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '0.75rem' }}>
                   <label style={labelStyle}>Cantidad {pedidoTipo === 'Solicitud' ? '*' : ''}</label>
                   <input
                     type="number" min="1" value={cantidad} onChange={(e) => setCantidad(e.target.value)}
                     placeholder="Ej: 50"
-                    style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14 }}
+                    style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
               )}
               {pedidoTipo === 'Solicitud' && (
-                <div style={{ marginBottom: '1rem' }}>
+                <div style={{ marginBottom: '0.75rem' }}>
                   <label style={labelStyle}>Plazo deseado *</label>
                   <input
                     value={plazoDeseado} onChange={(e) => setPlazoDeseado(e.target.value)}
                     placeholder="Ej: 3 días"
-                    style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14 }}
+                    style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
                   />
                 </div>
               )}
-              <div style={{ marginBottom: '1.25rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
                 <label style={labelStyle}>Observaciones (opcional)</label>
                 <textarea
                   value={observaciones} onChange={(e) => setObservaciones(e.target.value)}
                   placeholder="Notas adicionales..."
-                  style={{ width: '100%', minHeight: 60, padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, resize: 'vertical' }}
+                  style={{ width: '100%', minHeight: 60, padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, outline: 'none', boxSizing: 'border-box', resize: 'vertical' }}
                 />
               </div>
               <button
                 onClick={() => crearPedido(pedidoTipo)}
                 disabled={createPedidoMut.isPending || (pedidoTipo === 'Solicitud' && (!cantidad || !plazoDeseado))}
-                style={{ ...btnStyle(pedidoTipo === 'Solicitud Express' ? 'express' : 'primary'), width: '100%', justifyContent: 'center' }}
+                style={{ ...btnStyle(pedidoTipo === 'Solicitud Express' ? 'express' : 'primary'), width: '100%', justifyContent: 'center', padding: '10px 20px' }}
               >
-                {createPedidoMut.isPending ? 'Creando...' : 'Crear Pedido'}
+                {createPedidoMut.isPending ? 'Creando...' : `Crear ${pedidoTipo}`}
               </button>
             </div>
           )}
