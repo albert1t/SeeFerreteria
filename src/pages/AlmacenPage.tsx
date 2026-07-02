@@ -13,6 +13,24 @@ import * as panelesFrontApi from '../api/paneles';
 import * as catalogosApi from '../api/catalogos';
 import type { Recambio } from '../types';
 
+function LoadingOverlay({ message }: { message: string }) {
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 9999,
+      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16,
+    }}>
+      <div style={{
+        width: 40, height: 40, border: '3px solid rgba(77,184,255,0.2)',
+        borderTopColor: '#4db8ff', borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite',
+      }} />
+      <div style={{ color: '#edf2fb', fontSize: 14, fontWeight: 600 }}>{message}</div>
+      <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+    </div>
+  );
+}
+
 function CubetaMini({ filled, image, title }: { filled: boolean; image?: string | null; title?: string }) {
   const background = image ? `url(${image})` : undefined;
   return (
@@ -69,6 +87,16 @@ export function AlmacenPage() {
   const [pickPanelName, setPickPanelName] = useState<string | null>(null);
   const [targetPanelCubetas, setTargetPanelCubetas] = useState<any[]>([]);
   const [loadingPickPanel, setLoadingPickPanel] = useState(false);
+  const [swapLoading, setSwapLoading] = useState<'swap' | 'move' | null>(null);
+
+  useEffect(() => {
+    if (!swapLoading) return;
+    const t = setTimeout(() => {
+      setSwapLoading(null);
+      showToast('La operación está tardando demasiado, inténtalo de nuevo', 'error');
+    }, 15000);
+    return () => clearTimeout(t);
+  }, [swapLoading]);
   const panelListRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -197,7 +225,9 @@ export function AlmacenPage() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
+    <>
+      {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo recambio...'} />}
+      <div style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -400,14 +430,29 @@ export function AlmacenPage() {
                     return (
                       <div
                         key={`${col}-${row}`}
-                        onClick={() => {
-                          if (swapMode && r) {
-                            if (!selectedForSwap) {
-                              setSelectedForSwap(r);
-                            } else if (selectedForSwap.id === r.id) {
-                              setSelectedForSwap(null);
-                            } else {
-                              setConfirmSwap({ r1: selectedForSwap, r2: r });
+                        onClick={async () => {
+                          if (swapMode) {
+                            if (r) {
+                              if (!selectedForSwap) {
+                                setSelectedForSwap(r);
+                              } else if (selectedForSwap.id === r.id) {
+                                setSelectedForSwap(null);
+                              } else {
+                                setConfirmSwap({ r1: selectedForSwap, r2: r });
+                              }
+                            } else if (selectedForSwap) {
+                              setSwapLoading('move');
+                              try {
+                                await recambiosApi.updateRecambio(selectedForSwap.id, { panel: panelSeleccionado!, col, row });
+                                showToast(`Movido a C${col}F${row}`, 'success');
+                                setSelectedForSwap(null);
+                                setSwapMode(false);
+                                queryClient.invalidateQueries({ queryKey: ['paneles'] });
+                              } catch (err: any) {
+                                showToast(err.message, 'error');
+                              } finally {
+                                setSwapLoading(null);
+                              }
                             }
                           } else if (r) {
                             setFichaAbierta(r);
@@ -417,14 +462,26 @@ export function AlmacenPage() {
                           background: r ? (r.oculto ? 'rgba(196, 26, 26, 0.10)' : 'rgba(26,110,196,0.12)') : 'rgba(255,255,255,0.02)',
                           border: selectedForSwap?.id === r?.id ? '2px solid #f0c040' : r ? (r.oculto ? '1px dashed rgba(196, 26, 26, 0.45)' : '1px solid rgba(77,184,255,0.35)') : '1px dashed rgba(255,255,255,0.08)',
                           opacity: r?.oculto ? 0.84 : 1,
-                          borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : 'default',
+                          borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : (swapMode && selectedForSwap ? 'pointer' : 'default'),
                           minHeight: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
                           transition: 'all 0.2s',
                           boxSizing: 'border-box',
                           boxShadow: selectedForSwap?.id === r?.id ? '0 0 12px rgba(240,192,64,0.5)' : undefined,
                         }}
-                        onMouseEnter={(e) => { if (r) { e.currentTarget.style.background = 'rgba(26,110,196,0.22)'; e.currentTarget.style.borderColor = '#4db8ff'; } }}
-                        onMouseLeave={(e) => { if (r) { e.currentTarget.style.background = 'rgba(26,110,196,0.12)'; e.currentTarget.style.borderColor = 'rgba(77,184,255,0.35)'; } }}
+                        onMouseEnter={(e) => {
+                          if (r) {
+                            e.currentTarget.style.background = 'rgba(26,110,196,0.22)'; e.currentTarget.style.borderColor = '#4db8ff';
+                          } else if (swapMode && selectedForSwap) {
+                            e.currentTarget.style.background = 'rgba(46,204,64,0.12)'; e.currentTarget.style.borderColor = 'rgba(46,204,64,0.4)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (r) {
+                            e.currentTarget.style.background = 'rgba(26,110,196,0.12)'; e.currentTarget.style.borderColor = 'rgba(77,184,255,0.35)';
+                          } else if (swapMode && selectedForSwap) {
+                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                          }
+                        }}
                       >
                         {r ? (
                           <>
@@ -500,6 +557,7 @@ export function AlmacenPage() {
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button style={btnStyle('ghost')} onClick={() => setConfirmSwap(null)}>Cancelar</button>
               <button style={btnStyle('primary')} onClick={async () => {
+                setSwapLoading('swap');
                 try {
                   await recambiosApi.swapRecambios(confirmSwap.r1.id, confirmSwap.r2.id);
                   showToast('Posiciones intercambiadas', 'success');
@@ -509,6 +567,8 @@ export function AlmacenPage() {
                   queryClient.invalidateQueries({ queryKey: ['paneles'] });
                 } catch (err: any) {
                   showToast(err.message, 'error');
+                } finally {
+                  setSwapLoading(null);
                 }
               }}>Intercambiar</button>
             </div>
@@ -623,6 +683,7 @@ export function AlmacenPage() {
                                   }
                                   return;
                                 }
+                                setSwapLoading('move');
                                 try {
                                   await recambiosApi.updateRecambio(selectedForSwap.id, { panel: pickPanelName, col, row });
                                   showToast(`Movido a ${pickPanelName} C${col}F${row}`, 'success');
@@ -634,6 +695,8 @@ export function AlmacenPage() {
                                   queryClient.invalidateQueries({ queryKey: ['paneles'] });
                                 } catch (err: any) {
                                   showToast(err.message, 'error');
+                                } finally {
+                                  setSwapLoading(null);
                                 }
                               }}
                               title={ocupante ? `${ocupante.referenciaCMH} (ocupado)` : isSelf ? 'Posición actual' : `C${col}F${row} — vacío`}
@@ -695,5 +758,6 @@ export function AlmacenPage() {
         </div>
       </Modal>
     </div>
+    </>
   );
 }

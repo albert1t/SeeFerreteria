@@ -46,6 +46,7 @@ export interface Pedido {
   fechaActualizacion: string;
   recambioRef?: string;
   recambioNombre?: string;
+  recambioImagen?: string;
   solicitanteNombre?: string;
 }
 

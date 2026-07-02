@@ -1,6 +1,14 @@
 /* ========== MOBILE RESPONSIVE ========== */
 /* Overrides inline styles via !important — original desktop code untouched */
 
+/* Desktop defaults */
+.desktop-only {
+  display: flex !important;
+}
+.mobile-hamburger {
+  display: none !important;
+}
+
 @media (max-width: 768px) {
   /* -- HEADER -- */
   header {
@@ -9,12 +17,15 @@
     gap: 6px !important;
   }
 
-  /* Hide nav links */
-  header nav {
+  /* Hide desktop nav, user info, QR button; show hamburger */
+  .desktop-only {
     display: none !important;
   }
+  .mobile-hamburger {
+    display: block !important;
+  }
 
-  /* Hide user name/role, keep buttons */
+  /* Hide user name/role (desktop version) */
   header > div:last-child > div {
     display: none !important;
   }
@@ -24,13 +35,14 @@
     width: 36px !important;
     height: 36px !important;
   }
-  header span {
+  header > a span {
     font-size: 15px !important;
   }
 
-  /* Search bar compact */
+  /* Search bar — full remaining width on mobile */
   header > div:first-of-type {
-    max-width: 120px !important;
+    flex: 1 !important;
+    max-width: none !important;
   }
   header input[placeholder*="Buscar"] {
     font-size: 12px !important;
@@ -39,12 +51,6 @@
   header input[placeholder*="Buscar"] + span {
     font-size: 13px !important;
     right: 8px !important;
-  }
-
-  /* QR button compact */
-  header button[title*="QR"] {
-    font-size: 11px !important;
-    padding: 4px 8px !important;
   }
 
   /* Salir button compact */
@@ -70,7 +76,6 @@
   }
 
   /* -- OVERVIEW PANEL CARDS -- */
-  /* Reduce card width on mobile */
   .scrollbar-horizontal div[style*="cursor: pointer"] {
     min-width: 260px !important;
     width: 260px !important;
@@ -78,7 +83,6 @@
   }
 
   /* -- DETAIL GRID CELLS -- */
-  /* Target grid cells (divs inside grid containers) */
   div[style*="overflow-y: auto"][style*="overflow-x: hidden"] > div[style*="display: grid"] > div {
     padding: 0.4rem !important;
     border-radius: 8px !important;
@@ -90,7 +94,6 @@
   }
 
   /* -- MODAL -- */
-  /* Full width modal on small screens */
   div[style*="position: fixed"][style*="z-index: 1000"] > div {
     max-width: calc(100% - 0.5rem) !important;
     padding: 1rem !important;
@@ -100,41 +103,39 @@
   }
 
   /* -- FICHA TECNICA -- */
-  /* 2-col grids → single column */
   div[style*="grid-template-columns: 1fr 1fr"] {
     grid-template-columns: 1fr !important;
   }
 
-  /* Image in FichaTecnica */
   img[alt][style*="border-radius: 10"] {
     width: 80px !important;
     height: 80px !important;
   }
 
   /* -- PEDIDOS PAGE -- */
-  /* Filters row */
   div[style*="padding: 1.5rem"] div[style*="flex-wrap: wrap"] select,
   div[style*="padding: 1.5rem"] div[style*="flex-wrap: wrap"] input {
     width: 100% !important;
     max-width: 100% !important;
   }
 
-  /* Pedido cards more compact */
   div[style*="padding: 1.5rem"] div[style*="flex-direction: column"][style*="gap: 12"] > div {
     padding: 1rem !important;
   }
 
   /* -- SEARCH RESULTS -- */
-  /* Larger touch targets */
   div[style*="position: absolute"][style*="z-index: 200"] > div {
     padding: 12px 14px !important;
   }
+
+}
+
 }
 
 /* Small phones */
 @media (max-width: 400px) {
   header > div:first-of-type {
-    max-width: 90px !important;
+    max-width: none !important;
   }
   header input[placeholder*="Buscar"] {
     font-size: 11px !important;
