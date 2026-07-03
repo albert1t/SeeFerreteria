@@ -50,8 +50,20 @@ router.use(authMiddleware);
 router.post(
   '/upload-imagen',
   requireRole('admin'),
-  upload.single('imagen'),
-  async (req, res, next) => {
+  // Catch multer errors explicitly (file too large, wrong type, etc.)
+  (req, res, next) => {
+    upload.single('imagen')(req, res, (err) => {
+      if (err) {
+        console.error('Multer error:', err);
+        if (err instanceof multer.MulterError) {
+          return res.status(400).json({ error: `Error al procesar archivo: ${err.code}` });
+        }
+        return res.status(400).json({ error: err.message || 'Archivo inválido' });
+      }
+      next();
+    });
+  },
+  async (req, res) => {
     try {
       if (!req.file) {
         res.status(400).json({ error: 'No se ha enviado ninguna imagen' });
@@ -62,14 +74,26 @@ router.post(
       const ext = req.file.originalname.split('.').pop() ?? 'jpg';
       const blobName = `product-image/recambio-${Date.now()}-${Math.round(Math.random() * 1e9)}.${ext}`;
 
-      // La SAS URL del container: https://<account>.blob.core.windows.net/<container>?<sas>
-      // Para subir un blob concreto insertamos el nombre antes del '?'
       const [baseUrl, sasToken] = sasUrl.split('?');
+      if (!baseUrl || !sasToken) {
+        console.error('SAS URL mal formada:', sasUrl?.slice(0, 50));
+        return res.status(500).json({ error: 'Configuración de Azure inválida (SAS URL)' });
+      }
+
       const uploadUrl = `${baseUrl}/${blobName}?${sasToken}`;
 
       // Subida a Azure Blob Storage usando el módulo nativo https
-      const parsedUrl = new URL(uploadUrl);
+      let parsedUrl: URL;
+      try {
+        parsedUrl = new URL(uploadUrl);
+      } catch {
+        return res.status(500).json({ error: 'URL de subida inválida' });
+      }
+
       const buffer = req.file.buffer;
+      if (!buffer || buffer.length === 0) {
+        return res.status(400).json({ error: 'Archivo vacío' });
+      }
 
       const TIMEOUT_MS = 30_000;
 
@@ -91,27 +115,30 @@ router.post(
           azureRes.on('end', () => {
             resolve(azureRes.statusCode ?? 0);
           });
+          azureRes.on('error', (err) => reject(new Error(`Response error: ${err.message}`)));
         });
 
         azureReq.setTimeout(TIMEOUT_MS, () => {
-          azureReq.destroy(new Error('Timeout'));
+          azureReq.destroy();
+          reject(new Error('Timeout al conectar con Azure Blob Storage'));
         });
 
-        azureReq.on('error', (err) => reject(err));
+        azureReq.on('error', (err) => reject(new Error(`Conexión Azure falló: ${err.message}`)));
         azureReq.write(buffer);
         azureReq.end();
       });
 
       if (azureStatus < 200 || azureStatus >= 300) {
-        console.error(`Azure Blob Storage responded with status ${azureStatus}`);
-        throw new AppError(502, `Azure Blob Storage devolvió código ${azureStatus}`);
+        return res.status(502).json({ error: `Azure Blob Storage devolvió código ${azureStatus}` });
       }
 
       // URL pública del blob (sin token SAS)
       const url = `${baseUrl}/${blobName}`;
       res.json({ url });
     } catch (err) {
-      next(err);
+      console.error('Upload error:', err);
+      const msg = err instanceof Error ? err.message : 'Error desconocido';
+      res.status(500).json({ error: msg });
     }
   }
 );
