@@ -5,6 +5,7 @@ import * as xlsx from 'xlsx';
 import * as recambiosService from '../services/recambiosService.js';
 import * as pedidosService from '../services/pedidosService.js';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { AppError } from '../middleware/errorHandler.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
 import { recambioCreateSchema, recambioUpdateSchema, recambiosQuerySchema } from '../schemas/index.js';
 import { env } from '../config/env.js';
@@ -66,36 +67,45 @@ router.post(
       const [baseUrl, sasToken] = sasUrl.split('?');
       const uploadUrl = `${baseUrl}/${blobName}?${sasToken}`;
 
-      // Usamos el módulo nativo https (funciona en cualquier versión de Node)
-      const { hostname, pathname, search } = new URL(uploadUrl);
+      // Subida a Azure Blob Storage usando el módulo nativo https
+      const parsedUrl = new URL(uploadUrl);
       const buffer = req.file.buffer;
 
-      await new Promise<void>((resolve, reject) => {
+      const TIMEOUT_MS = 30_000;
+
+      const azureStatus = await new Promise<number>((resolve, reject) => {
         const opts: https.RequestOptions = {
           method: 'PUT',
-          hostname,
-          path: `${pathname}${search}`,
+          hostname: parsedUrl.hostname,
+          port: parsedUrl.port || 443,
+          path: parsedUrl.pathname + parsedUrl.search,
           headers: {
             'x-ms-blob-type': 'BlockBlob',
             'Content-Type': req.file.mimetype,
             'Content-Length': buffer.length,
           },
         };
+
         const azureReq = https.request(opts, (azureRes) => {
-          let body = '';
-          azureRes.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+          azureRes.resume();
           azureRes.on('end', () => {
-            if (azureRes.statusCode && azureRes.statusCode >= 200 && azureRes.statusCode < 300) {
-              resolve();
-            } else {
-              reject(new Error(`Azure Blob error ${azureRes.statusCode}: ${body || azureRes.statusMessage}`));
-            }
+            resolve(azureRes.statusCode ?? 0);
           });
         });
-        azureReq.on('error', (err) => reject(new Error(`Azure request failed: ${err.message}`)));
+
+        azureReq.setTimeout(TIMEOUT_MS, () => {
+          azureReq.destroy(new Error('Timeout'));
+        });
+
+        azureReq.on('error', (err) => reject(err));
         azureReq.write(buffer);
         azureReq.end();
       });
+
+      if (azureStatus < 200 || azureStatus >= 300) {
+        console.error(`Azure Blob Storage responded with status ${azureStatus}`);
+        throw new AppError(502, `Azure Blob Storage devolvió código ${azureStatus}`);
+      }
 
       // URL pública del blob (sin token SAS)
       const url = `${baseUrl}/${blobName}`;
