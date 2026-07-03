@@ -1,4 +1,4 @@
-import { apiFetch } from './client';
+import { apiFetch, BASE_URL } from './client';
 import type { Pedido, Recambio, RecambioFormData } from '../types';
 
 export function searchRecambios(busqueda: string) {
@@ -45,7 +45,7 @@ export async function uploadImagen(file: File): Promise<{ url: string }> {
   const formData = new FormData();
   formData.append('imagen', file);
 
-  const res = await fetch('/api/recambios/upload-imagen', {
+  const res = await fetch(`${BASE_URL}/api/recambios/upload-imagen`, {
     method: 'POST',
     credentials: 'include',
     body: formData,
@@ -70,7 +70,7 @@ export async function importarExcel(file: File): Promise<{ total: number, insert
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch('/api/recambios/import', {
+  const res = await fetch(`${BASE_URL}/api/recambios/import`, {
     method: 'POST',
     credentials: 'include',
     body: formData,
