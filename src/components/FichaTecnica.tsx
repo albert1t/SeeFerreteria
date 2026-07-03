@@ -27,6 +27,12 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
   const [editando, setEditando] = useState(false);
   const [confirmacion, setConfirmacion] = useState<{ tipo: PedidoTipo; cantidad?: number; plazoDeseado?: string; observaciones?: string } | null>(null);
 
+  function parseEmbalaje(embalaje: string | null | undefined): number {
+    if (!embalaje) return 1;
+    const match = embalaje.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 1;
+  }
+
   const { data: detail } = useQuery({
     queryKey: ['recambios', recambio.id],
     queryFn: () => recambiosApi.getRecambio(recambio.id),
@@ -83,12 +89,19 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
     });
   }
 
+  function totalPedido(): number {
+    const emb = parseEmbalaje(r.unidadEmbalaje);
+    if (confirmacion?.tipo === 'Reposición') return (confirmacion?.cantidad ?? r.nReposicion) * emb;
+    return (confirmacion?.cantidad ?? 0) * emb;
+  }
+
   function ejecutarPedido() {
     if (!confirmacion) return;
+    const cantidadTotal = totalPedido();
     createPedidoMut.mutate({
       recambioId: recambio.id,
       tipo: confirmacion.tipo,
-      cantidad: confirmacion.cantidad,
+      cantidad: cantidadTotal,
       plazoDeseado: confirmacion.plazoDeseado,
       observaciones: confirmacion.observaciones,
     });
@@ -226,7 +239,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
                 </div>
               )}
               {([
-                { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${r.nReposicion} uds. · Plazo: ${r.plazoEntrega || '—'}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
+                { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${r.nReposicion} uds${(() => { const emb = parseEmbalaje(r.unidadEmbalaje); return emb > 1 ? ` (${Math.ceil(r.nReposicion / emb)} paquetes × ${r.unidadEmbalaje})` : ''; })()} · Plazo: ${r.plazoEntrega || '—'}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
                 { tipo: 'Solicitud' as PedidoTipo, label: 'Personalizado', desc: 'Cantidad y plazo a definir', color: '#4dff9b', bgCard: '#0a2a1a', borderColor: '#1a5a3a' },
                 { tipo: 'Solicitud Express' as PedidoTipo, label: 'Urgente', desc: 'Prioritario · entrega inmediata', color: '#ff6b6b', bgCard: '#2a0a0a', borderColor: '#5a2020' },
               ]).map((opt) => (
@@ -281,12 +294,17 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               </div>
               {pedidoTipo !== 'Reposición' && (
                 <div style={{ marginBottom: '0.75rem' }}>
-                  <label style={labelStyle}>Cantidad {pedidoTipo === 'Solicitud' ? '*' : ''}</label>
+                  <label style={labelStyle}>N° paquetes {pedidoTipo === 'Solicitud' ? '*' : ''}</label>
                   <input
                     type="number" min="1" value={cantidad} onChange={(e) => setCantidad(e.target.value)}
-                    placeholder="Ej: 50"
+                    placeholder="Ej: 5"
                     style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
                   />
+                  {r.unidadEmbalaje && cantidad && !isNaN(parseInt(cantidad, 10)) && (
+                    <div style={{ fontSize: 12, color: '#7aade0', marginTop: 4 }}>
+                      {parseInt(cantidad, 10)} × {r.unidadEmbalaje} = <strong style={{ color: '#4db8ff' }}>{parseInt(cantidad, 10) * parseEmbalaje(r.unidadEmbalaje)} uds</strong> total
+                    </div>
+                  )}
                 </div>
               )}
               {pedidoTipo === 'Solicitud' && (
@@ -335,18 +353,24 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               {r.unidadEmbalaje && <div style={{ fontSize: 12, color: '#a8cce8', marginBottom: 2 }}>Ud. embalaje: {r.unidadEmbalaje}</div>}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem 1rem', marginBottom: '1rem' }}>
-              <div>
-                <div style={labelStyle}>Cantidad</div>
-                <div style={{ fontSize: 16, fontWeight: 700, color: '#f3f6ff' }}>{confirmacion.cantidad ?? r.nReposicion}</div>
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={labelStyle}>Cantidad</div>
+              <div style={{ fontSize: 16, fontWeight: 700, color: '#f3f6ff' }}>
+                {(() => {
+                  const emb = parseEmbalaje(r.unidadEmbalaje);
+                  const paquetes = confirmacion.cantidad ?? r.nReposicion;
+                  const total = paquetes * emb;
+                  if (emb <= 1) return `${paquetes} uds`;
+                  return `${paquetes} ${r.unidadEmbalaje ? `(x ${r.unidadEmbalaje})` : ''} = ${total} uds total`;
+                })()}
               </div>
-              {confirmacion.plazoDeseado && (
-                <div>
-                  <div style={labelStyle}>Plazo deseado</div>
-                  <div style={{ fontSize: 14, color: '#c8ddf0' }}>{confirmacion.plazoDeseado}</div>
-                </div>
-              )}
             </div>
+            {confirmacion.plazoDeseado && (
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={labelStyle}>Plazo deseado</div>
+                <div style={{ fontSize: 14, color: '#c8ddf0' }}>{confirmacion.plazoDeseado}</div>
+              </div>
+            )}
 
             {confirmacion.observaciones && (
               <div style={{ marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid rgba(42,80,128,0.15)' }}>
