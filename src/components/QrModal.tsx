@@ -97,7 +97,6 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           onChange={(e) => setManualRef(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handleRef(manualRef)}
           placeholder="CMH00001 o CLI-000001"
-          autoFocus
           style={{
             width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)',
             border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14,
