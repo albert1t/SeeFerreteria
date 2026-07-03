@@ -13,11 +13,11 @@ const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
   fileFilter: (_req, file, cb) => {
-    const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp)$/i;
+    const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|ico|heic|heif|avif)$/i;
     if (allowed.test(file.originalname)) {
       cb(null, true);
     } else {
-      cb(new Error('Solo se permiten imágenes (jpg, png, gif, webp, svg, bmp)'));
+      cb(new Error('Solo se permiten imágenes (jpg, png, gif, webp, svg, bmp, tiff, ico, heic, avif)'));
     }
   },
 });
