@@ -50,18 +50,22 @@ router.use(authMiddleware);
 router.post(
   '/upload-imagen',
   requireRole('admin'),
-  // Catch multer errors explicitly (file too large, wrong type, etc.)
   (req, res, next) => {
-    upload.single('imagen')(req, res, (err) => {
-      if (err) {
-        console.error('Multer error:', err);
-        if (err instanceof multer.MulterError) {
-          return res.status(400).json({ error: `Error al procesar archivo: ${err.code}` });
+    // Multer v2 maneja errores de forma distinta; lo envolvemos con try-catch
+    try {
+      upload.single('imagen')(req, res, (err: unknown) => {
+        if (err) {
+          console.error('Multer error:', err);
+          const msg = err instanceof Error ? err.message : String(err);
+          return res.status(400).json({ error: `Error al procesar archivo: ${msg}` });
         }
-        return res.status(400).json({ error: err.message || 'Archivo inválido' });
-      }
-      next();
-    });
+        next();
+      });
+    } catch (err) {
+      console.error('Multer sync error:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      res.status(500).json({ error: `Error en multer: ${msg}` });
+    }
   },
   async (req, res) => {
     try {
@@ -70,32 +74,25 @@ router.post(
         return;
       }
 
+      console.log('File received:', req.file.originalname, 'size:', req.file.size, 'mime:', req.file.mimetype);
+
       const sasUrl = env.AZURE_BLOB_SAS_URL;
       const ext = req.file.originalname.split('.').pop() ?? 'jpg';
       const blobName = `product-image/recambio-${Date.now()}-${Math.round(Math.random() * 1e9)}.${ext}`;
 
       const [baseUrl, sasToken] = sasUrl.split('?');
       if (!baseUrl || !sasToken) {
-        console.error('SAS URL mal formada:', sasUrl?.slice(0, 50));
         return res.status(500).json({ error: 'Configuración de Azure inválida (SAS URL)' });
       }
 
       const uploadUrl = `${baseUrl}/${blobName}?${sasToken}`;
 
-      // Subida a Azure Blob Storage usando el módulo nativo https
-      let parsedUrl: URL;
-      try {
-        parsedUrl = new URL(uploadUrl);
-      } catch {
-        return res.status(500).json({ error: 'URL de subida inválida' });
-      }
-
-      const buffer = req.file.buffer;
+      const file = req.file;
+      const parsedUrl = new URL(uploadUrl);
+      const buffer = file.buffer;
       if (!buffer || buffer.length === 0) {
         return res.status(400).json({ error: 'Archivo vacío' });
       }
-
-      const TIMEOUT_MS = 30_000;
 
       const azureStatus = await new Promise<number>((resolve, reject) => {
         const opts: https.RequestOptions = {
@@ -105,39 +102,32 @@ router.post(
           path: parsedUrl.pathname + parsedUrl.search,
           headers: {
             'x-ms-blob-type': 'BlockBlob',
-            'Content-Type': req.file.mimetype,
+            'Content-Type': file.mimetype,
             'Content-Length': buffer.length,
           },
         };
 
         const azureReq = https.request(opts, (azureRes) => {
           azureRes.resume();
-          azureRes.on('end', () => {
-            resolve(azureRes.statusCode ?? 0);
-          });
-          azureRes.on('error', (err) => reject(new Error(`Response error: ${err.message}`)));
+          azureRes.on('end', () => resolve(azureRes.statusCode ?? 0));
+          azureRes.on('error', (rejErr) => reject(new Error(`Response error: ${rejErr.message}`)));
         });
 
-        azureReq.setTimeout(TIMEOUT_MS, () => {
-          azureReq.destroy();
-          reject(new Error('Timeout al conectar con Azure Blob Storage'));
-        });
-
-        azureReq.on('error', (err) => reject(new Error(`Conexión Azure falló: ${err.message}`)));
+        azureReq.setTimeout(30_000, () => { azureReq.destroy(); reject(new Error('Timeout')); });
+        azureReq.on('error', (conErr) => reject(new Error(`Connection error: ${conErr.message}`)));
         azureReq.write(buffer);
         azureReq.end();
       });
 
       if (azureStatus < 200 || azureStatus >= 300) {
-        return res.status(502).json({ error: `Azure Blob Storage devolvió código ${azureStatus}` });
+        return res.status(502).json({ error: `Azure devolvió código ${azureStatus}` });
       }
 
-      // URL pública del blob (sin token SAS)
       const url = `${baseUrl}/${blobName}`;
       res.json({ url });
     } catch (err) {
       console.error('Upload error:', err);
-      const msg = err instanceof Error ? err.message : 'Error desconocido';
+      const msg = err instanceof Error ? err.message : String(err);
       res.status(500).json({ error: msg });
     }
   }
