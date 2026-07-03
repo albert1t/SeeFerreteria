@@ -51,7 +51,6 @@ router.post(
   '/upload-imagen',
   requireRole('admin'),
   (req, res, next) => {
-    // Multer v2 maneja errores de forma distinta; lo envolvemos con try-catch
     try {
       upload.single('imagen')(req, res, (err: unknown) => {
         if (err) {
@@ -74,10 +73,9 @@ router.post(
         return;
       }
 
-      console.log('File received:', req.file.originalname, 'size:', req.file.size, 'mime:', req.file.mimetype);
-
+      const file = req.file;
       const sasUrl = env.AZURE_BLOB_SAS_URL;
-      const ext = req.file.originalname.split('.').pop() ?? 'jpg';
+      const ext = file.originalname.split('.').pop() ?? 'jpg';
       const blobName = `product-image/recambio-${Date.now()}-${Math.round(Math.random() * 1e9)}.${ext}`;
 
       const [baseUrl, sasToken] = sasUrl.split('?');
@@ -85,12 +83,9 @@ router.post(
         return res.status(500).json({ error: 'Configuración de Azure inválida (SAS URL)' });
       }
 
-      // Eliminar trailing slash del base URL para evitar // en la ruta
       const baseClean = baseUrl.replace(/\/+$/, '');
       const uploadUrl = `${baseClean}/${blobName}?${sasToken}`;
 
-      console.log('Upload URL (sin token):', `${baseClean}/${blobName}`);
-      const file = req.file;
       const parsedUrl = new URL(uploadUrl);
       const buffer = file.buffer;
       if (!buffer || buffer.length === 0) {
@@ -126,7 +121,7 @@ router.post(
         return res.status(502).json({ error: `Azure devolvió código ${azureStatus}` });
       }
 
-      const url = `${baseUrl}/${blobName}`;
+      const url = `${baseClean}/${blobName}`;
       res.json({ url });
     } catch (err) {
       console.error('Upload error:', err);
