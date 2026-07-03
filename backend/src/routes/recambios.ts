@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import https from 'https';
 import multer from 'multer';
 import * as xlsx from 'xlsx';
 import * as recambiosService from '../services/recambiosService.js';
@@ -63,22 +64,38 @@ router.post(
       // La SAS URL del container: https://<account>.blob.core.windows.net/<container>?<sas>
       // Para subir un blob concreto insertamos el nombre antes del '?'
       const [baseUrl, sasToken] = sasUrl.split('?');
-      const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
+      const uploadUrl = `${baseUrl}/${blobName}?${sasToken}`;
 
-      const azureRes = await fetch(blobUrl, {
-        method: 'PUT',
-        headers: {
-          'x-ms-blob-type': 'BlockBlob',
-          'Content-Type': req.file.mimetype,
-          'Content-Length': String(req.file.size),
-        },
-        body: req.file.buffer as unknown as BodyInit,
+      // Usamos el módulo nativo https (funciona en cualquier versión de Node)
+      const { hostname, pathname, search } = new URL(uploadUrl);
+      const buffer = req.file.buffer;
+
+      await new Promise<void>((resolve, reject) => {
+        const opts: https.RequestOptions = {
+          method: 'PUT',
+          hostname,
+          path: `${pathname}${search}`,
+          headers: {
+            'x-ms-blob-type': 'BlockBlob',
+            'Content-Type': req.file.mimetype,
+            'Content-Length': buffer.length,
+          },
+        };
+        const azureReq = https.request(opts, (azureRes) => {
+          let body = '';
+          azureRes.on('data', (chunk: Buffer) => { body += chunk.toString(); });
+          azureRes.on('end', () => {
+            if (azureRes.statusCode && azureRes.statusCode >= 200 && azureRes.statusCode < 300) {
+              resolve();
+            } else {
+              reject(new Error(`Azure Blob error ${azureRes.statusCode}: ${body || azureRes.statusMessage}`));
+            }
+          });
+        });
+        azureReq.on('error', (err) => reject(new Error(`Azure request failed: ${err.message}`)));
+        azureReq.write(buffer);
+        azureReq.end();
       });
-
-      if (!azureRes.ok) {
-        const errorText = await azureRes.text().catch(() => azureRes.statusText);
-        throw new Error(`Azure Blob error ${azureRes.status}: ${errorText}`);
-      }
 
       // URL pública del blob (sin token SAS)
       const url = `${baseUrl}/${blobName}`;
