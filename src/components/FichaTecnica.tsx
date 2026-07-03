@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { badgeStyle, btnStyle, fmtDate } from '../styles/theme';
@@ -26,6 +26,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
   const [observaciones, setObservaciones] = useState('');
   const [editando, setEditando] = useState(false);
   const [confirmacion, setConfirmacion] = useState<{ tipo: PedidoTipo; cantidad?: number; plazoDeseado?: string; observaciones?: string } | null>(null);
+  const fechaRef = useRef<HTMLInputElement>(null);
 
   function parseEmbalaje(embalaje: string | null | undefined): number {
     if (!embalaje) return 1;
@@ -91,7 +92,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
 
   function totalPedido(): number {
     const emb = parseEmbalaje(r.unidadEmbalaje);
-    if (confirmacion?.tipo === 'Reposición') return (confirmacion?.cantidad ?? r.nReposicion) * emb;
+    if (confirmacion?.tipo === 'Reposición') return (confirmacion?.cantidad ?? r.nReposicion ?? 1) * emb;
     return (confirmacion?.cantidad ?? 0) * emb;
   }
 
@@ -180,7 +181,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               ['Unidad de embalaje', r.unidadEmbalaje ?? '—'],
               ['Plazo de entrega', r.plazoEntrega ?? '—'],
               ['Familia', r.familiaNombre ?? '—'],
-              ['N° Reposición', r.nReposicion],
+              ['N° Reposición', r.nReposicion ?? '—'],
               ['Ubicación', `${r.panel} - Col ${r.col} Fila ${r.row}`],
             ].map(([k, v]) => (
               <div key={k as string}>
@@ -239,7 +240,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
                 </div>
               )}
               {([
-                { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${r.nReposicion} uds${(() => { const emb = parseEmbalaje(r.unidadEmbalaje); return emb > 1 ? ` (${Math.ceil(r.nReposicion / emb)} paquetes × ${r.unidadEmbalaje})` : ''; })()} · Plazo: ${r.plazoEntrega || '—'}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
+                { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${(() => { const paq = r.nReposicion ?? 1; const emb = parseEmbalaje(r.unidadEmbalaje); const total = paq * emb; return emb > 1 ? `${paq} paquetes × ${r.unidadEmbalaje} = ${total} uds` : `${paq} uds`; })()} · Plazo: ${r.plazoEntrega || '—'}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
                 { tipo: 'Solicitud' as PedidoTipo, label: 'Personalizado', desc: 'Cantidad y plazo a definir', color: '#4dff9b', bgCard: '#0a2a1a', borderColor: '#1a5a3a' },
                 { tipo: 'Solicitud Express' as PedidoTipo, label: 'Urgente', desc: 'Prioritario · entrega inmediata', color: '#ff6b6b', bgCard: '#2a0a0a', borderColor: '#5a2020' },
               ]).map((opt) => (
@@ -309,12 +310,18 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               )}
               {pedidoTipo === 'Solicitud' && (
                 <div style={{ marginBottom: '0.75rem' }}>
-                  <label style={labelStyle}>Plazo deseado *</label>
-                  <input
-                    value={plazoDeseado} onChange={(e) => setPlazoDeseado(e.target.value)}
-                    placeholder="Ej: 3 días"
-                    style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
-                  />
+                  <label style={labelStyle}>Fecha deseada de entrega *</label>
+                  <div
+                    onClick={() => fechaRef.current?.showPicker()}
+                    style={{ cursor: 'pointer', width: '100%' }}
+                  >
+                    <input
+                      ref={fechaRef}
+                      type="date"
+                      value={plazoDeseado} onChange={(e) => setPlazoDeseado(e.target.value)}
+                      style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, outline: 'none', boxSizing: 'border-box', cursor: 'pointer' }}
+                    />
+                  </div>
                 </div>
               )}
               <div style={{ marginBottom: '1rem' }}>
@@ -358,7 +365,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               <div style={{ fontSize: 16, fontWeight: 700, color: '#f3f6ff' }}>
                 {(() => {
                   const emb = parseEmbalaje(r.unidadEmbalaje);
-                  const paquetes = confirmacion.cantidad ?? r.nReposicion;
+                  const paquetes = confirmacion.cantidad ?? r.nReposicion ?? 1;
                   const total = paquetes * emb;
                   if (emb <= 1) return `${paquetes} uds`;
                   return `${paquetes} ${r.unidadEmbalaje ? `(x ${r.unidadEmbalaje})` : ''} = ${total} uds total`;

@@ -25,7 +25,7 @@ export interface Recambio {
   plazoEntrega: string | null;
   familiaId: number;
   familiaNombre?: string;
-  nReposicion: number;
+  nReposicion: number | null;
   panel: string;
   col: number;
   row: number;
@@ -83,7 +83,7 @@ export interface RecambioFormData {
   imagen?: string | null;
   plazoEntrega?: string | null;
   familiaId: number;
-  nReposicion: number;
+  nReposicion: number | null;
   panel: string;
   col: number;
   row: number;

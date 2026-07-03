@@ -41,9 +41,9 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
     metrica: recambio?.metrica ?? '',
     unidadEmbalaje: recambio?.unidadEmbalaje ?? 'Unidad',
     imagen: recambio?.imagen ?? '',
-    plazoEntrega: recambio?.plazoEntrega ?? '3 días',
+    plazoEntrega: recambio?.plazoEntrega ?? '',
     familiaId: recambio?.familiaId ?? familias[0]?.id ?? 1,
-    nReposicion: recambio?.nReposicion ?? 10,
+    nReposicion: recambio?.nReposicion ?? null,
     panel: recambio?.panel ?? 'A1',
     col: recambio?.col ?? 1,
     row: recambio?.row ?? 1,
@@ -148,7 +148,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
       </div>
       <div>
         <label style={labelStyle}>N° Reposición</label>
-        <input style={inputStyle} type="number" min="1" value={form.nReposicion} onChange={(e) => upd('nReposicion', parseInt(e.target.value, 10))} />
+        <input style={inputStyle} type="number" min="1" value={form.nReposicion ?? ''} onChange={(e) => { const v = e.target.value; upd('nReposicion', v === '' ? null : parseInt(v, 10)); }} />
       </div>
       <div>
         <label style={labelStyle}>Panel</label>

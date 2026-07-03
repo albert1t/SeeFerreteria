@@ -49,7 +49,7 @@ export async function createPedido(
 
   switch (data.tipo) {
     case 'Reposición':
-      cantidad = recambio.nReposicion;
+      cantidad = recambio.nReposicion ?? 1;
       plazoDeseado = recambio.plazoEntrega;
       break;
     case 'Solicitud':
@@ -60,7 +60,7 @@ export async function createPedido(
       plazoDeseado = data.plazoDeseado;
       break;
     case 'Solicitud Express':
-      cantidad = data.cantidad ?? recambio.nReposicion;
+      cantidad = data.cantidad ?? recambio.nReposicion ?? 1;
       plazoDeseado = data.plazoDeseado ?? recambio.plazoEntrega;
       prioritario = true;
       break;

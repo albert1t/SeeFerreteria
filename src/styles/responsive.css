@@ -180,8 +180,47 @@
   }
 
   /* -- SEARCH RESULTS -- */
+  div[style*="position: absolute"][style*="z-index: 200"] {
+    position: fixed !important;
+    left: 0.6rem !important;
+    right: 0.6rem !important;
+    top: 56px !important;
+    width: auto !important;
+    max-width: calc(100vw - 1.2rem) !important;
+    max-height: calc(100dvh - 68px) !important;
+  }
   div[style*="position: absolute"][style*="z-index: 200"] > div {
-    padding: 12px 14px !important;
+    padding: 10px 12px !important;
+  }
+
+  /* -- PEDIDOS PAGE - TITLE ROW STACK -- */
+  div[style*="padding: 1.5rem"] > div[style*="justify-content: space-between"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  /* -- PEDIDOS CARDS - WRAP BADGES BELOW -- */
+  div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    padding: 0.75rem !important;
+  }
+  div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] {
+    width: 100% !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
+  }
+
+  /* -- QR MODAL - CAMERA ONLY -- */
+  input[placeholder*="CMH"] {
+    display: none !important;
+  }
+  div[style*="z-index: 1000"] > div > div[style*="display: flex"][style*="gap: 8"] > button:first-child {
+    display: none !important;
+  }
+  div[style*="z-index: 1000"] > div > p:first-of-type {
+    display: none !important;
   }
 
 }
