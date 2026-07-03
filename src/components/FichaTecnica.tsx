@@ -212,6 +212,11 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
           {!pedidoTipo ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <p style={{ color: '#7aade0', fontSize: 12, margin: '0 0 2px' }}>Selecciona el tipo de pedido:</p>
+              {r.unidadEmbalaje && (
+                <div style={{ fontSize: 12, color: '#a8cce8', background: 'rgba(77,184,255,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 2, display: 'inline-block' }}>
+                  Ud. embalaje: {r.unidadEmbalaje}
+                </div>
+              )}
               {([
                 { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${r.nReposicion} uds. · Plazo: ${r.plazoEntrega || '—'}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
                 { tipo: 'Solicitud' as PedidoTipo, label: 'Personalizado', desc: 'Cantidad y plazo a definir', color: '#4dff9b', bgCard: '#0a2a1a', borderColor: '#1a5a3a' },
