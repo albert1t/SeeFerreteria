@@ -85,8 +85,11 @@ router.post(
         return res.status(500).json({ error: 'Configuración de Azure inválida (SAS URL)' });
       }
 
-      const uploadUrl = `${baseUrl}/${blobName}?${sasToken}`;
+      // Eliminar trailing slash del base URL para evitar // en la ruta
+      const baseClean = baseUrl.replace(/\/+$/, '');
+      const uploadUrl = `${baseClean}/${blobName}?${sasToken}`;
 
+      console.log('Upload URL (sin token):', `${baseClean}/${blobName}`);
       const file = req.file;
       const parsedUrl = new URL(uploadUrl);
       const buffer = file.buffer;
