@@ -11,7 +11,7 @@ import { env } from '../config/env.js';
 // Multer en memoria: no escribe nada en disco
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
   fileFilter: (_req, file, cb) => {
     const allowed = /\.(jpg|jpeg|png|gif|webp|svg|bmp|tiff?|ico|heic|heif|avif)$/i;
     if (allowed.test(file.originalname)) {
