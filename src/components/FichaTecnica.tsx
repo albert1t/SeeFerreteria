@@ -25,6 +25,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
   const [plazoDeseado, setPlazoDeseado] = useState('');
   const [observaciones, setObservaciones] = useState('');
   const [editando, setEditando] = useState(false);
+  const [confirmacion, setConfirmacion] = useState<{ tipo: PedidoTipo; cantidad?: number; plazoDeseado?: string; observaciones?: string } | null>(null);
 
   const { data: detail } = useQuery({
     queryKey: ['recambios', recambio.id],
@@ -69,22 +70,29 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
     onError: (err: Error) => showToast(err.message),
   });
 
-  function crearPedido(tipo: PedidoTipo) {
-    if (tipo === 'Reposición') {
-      createPedidoMut.mutate({ recambioId: recambio.id, tipo });
-      return;
-    }
+  function confirmarCreacion(tipo: PedidoTipo) {
     if (tipo === 'Solicitud' && (!cantidad || !plazoDeseado)) {
       showToast('Indica cantidad y plazo deseado');
       return;
     }
-    createPedidoMut.mutate({
-      recambioId: recambio.id,
+    setConfirmacion({
       tipo,
       cantidad: cantidad ? parseInt(cantidad, 10) : undefined,
       plazoDeseado: plazoDeseado || undefined,
       observaciones: observaciones || undefined,
     });
+  }
+
+  function ejecutarPedido() {
+    if (!confirmacion) return;
+    createPedidoMut.mutate({
+      recambioId: recambio.id,
+      tipo: confirmacion.tipo,
+      cantidad: confirmacion.cantidad,
+      plazoDeseado: confirmacion.plazoDeseado,
+      observaciones: confirmacion.observaciones,
+    });
+    setConfirmacion(null);
   }
 
   const r = detail;
@@ -213,7 +221,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <p style={{ color: '#7aade0', fontSize: 12, margin: '0 0 2px' }}>Selecciona el tipo de pedido:</p>
               {r.unidadEmbalaje && (
-                <div style={{ fontSize: 12, color: '#a8cce8', background: 'rgba(77,184,255,0.08)', padding: '6px 10px', borderRadius: 6, marginBottom: 2, display: 'inline-block' }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#f3f6ff', background: 'rgba(77,184,255,0.15)', border: '1px solid rgba(77,184,255,0.4)', padding: '8px 14px', borderRadius: 8, marginBottom: 6 }}>
                   Ud. embalaje: {r.unidadEmbalaje}
                 </div>
               )}
@@ -224,7 +232,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               ]).map((opt) => (
                 <button
                   key={opt.tipo}
-                  onClick={() => opt.tipo === 'Reposición' ? crearPedido(opt.tipo) : setPedidoTipo(opt.tipo)}
+                  onClick={() => opt.tipo === 'Reposición' ? confirmarCreacion(opt.tipo) : setPedidoTipo(opt.tipo)}
                   disabled={createPedidoMut.isPending}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14, padding: 0,
@@ -257,7 +265,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
             </div>
           ) : (
             <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
                 <span style={badgeStyle(pedidoTipo)}>{pedidoTipo}</span>
                 <button onClick={() => setPedidoTipo(null)} style={{
                   background: 'none', border: 'none', color: '#7aade0', cursor: 'pointer', fontSize: 12,
@@ -265,6 +273,11 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
                 }}>
                   Cambiar tipo
                 </button>
+                {r.unidadEmbalaje && (
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#f3f6ff', background: 'rgba(77,184,255,0.15)', border: '1px solid rgba(77,184,255,0.4)', padding: '5px 12px', borderRadius: 6, marginLeft: 'auto', whiteSpace: 'nowrap' }}>
+                    Ud. embalaje: {r.unidadEmbalaje}
+                  </span>
+                )}
               </div>
               {pedidoTipo !== 'Reposición' && (
                 <div style={{ marginBottom: '0.75rem' }}>
@@ -295,7 +308,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
                 />
               </div>
               <button
-                onClick={() => crearPedido(pedidoTipo)}
+                onClick={() => confirmarCreacion(pedidoTipo)}
                 disabled={createPedidoMut.isPending || (pedidoTipo === 'Solicitud' && (!cantidad || !plazoDeseado))}
                 style={{ ...btnStyle(pedidoTipo === 'Solicitud Express' ? 'express' : 'primary'), width: '100%', justifyContent: 'center', padding: '10px 20px' }}
               >
@@ -305,6 +318,54 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
           )}
         </div>
       )}
+
+      <Modal open={!!confirmacion} onClose={() => setConfirmacion(null)} title="Confirmar pedido">
+        {confirmacion && (
+          <div>
+            <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(42,80,128,0.25)', borderRadius: 10 }}>
+              <div style={{ fontWeight: 600, fontSize: 15, color: '#e8eef6', marginBottom: 4 }}>{r.nombre}</div>
+              <div style={{ fontSize: 13, color: '#7aade0', marginBottom: 8 }}>
+                <span style={badgeStyle('info')}>{r.referenciaCMH}</span>
+                {' · '}
+                <span style={badgeStyle(confirmacion.tipo)}>{confirmacion.tipo}</span>
+                {' · '}
+                <span style={badgeStyle('ghost')}>P: {r.panel} · C: {r.col} · F: {r.row}</span>
+              </div>
+              {r.metrica && <div style={{ fontSize: 12, color: '#a8cce8', marginBottom: 2 }}>Métrica: {r.metrica}</div>}
+              {r.unidadEmbalaje && <div style={{ fontSize: 12, color: '#a8cce8', marginBottom: 2 }}>Ud. embalaje: {r.unidadEmbalaje}</div>}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem 1rem', marginBottom: '1rem' }}>
+              <div>
+                <div style={labelStyle}>Cantidad</div>
+                <div style={{ fontSize: 16, fontWeight: 700, color: '#f3f6ff' }}>{confirmacion.cantidad ?? r.nReposicion}</div>
+              </div>
+              {confirmacion.plazoDeseado && (
+                <div>
+                  <div style={labelStyle}>Plazo deseado</div>
+                  <div style={{ fontSize: 14, color: '#c8ddf0' }}>{confirmacion.plazoDeseado}</div>
+                </div>
+              )}
+            </div>
+
+            {confirmacion.observaciones && (
+              <div style={{ marginBottom: '1rem', padding: '0.5rem 0.75rem', background: 'rgba(255,255,255,0.02)', borderRadius: 6, border: '1px solid rgba(42,80,128,0.15)' }}>
+                <div style={labelStyle}>Observaciones</div>
+                <div style={{ fontSize: 13, color: '#a8bdd0' }}>{confirmacion.observaciones}</div>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', borderTop: '1px solid rgba(42,80,128,0.4)', paddingTop: '1rem' }}>
+              <button style={btnStyle('ghost')} onClick={() => setConfirmacion(null)} disabled={createPedidoMut.isPending}>
+                Cancelar
+              </button>
+              <button style={btnStyle(confirmacion.tipo === 'Solicitud Express' ? 'express' : 'primary')} onClick={ejecutarPedido} disabled={createPedidoMut.isPending}>
+                {createPedidoMut.isPending ? 'Creando...' : 'Confirmar pedido'}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal open={editando} onClose={() => setEditando(false)} title="Editar Recambio" wide>
         <FormRecambio
