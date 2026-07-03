@@ -16,7 +16,7 @@ function mapRecambio(row: Record<string, unknown>): Recambio {
     plazoEntrega: row.plazoEntrega as string | null,
     familiaId: row.familiaId as number,
     familiaNombre: row.familiaNombre as string | undefined,
-    nReposicion: row.nReposicion as number,
+    nReposicion: row.nReposicion as number | null,
     panel: row.panel as string,
     col: row.col as number,
     row: row.row as number,

@@ -27,7 +27,7 @@ const baseRecambioSchema = z.object({
   imagen: z.string().max(500).optional().nullable(),
   plazoEntrega: z.string().max(50).optional().nullable(),
   familiaId: z.number().int().positive(),
-  nReposicion: z.number().int().positive().default(1),
+  nReposicion: z.number().int().positive().nullable().default(1),
   panel: z.string().min(1).max(10),
   col: z.number().int().min(1).max(6),
   row: z.number().int().min(1).max(15),
