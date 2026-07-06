@@ -311,16 +311,14 @@ export function PedidosPage() {
                 onMouseEnter={(e) => { e.currentTarget.style.background = p.prioritario ? 'rgba(192,57,43,0.15)' : 'rgba(77,184,255,0.06)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = p.prioritario ? 'rgba(192,57,43,0.08)' : 'rgba(255,255,255,0.03)'; }}
               >
-                <div className="pedido-card-main">
-                  {p.recambioImagen && (
-                    <img className="pedido-card-img" src={p.recambioImagen} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-                  )}
-                  {p.prioritario && <span className="urgente-tag" style={{ fontSize: 10, color: '#ff6b6b', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
-                  <div className="pedido-card-info" style={{ flex: 1, minWidth: 140 }}>
-                    <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
-                    <div className="pedido-card-meta" style={{ fontSize: 12, color: '#7aade0' }}>
-                      {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad}
-                    </div>
+                {p.recambioImagen && (
+                <img className="pedido-card-img" src={p.recambioImagen} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+              )}
+              {p.prioritario && <span className="urgente-tag" style={{ fontSize: 10, color: '#ff6b6b', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
+                <div className="pedido-card-info" style={{ flex: 1, minWidth: 140 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
+                  <div className="pedido-card-meta" style={{ fontSize: 12, color: '#7aade0' }}>
+                    {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad}
                   </div>
                 </div>
                 <div className="pedido-badges-row" style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
