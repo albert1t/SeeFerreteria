@@ -111,8 +111,8 @@ export function Layout() {
 
         <div className="desktop-only" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 12, fontWeight: 600 }}>{user?.name}</div>
-            <div style={{ fontSize: 10, color: '#4a7aaa', textTransform: 'uppercase' }}>{user?.role}</div>
+            <div style={{ fontSize: 18, fontWeight: 600 }}>{user?.name}</div>
+            <div style={{ fontSize: 14, color: '#4a7aaa', textTransform: 'uppercase' }}>{user?.role}</div>
           </div>
           <button style={{ ...btnStyle('ghost'), padding: '6px 10px', fontSize: 12 }} onClick={() => logout()}>Salir</button>
         </div>
