@@ -48,10 +48,21 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         boxShadow: filled && image ? 'inset 0 0 0 1px rgba(255,255,255,0.12)' : undefined,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
+        containerType: 'size',
       }}
     >
       {filled && !image && <NoImageSlot size={36} showText={false} />}
-      {!filled && <EmptySlot size={32} showText={false} />}
+      {!filled && (
+        <span style={{
+          color: 'rgba(255,255,255,0.35)',
+          fontSize: 'clamp(7px, 18cqw, 10px)',
+          fontWeight: 700,
+          lineHeight: 1,
+          whiteSpace: 'nowrap',
+        }}>
+          Vacío
+        </span>
+      )}
     </div>
   );
 }
