@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as authApi from '../api/auth';
-import { ApiError, clearToken, setToken } from '../api/client';
+import { ApiError, clearToken, setToken, getToken } from '../api/client';
 import type { User } from '../types';
 
 interface AuthContextValue {
@@ -23,12 +23,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { isLoading } = useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => {
+      const token = getToken();
+      if (!token) {
+        setUser(null);
+        return null;
+      }
       try {
         const { user: u } = await authApi.getMe();
         setUser(u);
         return u;
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
+          clearToken();
           setUser(null);
           return null;
         }
