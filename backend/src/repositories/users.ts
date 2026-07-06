@@ -87,3 +87,39 @@ export async function upsertUser(
         VALUES (@username, @passwordHash, @name, @role)
     `);
 }
+
+export async function findAll(): Promise<User[]> {
+  const pool = await getPool();
+  const result = await pool.request().query(`
+    SELECT id, username, name, role, isActive
+    FROM Users
+    ORDER BY name
+  `);
+  return result.recordset.map(mapUser);
+}
+
+export async function updateRole(id: number, role: User['role']): Promise<boolean> {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input('id', sql.Int, id)
+    .input('role', sql.NVarChar(20), role)
+    .query(`
+      UPDATE Users SET role = @role, updatedAt = SYSUTCDATETIME()
+      WHERE id = @id
+    `);
+  return result.rowsAffected[0] > 0;
+}
+
+export async function updateActive(id: number, isActive: boolean): Promise<boolean> {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input('id', sql.Int, id)
+    .input('isActive', sql.Bit, isActive ? 1 : 0)
+    .query(`
+      UPDATE Users SET isActive = @isActive, updatedAt = SYSUTCDATETIME()
+      WHERE id = @id
+    `);
+  return result.rowsAffected[0] > 0;
+}
