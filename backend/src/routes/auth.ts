@@ -69,7 +69,11 @@ router.post('/msal-login', validateBody(msalLoginSchema), async (req, res, next)
 });
 
 router.post('/logout', (_req, res) => {
-  res.clearCookie(COOKIE_NAME);
+  res.clearCookie(COOKIE_NAME, {
+    secure: env.NODE_ENV === 'production',
+    sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
+    path: '/',
+  });
   res.json({ ok: true });
 });
 
