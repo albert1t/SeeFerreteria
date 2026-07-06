@@ -102,6 +102,11 @@ export function Layout() {
               </span>
             )}
           </NavLink>
+          {isAdmin && (
+            <NavLink to="/usuarios" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}) })}>
+              Usuarios
+            </NavLink>
+          )}
         </nav>
 
         <div className="desktop-only" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -144,6 +149,14 @@ export function Layout() {
         })}>
           Pedidos {(urgentes?.count ?? 0) > 0 ? `(${urgentes!.count})` : ''}
         </NavLink>
+        {isAdmin && (
+          <NavLink to="/usuarios" onClick={closeMenu} style={({ isActive }) => ({
+            ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
+            ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}),
+          })}>
+            Usuarios
+          </NavLink>
+        )}
         {isAdmin && (
           <button style={{ ...btnStyle('primary'), justifyContent: 'center', padding: '12px 18px', fontSize: 14 }} onClick={() => { setCrearRecambio(true); closeMenu(); }}>
             + Nuevo Recambio

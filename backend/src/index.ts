@@ -6,6 +6,7 @@ import { env } from './config/env.js';
 import { getPool } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
+import usersRoutes from './routes/users.js';
 import recambiosRoutes from './routes/recambios.js';
 import panelesRoutes from './routes/paneles.js';
 import pedidosRoutes from './routes/pedidos.js';
@@ -28,6 +29,7 @@ app.get('/api/health', (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/users', usersRoutes);
 app.use('/api/recambios', recambiosRoutes);
 app.use('/api/paneles', panelesRoutes);
 app.use('/api/pedidos', pedidosRoutes);

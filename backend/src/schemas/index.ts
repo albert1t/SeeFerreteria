@@ -101,3 +101,15 @@ export const pedidosQuerySchema = z.object({
   orden: z.enum(['reciente', 'antiguo']).optional(),
   incluirFinalizados: z.enum(['true', 'false']).optional(),
 });
+
+export const userIdSchema = z.object({
+  id: z.coerce.number().int().positive(),
+});
+
+export const updateRoleSchema = z.object({
+  role: z.enum(['admin', 'user']),
+});
+
+export const updateActiveSchema = z.object({
+  isActive: z.boolean(),
+});

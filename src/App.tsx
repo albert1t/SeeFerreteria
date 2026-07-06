@@ -6,6 +6,7 @@ import { Layout } from './components/Layout';
 import { LoginPage } from './pages/LoginPage';
 import { AlmacenPage } from './pages/AlmacenPage';
 import { PedidosPage } from './pages/PedidosPage';
+import { UsersPage } from './pages/UsersPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -23,6 +24,20 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
   if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading, isAdmin } = useAuth();
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a7aaa' }}>
+        Cargando...
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
   return <>{children}</>;
 }
 
@@ -45,6 +60,7 @@ export default function App() {
               >
                 <Route index element={<AlmacenPage />} />
                 <Route path="pedidos" element={<PedidosPage />} />
+                <Route path="usuarios" element={<AdminRoute><UsersPage /></AdminRoute>} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
