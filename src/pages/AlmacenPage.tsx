@@ -50,8 +50,8 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         overflow: 'hidden',
       }}
     >
-      {filled && !image && <NoImageSlot size={36} style={{ border: 'none', background: 'transparent' }} />}
-      {!filled && <EmptySlot size={32} style={{ border: 'none', background: 'transparent' }} />}
+      {filled && !image && <NoImageSlot size={36} showText={false} />}
+      {!filled && <EmptySlot size={32} showText={false} />}
     </div>
   );
 }
