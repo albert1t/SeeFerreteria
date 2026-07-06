@@ -168,7 +168,17 @@
     height: 80px !important;
   }
 
-  /* -- PEDIDOS PAGE FILTERS -- */
+  /* -- PEDIDOS PAGE FILTERS - full width container */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-wrap: wrap"] {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-wrap: wrap"] input[placeholder*="Buscar"] {
+    min-width: 0 !important;
+    width: auto !important;
+    flex: 1 !important;
+  }
+
   /* Hide collapsible filters by default on mobile, show only when expanded */
   .filters-collapsible[data-expanded="false"] {
     display: none !important;
@@ -178,13 +188,20 @@
     flex-direction: column !important;
     gap: 8px !important;
     width: 100% !important;
+    border-top: 1px solid rgba(42,80,128,0.3) !important;
+    padding-top: 10px !important;
+    margin-top: 4px !important;
   }
   .filters-collapsible[data-expanded="true"] select,
-  .filters-collapsible[data-expanded="true"] input,
-  .filters-collapsible[data-expanded="true"] button {
+  .filters-collapsible[data-expanded="true"] input[type="date"],
+  .filters-collapsible[data-expanded="true"] > button {
     width: 100% !important;
     max-width: 100% !important;
     box-sizing: border-box !important;
+  }
+  /* Ver finalizados button inside collapsible */
+  .filters-collapsible[data-expanded="true"] button {
+    justify-content: center !important;
   }
 
   /* Show the filter toggle button on mobile */
@@ -261,11 +278,27 @@
     word-break: break-all !important;
   }
 
-  /* Card info text */
+  /* Card info text - remove minWidth constraint, allow wrap */
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div > div[style*="flex: 1"] {
+    min-width: 0 !important;
+    max-width: 100% !important;
     overflow: hidden !important;
     word-break: break-word !important;
-    max-width: 100% !important;
+  }
+
+  /* Card summary line (ref · name · qty) - allow wrap */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div > div[style*="flex: 1"] > div[style*="font-size: 12"] {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+    line-height: 1.4 !important;
+  }
+
+  /* Card image - smaller on very small screens */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] img {
+    width: 32px !important;
+    height: 32px !important;
+    align-self: flex-start !important;
   }
 
   /* Detail modal grid cells - no overflow */
@@ -323,5 +356,26 @@
   .scrollbar-horizontal div[style*="cursor: pointer"] {
     min-width: 220px !important;
     width: 220px !important;
+  }
+
+  /* Smaller card padding */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] {
+    padding: 0.6rem !important;
+    gap: 6px !important;
+  }
+  .pedido-badges-row {
+    gap: 3px !important;
+  }
+  .pedido-badges-row span {
+    font-size: 10px !important;
+  }
+  .pedido-date {
+    font-size: 10px !important;
+  }
+}
+
+@media (max-width: 360px) {
+  .pedido-badges-row span {
+    font-size: 9px !important;
   }
 }
