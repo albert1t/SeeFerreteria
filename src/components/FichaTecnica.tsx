@@ -120,8 +120,12 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
   return (
     <>
       <div style={{ display: 'flex', gap: '1.5rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-        {r.imagen && (
+        {r.imagen ? (
           <img src={r.imagen} alt={r.nombre} style={{ width: 100, height: 100, borderRadius: 10, border: '1px solid #2a5080', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: 100, height: 100, borderRadius: 10, border: '1px solid #2a5080', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, color: '#4a7aaa', flexShrink: 0 }}>
+            📦
+          </div>
         )}
         <div style={{ flex: 1, minWidth: 200 }}>
           <h3 style={{ margin: '0 0 6px', fontSize: 17, fontWeight: 700 }}>{r.nombre}</h3>
