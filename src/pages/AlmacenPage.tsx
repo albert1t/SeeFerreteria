@@ -12,7 +12,6 @@ import * as recambiosApi from '../api/recambios';
 import * as panelesFrontApi from '../api/paneles';
 import * as catalogosApi from '../api/catalogos';
 import type { Recambio } from '../types';
-import { EmptySlot, NoImageSlot } from '../components/PlaceholderImage';
 
 function LoadingOverlay({ message }: { message: string }) {
   return (
@@ -503,7 +502,15 @@ export function AlmacenPage() {
                             {r.imagen ? (
                               <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
                             ) : (
-                              <NoImageSlot size={90} />
+                              <img
+                                src="/icons/screw.svg"
+                                alt=""
+                                style={{
+                                  width: 90, height: 90, borderRadius: 8, flexShrink: 0,
+                                  objectFit: 'contain',
+                                  filter: 'brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
+                                }}
+                              />
                             )}
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%', flex: 1 }}>
                               <div style={{ fontSize: 14, fontWeight: 700, color: '#4db8ff', textAlign: 'center', wordBreak: 'break-all' }}>{r.referenciaCMH}</div>
@@ -538,9 +545,9 @@ export function AlmacenPage() {
                             </div>
                           </>
                         ) : (
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 4 }}>
-                            <EmptySlot size={64} />
-                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>{col}/{row}</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 6 }}>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.25)' }}>Vacío</span>
+                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>{col}/{row}</span>
                           </div>
                         )}
                       </div>
