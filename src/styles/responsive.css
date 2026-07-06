@@ -246,13 +246,17 @@
     overflow-x: hidden !important;
   }
 
-  /* Card badges/date row - full width and wrap */
-  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] {
+  /* Card badges row - full width and wrap */
+  .pedido-badges-row {
+    width: 100% !important;
     max-width: 100% !important;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+    gap: 4px !important;
   }
 
-  /* Card badges/date row date - force wrap */
-  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] span[style*="white-space: nowrap"] {
+  /* Card date - force wrap */
+  .pedido-date {
     white-space: normal !important;
     word-break: break-all !important;
   }
@@ -271,20 +275,20 @@
     overflow-wrap: anywhere !important;
   }
 
-  /* Detail modal grid values */
+  /* Detail modal grid values - React renderiza font-size: 14px */
   div[style*="grid-template-columns"] > div > div[style*="font-size: 14px"] {
     word-break: break-word !important;
     overflow-wrap: anywhere !important;
   }
 
-  /* Detail modal timeline */
+  /* Detail modal timeline - React renderiza padding-left: 20px */
   div[style*="padding-left: 20px"] > div > div > span[style*="color: #c8ddf0"] {
     word-break: break-word !important;
     overflow-wrap: break-word !important;
   }
 
   /* Hide URGENTE text on mobile cards (red border/background is enough) */
-  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > span[style*="color: #ff6b6b"] {
+  .urgente-tag {
     display: none !important;
   }
 

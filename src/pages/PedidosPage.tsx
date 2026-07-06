@@ -312,17 +312,17 @@ export function PedidosPage() {
                 {p.recambioImagen && (
                 <img src={p.recambioImagen} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
               )}
-              {p.prioritario && <span style={{ fontSize: 10, color: '#ff6b6b', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
+              {p.prioritario && <span className="urgente-tag" style={{ fontSize: 10, color: '#ff6b6b', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
                 <div style={{ flex: 1, minWidth: 140 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
                   <div style={{ fontSize: 12, color: '#7aade0' }}>
                     {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad}
                   </div>
                 </div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                <div className="pedido-badges-row" style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
                   <span style={{ ...badgeStyle(p.tipo), fontSize: 11 }}>{p.tipo}</span>
                   <span style={{ ...badgeStyle(p.estado), fontSize: 11 }}>{p.estado}</span>
-                  <span style={{ fontSize: 11, color: '#4a7aaa', whiteSpace: 'nowrap' }}>{fmtDate(p.fechaSolicitud)}</span>
+                  <span className="pedido-date" style={{ fontSize: 11, color: '#4a7aaa', whiteSpace: 'nowrap' }}>{fmtDate(p.fechaSolicitud)}</span>
                 </div>
               </div>
             );
