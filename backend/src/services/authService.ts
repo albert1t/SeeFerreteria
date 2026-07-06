@@ -54,11 +54,18 @@ export async function register(username: string, name: string, password: string)
 }
 
 async function verifyMsalToken(idToken: string): Promise<JWTPayload> {
-  if (!env.AZURE_AD_TENANT_ID || !env.AZURE_AD_CLIENT_ID) {
+  if (!env.AZURE_AD_CLIENT_ID) {
     throw new AppError(500, 'Azure AD no está configurado en el servidor');
   }
 
-  const issuer = `https://login.microsoftonline.com/${env.AZURE_AD_TENANT_ID}/v2.0`;
+  // Extraer tenant del token sin verificar para soportar múltiples tenants
+  const unverified = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64url').toString()) as { tid?: string };
+  const tenantId = unverified.tid;
+  if (!tenantId) {
+    throw new AppError(401, 'Token de Microsoft inválido: falta tid');
+  }
+
+  const issuer = `https://login.microsoftonline.com/${tenantId}/v2.0`;
   const jwks = createRemoteJWKSet(new URL(`${issuer}/discovery/v2.0/keys`));
   const { payload } = await jwtVerify(idToken, jwks, {
     issuer,
