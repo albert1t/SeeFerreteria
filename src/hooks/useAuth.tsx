@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as authApi from '../api/auth';
-import { ApiError } from '../api/client';
+import { ApiError, clearToken, setToken } from '../api/client';
 import type { User } from '../types';
 
 interface AuthContextValue {
@@ -40,25 +40,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   const login = useCallback(async (username: string, password: string) => {
-    const { user: u } = await authApi.login(username, password);
+    const { user: u, token } = await authApi.login(username, password);
+    setToken(token);
     setUser(u);
     queryClient.setQueryData(['auth', 'me'], u);
   }, [queryClient]);
 
   const register = useCallback(async (username: string, name: string, password: string) => {
-    const { user: u } = await authApi.register(username, name, password);
+    const { user: u, token } = await authApi.register(username, name, password);
+    setToken(token);
     setUser(u);
     queryClient.setQueryData(['auth', 'me'], u);
   }, [queryClient]);
 
   const loginMicrosoft = useCallback(async (idToken: string) => {
-    const { user: u } = await authApi.loginMicrosoft(idToken);
+    const { user: u, token } = await authApi.loginMicrosoft(idToken);
+    setToken(token);
     setUser(u);
     queryClient.setQueryData(['auth', 'me'], u);
   }, [queryClient]);
 
   const logout = useCallback(async () => {
     await authApi.logout();
+    clearToken();
     setUser(null);
     queryClient.clear();
   }, [queryClient]);

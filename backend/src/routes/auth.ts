@@ -26,7 +26,7 @@ router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res, 
       maxAge: 8 * 60 * 60 * 1000,
     });
 
-    res.json({ user });
+    res.json({ user, token });
   } catch (err) {
     next(err);
   }
@@ -44,7 +44,7 @@ router.post('/register', loginLimiter, validateBody(registerSchema), async (req,
       maxAge: 8 * 60 * 60 * 1000,
     });
 
-    res.json({ user });
+    res.json({ user, token });
   } catch (err) {
     next(err);
   }
@@ -62,7 +62,7 @@ router.post('/msal-login', validateBody(msalLoginSchema), async (req, res, next)
       maxAge: 8 * 60 * 60 * 1000,
     });
 
-    res.json({ user });
+    res.json({ user, token });
   } catch (err) {
     next(err);
   }
