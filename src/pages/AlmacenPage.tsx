@@ -12,6 +12,7 @@ import * as recambiosApi from '../api/recambios';
 import * as panelesFrontApi from '../api/paneles';
 import * as catalogosApi from '../api/catalogos';
 import type { Recambio } from '../types';
+import { EmptySlot, NoImageSlot } from '../components/PlaceholderImage';
 
 function LoadingOverlay({ message }: { message: string }) {
   return (
@@ -46,9 +47,11 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         border: filled ? '1px solid rgba(77,184,255,0.4)' : '1px solid rgba(255,255,255,0.06)',
         boxShadow: filled && image ? 'inset 0 0 0 1px rgba(255,255,255,0.12)' : undefined,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        overflow: 'hidden',
       }}
     >
-      {filled && !image && <span style={{ fontSize: 40, lineHeight: 1, opacity: 0.7 }}>📦</span>}
+      {filled && !image && <NoImageSlot size={36} style={{ border: 'none', background: 'transparent' }} />}
+      {!filled && <EmptySlot size={32} style={{ border: 'none', background: 'transparent' }} />}
     </div>
   );
 }
@@ -478,9 +481,7 @@ export function AlmacenPage() {
                             {r.imagen ? (
                               <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
                             ) : (
-                              <div style={{ width: 90, height: 90, borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a7aaa', fontSize: 28, fontWeight: 700, flexShrink: 0 }}>
-                                📦
-                              </div>
+                              <NoImageSlot size={90} />
                             )}
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%', flex: 1 }}>
                               <div style={{ fontSize: 14, fontWeight: 700, color: '#4db8ff', textAlign: 'center', wordBreak: 'break-all' }}>{r.referenciaCMH}</div>
@@ -515,9 +516,9 @@ export function AlmacenPage() {
                             </div>
                           </>
                         ) : (
-                          <div style={{ fontSize: 13, color: 'rgba(255,255,255,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 4 }}>
-                            <span style={{ fontWeight: 600 }}>{col}/{row}</span>
-                            <span style={{ fontSize: 10, opacity: 0.6 }}>Vacío</span>
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 4 }}>
+                            <EmptySlot size={64} />
+                            <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.2)' }}>{col}/{row}</span>
                           </div>
                         )}
                       </div>

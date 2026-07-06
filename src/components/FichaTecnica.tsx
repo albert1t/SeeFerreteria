@@ -5,6 +5,7 @@ import { badgeStyle, btnStyle, fmtDate } from '../styles/theme';
 import { Modal } from './Modal';
 import { FormRecambio } from './FormRecambio';
 import { useToast } from './Toast';
+import { NoImageSlot } from './PlaceholderImage';
 import * as recambiosApi from '../api/recambios';
 import * as pedidosApi from '../api/pedidos';
 import type { PedidoTipo, Recambio } from '../types';
@@ -123,9 +124,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
         {r.imagen ? (
           <img src={r.imagen} alt={r.nombre} style={{ width: 100, height: 100, borderRadius: 10, border: '1px solid #2a5080', objectFit: 'cover' }} />
         ) : (
-          <div style={{ width: 100, height: 100, borderRadius: 10, border: '1px solid #2a5080', background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 36, color: '#4a7aaa', flexShrink: 0 }}>
-            📦
-          </div>
+          <NoImageSlot size={100} style={{ borderRadius: 10, border: '1px solid #2a5080' }} />
         )}
         <div style={{ flex: 1, minWidth: 200 }}>
           <h3 style={{ margin: '0 0 6px', fontSize: 17, fontWeight: 700 }}>{r.nombre}</h3>
