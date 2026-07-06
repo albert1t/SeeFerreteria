@@ -238,35 +238,49 @@
     gap: 4px !important;
   }
 
-  /* Card info text - prevent long text overflow */
-  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div > div[style*="flex: 1"] {
-    overflow: hidden !important;
-    word-break: break-word !important;
+  /* Card - force border-box to include padding/border in width */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
   }
 
-  /* Card badges/date row - allow date to wrap instead of overflow */
+  /* Card badges/date row - full width and wrap */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] {
+    max-width: 100% !important;
+  }
+
+  /* Card badges/date row date - force wrap */
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] span[style*="white-space: nowrap"] {
     white-space: normal !important;
     word-break: break-all !important;
   }
 
-  /* Detail modal - prevent date/metadata overflow in data grid values (React añade px) */
+  /* Card info text */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div > div[style*="flex: 1"] {
+    overflow: hidden !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
+  /* Detail modal grid cells - no overflow */
+  div[style*="grid-template-columns"] > div {
+    min-width: 0 !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Detail modal grid values */
   div[style*="grid-template-columns"] > div > div[style*="font-size: 14px"] {
     word-break: break-word !important;
     overflow-wrap: anywhere !important;
   }
 
-  /* Detail modal timeline dates */
+  /* Detail modal timeline */
   div[style*="padding-left: 20px"] > div > div > span[style*="color: #c8ddf0"] {
     word-break: break-word !important;
     overflow-wrap: break-word !important;
-  }
-
-  /* Detail modal - data grid label+value pairs prevent overflow */
-  div[style*="grid-template-columns: 1fr"] > div {
-    min-width: 0 !important;
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
   }
 
   /* Hide URGENTE text on mobile cards (red border/background is enough) */
