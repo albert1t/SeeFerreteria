@@ -43,7 +43,7 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        border: filled ? '1px solid rgba(77,184,255,0.25)' : '1px solid rgba(255,255,255,0.22)',
+        border: filled ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.22)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
         containerType: 'size',
@@ -499,7 +499,7 @@ export function AlmacenPage() {
                         {r ? (
                           <>
                             {r.imagen ? (
-                              <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(77,184,255,0.35)', flexShrink: 0 }} />
+                              <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
                             ) : (
                               <img
                                 src="/icons/screw.svg"
