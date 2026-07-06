@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { PublicClientApplication } from '@azure/msal-browser';
 import { useAuth } from '../hooks/useAuth';
 import { btnStyle } from '../styles/theme';
@@ -9,6 +9,7 @@ const msalScopes = ['openid', 'profile', 'email'];
 
 export function LoginPage() {
   const { user, isLoading, login, register, loginMicrosoft } = useAuth();
+  const navigate = useNavigate();
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [username, setUsername] = useState('');
   const [name, setName] = useState('');
@@ -46,7 +47,7 @@ export function LoginPage() {
         if (ignore) return;
         const idToken = response?.idToken;
         if (idToken) {
-          return loginMicrosoft(idToken);
+          return loginMicrosoft(idToken).then(() => navigate('/', { replace: true }));
         }
       })
       .catch((err) => {
@@ -55,9 +56,13 @@ export function LoginPage() {
         setSubmitting(false);
       });
     return () => { ignore = true; };
-  }, [msalClient, loginMicrosoft]);
+  }, [msalClient, loginMicrosoft, navigate]);
 
-  if (!isLoading && user) return <Navigate to="/" replace />;
+  useEffect(() => {
+    if (user && !isLoading) {
+      navigate('/', { replace: true });
+    }
+  }, [user, isLoading, navigate]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -76,6 +81,7 @@ export function LoginPage() {
       } else {
         await login(username, password);
       }
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : String(err || 'Error en la acción'));
       setSubmitting(false);
