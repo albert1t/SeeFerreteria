@@ -18,7 +18,7 @@ const navBtn: React.CSSProperties = {
 };
 
 export function Layout() {
-  const { user, logout, isAdmin, can } = useAuth();
+  const { user, logout, isAdmin } = useAuth();
   const [qrOpen, setQrOpen] = useState(false);
   const [fichaRecambio, setFichaRecambio] = useState<Recambio | null>(null);
   const [crearRecambio, setCrearRecambio] = useState(false);
@@ -34,7 +34,7 @@ export function Layout() {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const outletContext = { panelSeleccionado, setPanelSeleccionado };
+  const outletContext = { panelSeleccionado, setPanelSeleccionado, setCrearRecambio };
 
   const { data: urgentes } = useQuery({
     queryKey: ['pedidos', 'urgentes'],
@@ -110,9 +110,6 @@ export function Layout() {
         </nav>
 
         <div className="desktop-only" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {can('recambios', 'create') && (
-            <button style={btnStyle('primary')} onClick={() => setCrearRecambio(true)}>+ Nuevo Recambio</button>
-          )}
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: 12, fontWeight: 600 }}>{user?.name}</div>
             <div style={{ fontSize: 10, color: '#4a7aaa', textTransform: 'uppercase' }}>{user?.role}</div>
@@ -156,11 +153,6 @@ export function Layout() {
           })}>
             Usuarios
           </NavLink>
-        )}
-        {can('recambios', 'create') && (
-          <button style={{ ...btnStyle('primary'), justifyContent: 'center', padding: '12px 18px', fontSize: 14 }} onClick={() => { setCrearRecambio(true); closeMenu(); }}>
-            + Nuevo Recambio
-          </button>
         )}
         <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(42,80,128,0.5)', paddingTop: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: '#c8ddf0' }}>{user?.name}</div>

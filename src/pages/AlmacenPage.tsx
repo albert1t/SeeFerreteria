@@ -70,16 +70,16 @@ function getPanelDimensions(panelName: string) {
 interface AlmacenOutletContext {
   panelSeleccionado: string | null;
   setPanelSeleccionado: Dispatch<SetStateAction<string | null>>;
+  setCrearRecambio: Dispatch<SetStateAction<boolean>>;
 }
 
 export function AlmacenPage() {
-  const { panelSeleccionado, setPanelSeleccionado } = useOutletContext<AlmacenOutletContext>();
+  const { panelSeleccionado, setPanelSeleccionado, setCrearRecambio } = useOutletContext<AlmacenOutletContext>();
   const { can } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [mostrarOcultos, setMostrarOcultos] = useState(false);
   const [fichaAbierta, setFichaAbierta] = useState<Recambio | null>(null);
-  const [importing, setImporting] = useState(false);
   const [swapMode, setSwapMode] = useState(false);
   const [selectedForSwap, setSelectedForSwap] = useState<Recambio | null>(null);
   const [confirmSwap, setConfirmSwap] = useState<{ r1: Recambio; r2: Recambio } | null>(null);
@@ -98,7 +98,6 @@ export function AlmacenPage() {
     return () => clearTimeout(t);
   }, [swapLoading]);
   const panelListRef = useRef<HTMLDivElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: panelesRaw = [], isLoading: loadingPaneles } = useQuery({
     queryKey: ['paneles'],
@@ -205,25 +204,6 @@ export function AlmacenPage() {
     }
   }
 
-  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    
-    setImporting(true);
-    try {
-      const result = await recambiosApi.importarExcel(file);
-      showToast(`Excel importado: ${result.insertados} recambios insertados de ${result.total}.`, 'success');
-      queryClient.invalidateQueries({ queryKey: ['paneles'] });
-    } catch (error: any) {
-      showToast(error.message, 'error');
-    } finally {
-      setImporting(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    }
-  };
-
   return (
     <>
       {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo recambio...'} />}
@@ -233,12 +213,9 @@ export function AlmacenPage() {
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {panelSeleccionado ? `Panel ${panelSeleccionado}` : 'Almacén — Vista General'}
             {!panelSeleccionado && can('recambios', 'create') && (
-              <>
-                <input type="file" hidden ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} />
-                <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px' }} onClick={() => fileInputRef.current?.click()} disabled={importing}>
-                  {importing ? 'Importando...' : 'Importar Excel'}
-                </button>
-              </>
+              <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px' }} onClick={() => setCrearRecambio(true)}>
+                + Nuevo Recambio
+              </button>
             )}
           </h2>
           {can('recambios', 'edit') && panelSeleccionado && (
