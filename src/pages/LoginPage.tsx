@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import { PublicClientApplication, type AuthenticationResult } from '@azure/msal-browser';
+import { PublicClientApplication } from '@azure/msal-browser';
 import { useAuth } from '../hooks/useAuth';
 import { btnStyle } from '../styles/theme';
 import { ApiError } from '../api/client';
@@ -36,6 +36,27 @@ export function LoginPage() {
     });
   }, [clientId, tenantId, msalEnabled, redirectUri]);
 
+  useEffect(() => {
+    if (!msalClient) return;
+    let ignore = false;
+    msalClient
+      .initialize()
+      .then(() => msalClient.handleRedirectPromise())
+      .then((response) => {
+        if (ignore) return;
+        const idToken = response?.idToken;
+        if (idToken) {
+          return loginMicrosoft(idToken);
+        }
+      })
+      .catch((err) => {
+        if (ignore) return;
+        setError(err instanceof ApiError ? err.message : String(err || 'Error al iniciar con Microsoft'));
+        setSubmitting(false);
+      });
+    return () => { ignore = true; };
+  }, [msalClient, loginMicrosoft]);
+
   if (!isLoading && user) return <Navigate to="/" replace />;
 
   async function handleSubmit(e: React.FormEvent) {
@@ -68,12 +89,7 @@ export function LoginPage() {
 
     try {
       await msalClient.initialize();
-      const response: AuthenticationResult = await msalClient.loginPopup({ scopes: msalScopes });
-      const idToken = response.idToken;
-      if (!idToken) {
-        throw new Error('No se obtuvo token de Microsoft');
-      }
-      await loginMicrosoft(idToken);
+      await msalClient.loginRedirect({ scopes: msalScopes });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : String(err || 'Error al iniciar con Microsoft'));
       setSubmitting(false);
