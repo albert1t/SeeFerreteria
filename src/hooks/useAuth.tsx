@@ -4,6 +4,9 @@ import * as authApi from '../api/auth';
 import { ApiError, clearToken, setToken, getToken } from '../api/client';
 import type { User } from '../types';
 
+type Resource = 'pedidos' | 'recambios';
+type Action = 'create' | 'view' | 'edit' | 'delete';
+
 interface AuthContextValue {
   user: User | null;
   isLoading: boolean;
@@ -12,6 +15,7 @@ interface AuthContextValue {
   loginMicrosoft: (idToken: string) => Promise<void>;
   logout: () => Promise<void>;
   isAdmin: boolean;
+  can: (resource: Resource, action: Action) => boolean;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -73,6 +77,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.clear();
   }, [queryClient]);
 
+  const can = useCallback((resource: Resource, action: Action) => {
+    const perms = user?.permissions;
+    if (!perms) return false;
+    if (perms.admin) return true;
+    return Boolean(perms[resource]?.[action]);
+  }, [user]);
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -82,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       loginMicrosoft,
       logout,
       isAdmin: user?.role === 'admin',
+      can,
     }}>
       {children}
     </AuthContext.Provider>

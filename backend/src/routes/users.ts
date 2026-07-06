@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validate.js';
-import { updateRoleSchema, updateActiveSchema, userIdSchema } from '../schemas/index.js';
+import {
+  userIdSchema,
+  updateRoleSchema,
+  updateActiveSchema,
+  updatePermissionsSchema,
+  allowedEmailSchema,
+  allowedEmailUpdateSchema,
+} from '../schemas/index.js';
 import * as usersRepo from '../repositories/users.js';
 import { AppError } from '../middleware/errorHandler.js';
 
@@ -25,7 +32,25 @@ router.patch(
   async (req, res, next) => {
     try {
       const { id } = req.params as unknown as { id: number };
-      const updated = await usersRepo.updateRole(id, req.body.role);
+      const updated = await usersRepo.updateRoleAndPermissions(id, req.body.role);
+      if (!updated) {
+        throw new AppError(404, 'Usuario no encontrado');
+      }
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.patch(
+  '/:id/permissions',
+  validateParams(userIdSchema),
+  validateBody(updatePermissionsSchema),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as unknown as { id: number };
+      const updated = await usersRepo.updateRoleAndPermissions(id, req.body.role, req.body.permissions);
       if (!updated) {
         throw new AppError(404, 'Usuario no encontrado');
       }
@@ -53,5 +78,58 @@ router.patch(
     }
   },
 );
+
+// Allowed emails for MSAL
+router.get('/allowed-emails', async (_req, res, next) => {
+  try {
+    const emails = await usersRepo.findAllowedEmails();
+    res.json({ emails });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/allowed-emails', validateBody(allowedEmailSchema), async (req, res, next) => {
+  try {
+    const created = await usersRepo.createAllowedEmail(req.body.email, req.body.role, req.body.permissions);
+    if (!created) {
+      throw new AppError(409, 'El correo ya existe en la lista');
+    }
+    res.status(201).json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch(
+  '/allowed-emails/:id',
+  validateParams(userIdSchema),
+  validateBody(allowedEmailUpdateSchema),
+  async (req, res, next) => {
+    try {
+      const { id } = req.params as unknown as { id: number };
+      const updated = await usersRepo.updateAllowedEmail(id, req.body.role, req.body.isActive, req.body.permissions);
+      if (!updated) {
+        throw new AppError(404, 'Correo no encontrado');
+      }
+      res.json({ ok: true });
+    } catch (err) {
+      next(err);
+    }
+  },
+);
+
+router.delete('/allowed-emails/:id', validateParams(userIdSchema), async (req, res, next) => {
+  try {
+    const { id } = req.params as unknown as { id: number };
+    const deleted = await usersRepo.deleteAllowedEmail(id);
+    if (!deleted) {
+      throw new AppError(404, 'Correo no encontrado');
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
 
 export default router;

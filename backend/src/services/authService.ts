@@ -2,10 +2,10 @@ import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 import { createRemoteJWKSet, jwtVerify, type JWTPayload } from 'jose';
 import * as usersRepo from '../repositories/users.js';
-import { signToken } from '../middleware/auth.js';
+import { signToken, getDefaultPermissions } from '../middleware/auth.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { env } from '../config/env.js';
-import type { JwtPayload, User } from '../types/index.js';
+import type { JwtPayload, User, UserRole, Permissions } from '../types/index.js';
 
 function buildTokenResponse(user: User) {
   const payload: JwtPayload = {
@@ -13,6 +13,7 @@ function buildTokenResponse(user: User) {
     username: user.username,
     role: user.role,
     name: user.name,
+    permissions: user.permissions,
   };
   return { user, token: signToken(payload) };
 }
@@ -39,7 +40,8 @@ export async function register(username: string, name: string, password: string)
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
-  const created = await usersRepo.createUser(username, passwordHash, name, 'user');
+  const role: UserRole = 'user';
+  const created = await usersRepo.createUser(username, passwordHash, name, role);
   if (!created) {
     throw new AppError(409, 'El usuario ya existe');
   }
@@ -58,7 +60,6 @@ async function verifyMsalToken(idToken: string): Promise<JWTPayload> {
     throw new AppError(500, 'Azure AD no está configurado en el servidor');
   }
 
-  // Extraer tenant del token sin verificar para soportar múltiples tenants
   const unverified = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64url').toString()) as { tid?: string };
   const tenantId = unverified.tid;
   if (!tenantId) {
@@ -83,11 +84,24 @@ export async function loginMicrosoft(idToken: string): Promise<{ user: User; tok
   }
 
   const name = (payload.name || username) as string;
+
+  // Check allowed emails
+  const allowed = await usersRepo.findAllowedEmailByEmail(username);
+  if (allowed && !allowed.isActive) {
+    throw new AppError(403, 'Este correo no tiene permiso para acceder');
+  }
+
   let user = await usersRepo.findByUsername(username);
 
   if (!user) {
+    if (!allowed) {
+      throw new AppError(403, 'Este correo no está autorizado para acceder');
+    }
+
     const passwordHash = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
-    const created = await usersRepo.createUser(username, passwordHash, name, 'user');
+    const role = allowed.role;
+    const permissions = allowed.permissions ?? getDefaultPermissions(role);
+    const created = await usersRepo.createUser(username, passwordHash, name, role, permissions);
     if (!created) {
       throw new AppError(409, 'El usuario ya existe');
     }

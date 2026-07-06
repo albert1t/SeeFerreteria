@@ -18,7 +18,7 @@ const navBtn: React.CSSProperties = {
 };
 
 export function Layout() {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, can } = useAuth();
   const [qrOpen, setQrOpen] = useState(false);
   const [fichaRecambio, setFichaRecambio] = useState<Recambio | null>(null);
   const [crearRecambio, setCrearRecambio] = useState(false);
@@ -110,7 +110,7 @@ export function Layout() {
         </nav>
 
         <div className="desktop-only" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
-          {isAdmin && (
+          {can('recambios', 'create') && (
             <button style={btnStyle('primary')} onClick={() => setCrearRecambio(true)}>+ Nuevo Recambio</button>
           )}
           <div style={{ textAlign: 'right' }}>
@@ -157,7 +157,7 @@ export function Layout() {
             Usuarios
           </NavLink>
         )}
-        {isAdmin && (
+        {can('recambios', 'create') && (
           <button style={{ ...btnStyle('primary'), justifyContent: 'center', padding: '12px 18px', fontSize: 14 }} onClick={() => { setCrearRecambio(true); closeMenu(); }}>
             + Nuevo Recambio
           </button>
