@@ -38,13 +38,13 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
       title={title}
       style={{
         width: '100%', height: '100%', borderRadius: 3,
-        backgroundColor: filled ? 'rgba(26,110,196,0.20)' : 'rgba(255,255,255,0.03)',
+        backgroundColor: filled ? 'rgba(26,110,196,0.08)' : 'rgba(235,245,255,0.14)',
         backgroundImage: background,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        border: filled ? '1px solid rgba(77,184,255,0.4)' : '1px solid rgba(255,255,255,0.06)',
-        boxShadow: filled && image ? 'inset 0 0 0 1px rgba(77,184,255,0.5)' : undefined,
+        border: filled ? '1px solid rgba(77,184,255,0.25)' : '1px solid rgba(255,255,255,0.22)',
+        boxShadow: filled && image ? 'inset 0 0 0 1px rgba(77,184,255,0.25)' : undefined,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
         containerType: 'size',
@@ -64,7 +64,7 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
       )}
       {!filled && (
         <span style={{
-          color: 'rgba(255,255,255,0.35)',
+          color: 'rgba(255,255,255,0.55)',
           fontSize: 'clamp(7px, 18cqw, 10px)',
           fontWeight: 700,
           lineHeight: 1,
@@ -473,8 +473,8 @@ export function AlmacenPage() {
                         }}
                         className="panel-detail-cell"
                         style={{
-                          background: r ? (r.oculto ? 'rgba(196, 26, 26, 0.10)' : 'rgba(26,110,196,0.12)') : 'rgba(255,255,255,0.03)',
-                          border: selectedForSwap?.id === r?.id ? '2px solid rgba(77,184,255,0.8)' : r ? (r.oculto ? '1px dashed rgba(196, 26, 26, 0.45)' : '1px solid rgba(77,184,255,0.35)') : '1px solid rgba(255,255,255,0.06)',
+                          background: r ? (r.oculto ? 'rgba(196, 26, 26, 0.10)' : 'rgba(26,110,196,0.06)') : 'rgba(235,245,255,0.14)',
+                          border: selectedForSwap?.id === r?.id ? '2px solid rgba(77,184,255,0.8)' : r ? (r.oculto ? '1px dashed rgba(196, 26, 26, 0.45)' : '1px solid rgba(77,184,255,0.22)') : '1px solid rgba(255,255,255,0.18)',
                           opacity: r?.oculto ? 0.84 : 1,
                           borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : (swapMode && selectedForSwap ? 'pointer' : 'default'),
                           minHeight: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
@@ -484,23 +484,23 @@ export function AlmacenPage() {
                         }}
                         onMouseEnter={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = 'rgba(26,110,196,0.22)'; e.currentTarget.style.borderColor = '#4db8ff';
+                            e.currentTarget.style.background = 'rgba(26,110,196,0.14)'; e.currentTarget.style.borderColor = 'rgba(77,184,255,0.45)';
                           } else if (swapMode && selectedForSwap) {
-                            e.currentTarget.style.background = 'rgba(46,204,64,0.12)'; e.currentTarget.style.borderColor = 'rgba(46,204,64,0.4)';
+                            e.currentTarget.style.background = 'rgba(235,245,255,0.22)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = 'rgba(26,110,196,0.12)'; e.currentTarget.style.borderColor = 'rgba(77,184,255,0.35)';
+                            e.currentTarget.style.background = 'rgba(26,110,196,0.06)'; e.currentTarget.style.borderColor = 'rgba(77,184,255,0.22)';
                           } else if (swapMode && selectedForSwap) {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                            e.currentTarget.style.background = 'rgba(235,245,255,0.14)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
                           }
                         }}
                       >
                         {r ? (
                           <>
                             {r.imagen ? (
-                              <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(77,184,255,0.5)', flexShrink: 0 }} />
+                              <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(77,184,255,0.35)', flexShrink: 0 }} />
                             ) : (
                               <img
                                 src="/icons/screw.svg"
@@ -539,15 +539,15 @@ export function AlmacenPage() {
                               }}>
                                 {r.nombre}
                               </div>
-                              <div style={{ fontSize: 10, color: '#4a7aaa', background: 'rgba(77,184,255,0.06)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto' }}>
+                              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto' }}>
                                 {col}/{row}
                               </div>
                             </div>
                           </>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 6 }}>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.25)' }}>Vacío</span>
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)' }}>{col}/{row}</span>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>Vacío</span>
+                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{col}/{row}</span>
                           </div>
                         )}
                       </div>
