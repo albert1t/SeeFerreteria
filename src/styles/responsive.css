@@ -245,7 +245,8 @@
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] {
     flex-direction: column !important;
     align-items: stretch !important;
-    padding: 0.75rem !important;
+    padding: 0.9rem 0.75rem !important;
+    gap: 0.5rem !important;
     word-break: break-word !important;
   }
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] {
@@ -360,8 +361,8 @@
 
   /* Smaller card padding */
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] {
-    padding: 0.6rem !important;
-    gap: 6px !important;
+    padding: 0.7rem 0.6rem !important;
+    gap: 0.4rem !important;
   }
   .pedido-badges-row {
     gap: 3px !important;
