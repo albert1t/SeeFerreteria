@@ -1,64 +1,77 @@
 interface PlaceholderProps {
   size?: number;
   style?: React.CSSProperties;
+  showText?: boolean;
 }
 
-export function EmptySlot({ size = 90, style }: PlaceholderProps) {
+function shouldShowText(size: number, showText?: boolean) {
+  return showText !== false && size >= 48;
+}
+
+export function EmptySlot({ size = 90, style, showText }: PlaceholderProps) {
+  const displayText = shouldShowText(size, showText);
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: 8,
-        border: '2px dashed rgba(255,255,255,0.15)',
-        background: 'rgba(255,255,255,0.02)',
+        border: '1px solid rgba(0,0,0,0.08)',
+        background: '#ffffff',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'rgba(255,255,255,0.25)',
+        color: '#6b7280',
         fontSize: size * 0.12,
         fontWeight: 600,
-        gap: 4,
+        gap: displayText ? 4 : 0,
         flexShrink: 0,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        overflow: 'hidden',
         ...style,
       }}
     >
-      <svg width={size * 0.35} height={size * 0.35} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="3" y="6" width="18" height="12" rx="2" />
-        <path d="M3 10h18" strokeDasharray="2 2" />
-      </svg>
-      Vacío
+      <img
+        src="/icons/empty-drawer.svg"
+        alt="Vacío"
+        style={{ width: size * 0.5, height: size * 0.5, objectFit: 'contain' }}
+      />
+      {displayText && <span>Vacío</span>}
     </div>
   );
 }
 
-export function NoImageSlot({ size = 90, style }: PlaceholderProps) {
+export function NoImageSlot({ size = 90, style, showText }: PlaceholderProps) {
+  const displayText = shouldShowText(size, showText);
   return (
     <div
       style={{
         width: size,
         height: size,
         borderRadius: 8,
-        border: '1px solid rgba(255,255,255,0.08)',
-        background: 'rgba(255,255,255,0.04)',
+        border: '1px solid rgba(0,0,0,0.08)',
+        background: '#ffffff',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        color: 'rgba(255,255,255,0.35)',
+        color: '#2c5282',
         fontSize: size * 0.11,
-        fontWeight: 500,
-        gap: 4,
+        fontWeight: 600,
+        gap: displayText ? 4 : 0,
         flexShrink: 0,
+        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+        overflow: 'hidden',
         ...style,
       }}
     >
-      <svg width={size * 0.35} height={size * 0.35} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="12" cy="12" r="3" />
-        <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
-      </svg>
-      Sin imagen
+      <img
+        src="/icons/screw.svg"
+        alt="Sin imagen"
+        style={{ width: size * 0.5, height: size * 0.5, objectFit: 'contain' }}
+      />
+      {displayText && <span>Sin imagen</span>}
     </div>
   );
 }
