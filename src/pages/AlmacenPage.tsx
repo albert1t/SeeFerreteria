@@ -473,14 +473,14 @@ export function AlmacenPage() {
                         }}
                         className="panel-detail-cell"
                         style={{
-                          background: r ? (r.oculto ? 'rgba(196, 26, 26, 0.10)' : 'rgba(26,110,196,0.12)') : 'rgba(255,255,255,0.02)',
-                          border: selectedForSwap?.id === r?.id ? '2px solid #f0c040' : r ? (r.oculto ? '1px dashed rgba(196, 26, 26, 0.45)' : '1px solid rgba(77,184,255,0.35)') : '1px dashed rgba(255,255,255,0.08)',
+                          background: r ? (r.oculto ? 'rgba(196, 26, 26, 0.10)' : 'rgba(26,110,196,0.12)') : 'rgba(255,255,255,0.03)',
+                          border: selectedForSwap?.id === r?.id ? '2px solid rgba(77,184,255,0.8)' : r ? (r.oculto ? '1px dashed rgba(196, 26, 26, 0.45)' : '1px solid rgba(77,184,255,0.35)') : '1px solid rgba(255,255,255,0.06)',
                           opacity: r?.oculto ? 0.84 : 1,
                           borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : (swapMode && selectedForSwap ? 'pointer' : 'default'),
                           minHeight: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
                           transition: 'all 0.2s',
                           boxSizing: 'border-box',
-                          boxShadow: selectedForSwap?.id === r?.id ? '0 0 12px rgba(240,192,64,0.5)' : undefined,
+                          boxShadow: selectedForSwap?.id === r?.id ? '0 0 12px rgba(77,184,255,0.35)' : undefined,
                         }}
                         onMouseEnter={(e) => {
                           if (r) {
@@ -500,7 +500,7 @@ export function AlmacenPage() {
                         {r ? (
                           <>
                             {r.imagen ? (
-                              <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)', flexShrink: 0 }} />
+                              <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '1px solid rgba(77,184,255,0.5)', flexShrink: 0 }} />
                             ) : (
                               <img
                                 src="/icons/screw.svg"
