@@ -26,7 +26,7 @@ const ESTADO_COLOR: Record<PedidoEstado, string> = {
 function EstadoSteps({ current, onAdvance, disabled }: { current: PedidoEstado; onAdvance?: (next: PedidoEstado) => void; disabled?: boolean }) {
   const idx = ESTADOS.indexOf(current);
   return (
-    <div style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: '0.5rem' }}>
+    <div className="pedido-estado-steps" style={{ display: 'flex', gap: 0, alignItems: 'center', marginBottom: '0.5rem' }}>
       {ESTADOS.map((estado, i) => {
         const done = i < idx;
         const active = i === idx;
@@ -121,7 +121,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       </div>
 
       {/* Data grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1.5rem', marginBottom: '1.25rem' }}>
+      <div className="detalle-pedido-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1.5rem', marginBottom: '1.25rem' }}>
         {[
           ['Recambio', detail.recambioNombre],
           ['Referencia CMH', detail.recambioRef],
@@ -149,7 +149,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       {detail.historial && detail.historial.length > 0 && (
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ ...labelStyle, marginBottom: 8 }}>Historial</div>
-          <div style={{ position: 'relative', paddingLeft: 20 }}>
+          <div className="pedido-historial" style={{ position: 'relative', paddingLeft: 20 }}>
             {detail.historial.map((h, i) => {
               const isLast = i === detail.historial.length - 1;
               return (
@@ -236,9 +236,9 @@ export function PedidosPage() {
   };
 
   return (
-    <div style={{ padding: '1.5rem' }}>
+    <div className="pedidos-page" style={{ padding: '1.5rem' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: 8 }}>
+      <div className="pedidos-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: 8 }}>
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Pedidos</h2>
         <div style={{ display: 'flex', gap: 12, fontSize: 12, color: '#7aade0' }}>
           <span><span style={{ color: '#f0c040', fontWeight: 700 }}>{activos}</span> activos</span>
@@ -247,12 +247,13 @@ export function PedidosPage() {
       </div>
 
       {/* Filters */}
-      <div style={{
+      <div className="pedidos-filters" style={{
         display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap', padding: '0.75rem 1rem',
         background: 'rgba(255,255,255,0.02)', borderRadius: 10, border: '1px solid rgba(42,80,128,0.25)',
         alignItems: 'center',
       }}>
         <input
+          className="pedidos-search-input"
           style={{ ...inputStyle, maxWidth: 220, flex: 1, minWidth: 120 }}
           placeholder="Buscar pedido..."
           value={busqueda}
@@ -291,12 +292,13 @@ export function PedidosPage() {
           Sin pedidos con los filtros actuales
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        <div className="pedidos-list" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {pedidos.map((p) => {
             const borderColor = ESTADO_CARD_BORDER[p.estado] || '#2a5080';
             return (
               <div
                 key={p.id}
+                className="pedido-card"
                 onClick={() => setPedidoDetalle(p)}
                 style={{
                   background: p.prioritario ? 'rgba(192,57,43,0.08)' : 'rgba(255,255,255,0.03)',
@@ -309,14 +311,16 @@ export function PedidosPage() {
                 onMouseEnter={(e) => { e.currentTarget.style.background = p.prioritario ? 'rgba(192,57,43,0.15)' : 'rgba(77,184,255,0.06)'; }}
                 onMouseLeave={(e) => { e.currentTarget.style.background = p.prioritario ? 'rgba(192,57,43,0.08)' : 'rgba(255,255,255,0.03)'; }}
               >
-                {p.recambioImagen && (
-                <img src={p.recambioImagen} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
-              )}
-              {p.prioritario && <span className="urgente-tag" style={{ fontSize: 10, color: '#ff6b6b', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
-                <div style={{ flex: 1, minWidth: 140 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
-                  <div style={{ fontSize: 12, color: '#7aade0' }}>
-                    {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad}
+                <div className="pedido-card-main">
+                  {p.recambioImagen && (
+                    <img className="pedido-card-img" src={p.recambioImagen} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                  )}
+                  {p.prioritario && <span className="urgente-tag" style={{ fontSize: 10, color: '#ff6b6b', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
+                  <div className="pedido-card-info" style={{ flex: 1, minWidth: 140 }}>
+                    <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
+                    <div className="pedido-card-meta" style={{ fontSize: 12, color: '#7aade0' }}>
+                      {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad}
+                    </div>
                   </div>
                 </div>
                 <div className="pedido-badges-row" style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
