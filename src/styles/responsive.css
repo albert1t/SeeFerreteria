@@ -168,11 +168,28 @@
     height: 80px !important;
   }
 
-  /* -- PEDIDOS PAGE -- */
-  div[style*="padding: 1.5rem"] div[style*="flex-wrap: wrap"] select,
-  div[style*="padding: 1.5rem"] div[style*="flex-wrap: wrap"] input {
+  /* -- PEDIDOS PAGE FILTERS -- */
+  /* Hide collapsible filters by default on mobile, show only when expanded */
+  .filters-collapsible[data-expanded="false"] {
+    display: none !important;
+  }
+  .filters-collapsible[data-expanded="true"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+  .filters-collapsible[data-expanded="true"] select,
+  .filters-collapsible[data-expanded="true"] input,
+  .filters-collapsible[data-expanded="true"] button {
     width: 100% !important;
     max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Show the filter toggle button on mobile */
+  .mobile-filter-btn {
+    display: block !important;
   }
 
   div[style*="padding: 1.5rem"] div[style*="flex-direction: column"][style*="gap: 12"] > div {
@@ -225,6 +242,25 @@
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div > div[style*="flex: 1"] {
     overflow: hidden !important;
     word-break: break-word !important;
+  }
+
+  /* Card badges/date row - allow date to wrap instead of overflow */
+  main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] span[style*="white-space: nowrap"] {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
+  }
+
+  /* Detail modal - prevent date/metadata overflow in data grid values */
+  div[style*="grid-template-columns"] > div > div[style*="font-size: 14"] {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Historial timeline - wrap long dates */
+  div[style*="padding-left: 20"] > div > div > span[style*="color: #c8ddf0"] {
+    word-break: break-word !important;
+    overflow-wrap: break-word !important;
   }
 
   /* -- ESTADO STEPS - HIDE LABEL TEXT ON MOBILE -- */

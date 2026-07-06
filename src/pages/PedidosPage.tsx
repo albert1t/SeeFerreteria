@@ -206,6 +206,7 @@ export function PedidosPage() {
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente');
   const [mostrarFinalizados, setMostrarFinalizados] = useState(false);
   const [pedidoDetalle, setPedidoDetalle] = useState<Pedido | null>(null);
+  const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   const { data: pedidos = [], isLoading } = useQuery({
     queryKey: ['pedidos', busqueda, filtroTipo, filtroFecha, orden, mostrarFinalizados],
@@ -257,17 +258,22 @@ export function PedidosPage() {
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
-        <select style={{ ...inputStyle, width: 'auto' }} value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as PedidoTipo | 'Todos')}>
-          {TIPOS.map((t) => <option key={t} value={t}>{t === 'Todos' ? 'Todos los tipos' : t}</option>)}
-        </select>
-        <input type="date" style={{ ...inputStyle, width: 'auto' }} value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} />
-        <select style={{ ...inputStyle, width: 'auto' }} value={orden} onChange={(e) => setOrden(e.target.value as 'reciente' | 'antiguo')}>
-          <option value="reciente">Más reciente</option>
-          <option value="antiguo">Más antiguo</option>
-        </select>
-        <button style={{ ...btnStyle('ghost'), fontSize: 12, padding: '6px 12px' }} onClick={() => setMostrarFinalizados((v) => !v)}>
-          {mostrarFinalizados ? 'Ocultar finalizados' : 'Ver finalizados'}
+        <button className="mobile-filter-btn" style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 12px', display: 'none' }} onClick={() => setMostrarFiltros((v) => !v)}>
+          {mostrarFiltros ? 'Ocultar' : 'Filtrar'}
         </button>
+        <div className="filters-collapsible" data-expanded={mostrarFiltros} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+          <select style={{ ...inputStyle, width: 'auto' }} value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as PedidoTipo | 'Todos')}>
+            {TIPOS.map((t) => <option key={t} value={t}>{t === 'Todos' ? 'Todos los tipos' : t}</option>)}
+          </select>
+          <input type="date" style={{ ...inputStyle, width: 'auto' }} value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} />
+          <select style={{ ...inputStyle, width: 'auto' }} value={orden} onChange={(e) => setOrden(e.target.value as 'reciente' | 'antiguo')}>
+            <option value="reciente">Más reciente</option>
+            <option value="antiguo">Más antiguo</option>
+          </select>
+          <button style={{ ...btnStyle('ghost'), fontSize: 12, padding: '6px 12px' }} onClick={() => setMostrarFinalizados((v) => !v)}>
+            {mostrarFinalizados ? 'Ocultar finalizados' : 'Ver finalizados'}
+          </button>
+        </div>
       </div>
 
       {/* List */}
