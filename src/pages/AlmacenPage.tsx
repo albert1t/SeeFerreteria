@@ -319,7 +319,8 @@ export function AlmacenPage() {
                 const cardWidth = dims.cols === 6 ? 400 : 320;
                 const isA1toA5 = (dims.cols === 4 && dims.rows === 8);
                 const isA6toA9 = (dims.cols === 5 && dims.rows === 10);
-                const miniGap = isA1toA5 ? 4 : isA6toA9 ? 0.75 : 1.5;
+                const miniColGap = isA1toA5 ? 6 : isA6toA9 ? 4 : 5;
+                const miniRowGap = isA1toA5 ? 4 : isA6toA9 ? 3 : 3;
                 return (
                   <div
                     key={p.panel}
@@ -398,7 +399,7 @@ export function AlmacenPage() {
                         </div>
                       )}
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${dims.cols}, 1fr)`, gridAutoRows: '1fr', gap: miniGap, flex: 1, minHeight: 0, height: '100%' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${dims.cols}, 1fr)`, gridAutoRows: '1fr', columnGap: miniColGap, rowGap: miniRowGap, flex: 1, minHeight: 0, height: '100%' }}>
                       {Array.from({ length: dims.total }, (_, i) => {
                         const col = (i % dims.cols) + 1;
                         const row = Math.floor(i / dims.cols) + 1;
