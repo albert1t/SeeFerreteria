@@ -227,13 +227,11 @@
   /* Pedido cards — main row + badges on second line */
   .pedido-card {
     flex-direction: column !important;
-    align-items: stretch !important;
-    padding: 0.9rem 0.75rem !important;
+    padding: 0.75rem !important;
     box-sizing: border-box !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow: hidden !important;
-    gap: 0.6rem !important;
   }
 
   .pedido-card-main {
@@ -350,8 +348,7 @@
 
   /* Pedidos — smaller cards */
   .pedido-card {
-    padding: 0.7rem 0.6rem !important;
-    gap: 0.5rem !important;
+    padding: 0.6rem !important;
   }
   .pedido-card-img {
     width: 32px !important;
