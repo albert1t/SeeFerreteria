@@ -45,8 +45,11 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         backgroundRepeat: 'no-repeat',
         border: filled ? '1px solid rgba(77,184,255,0.4)' : '1px solid rgba(255,255,255,0.06)',
         boxShadow: filled && image ? 'inset 0 0 0 1px rgba(255,255,255,0.12)' : undefined,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
-    />
+    >
+      {filled && !image && <span style={{ fontSize: 10, lineHeight: 1, opacity: 0.5 }}>📦</span>}
+    </div>
   );
 }
 
