@@ -51,7 +51,18 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         containerType: 'size',
       }}
     >
-      {filled && !image && <NoImageSlot size={36} showText={false} />}
+      {filled && !image && (
+        <img
+          src="/icons/screw.svg"
+          alt=""
+          style={{
+            width: '70%',
+            height: '70%',
+            objectFit: 'contain',
+            filter: 'brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,0.4))',
+          }}
+        />
+      )}
       {!filled && (
         <span style={{
           color: 'rgba(255,255,255,0.35)',
