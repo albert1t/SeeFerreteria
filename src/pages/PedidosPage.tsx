@@ -78,7 +78,7 @@ function EstadoSteps({ current, onAdvance, disabled }: { current: PedidoEstado; 
 }
 
 function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => void }) {
-  const { isAdmin } = useAuth();
+  const { can } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [confirmEstado, setConfirmEstado] = useState<PedidoEstado | null>(null);
@@ -101,7 +101,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
   });
 
   const next = SIGUIENTE_ESTADO[detail.estado];
-  const puedeAvanzar = !!(next && (isAdmin || detail.estado === 'Solicitado'));
+  const puedeAvanzar = !!(next && can('pedidos', 'edit'));
   const labelStyle: React.CSSProperties = {
     fontSize: 12, color: '#7aade0', fontWeight: 600, textTransform: 'uppercase', marginBottom: 2, display: 'block',
   };

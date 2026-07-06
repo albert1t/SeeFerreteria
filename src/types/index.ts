@@ -1,4 +1,20 @@
-export type UserRole = 'admin' | 'user';
+export type UserRole = 'admin' | 'user' | 'viewer' | 'operario';
+
+export interface Permissions {
+  admin: boolean;
+  pedidos: {
+    create: boolean;
+    view: boolean;
+    edit: boolean;
+    delete: boolean;
+  };
+  recambios: {
+    create: boolean;
+    view: boolean;
+    edit: boolean;
+    delete: boolean;
+  };
+}
 
 export interface User {
   id: number;
@@ -6,6 +22,15 @@ export interface User {
   name: string;
   role: UserRole;
   isActive: boolean;
+  permissions: Permissions;
+}
+
+export interface AllowedEmail {
+  id: number;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  permissions: Permissions | null;
 }
 
 export type PedidoTipo = 'Reposición' | 'Solicitud' | 'Solicitud Express';

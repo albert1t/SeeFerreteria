@@ -333,6 +333,11 @@
 }
 
 /* Small phones */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
 @media (max-width: 400px) {
   header > div:first-of-type {
     max-width: 130px !important;

@@ -40,6 +40,8 @@ export function LoginPage() {
   useEffect(() => {
     if (!msalClient) return;
     let ignore = false;
+    setSubmitting(true);
+    setError('');
     msalClient
       .initialize()
       .then(() => msalClient.handleRedirectPromise())
@@ -53,7 +55,9 @@ export function LoginPage() {
       .catch((err) => {
         if (ignore) return;
         setError(err instanceof ApiError ? err.message : String(err || 'Error al iniciar con Microsoft'));
-        setSubmitting(false);
+      })
+      .finally(() => {
+        if (!ignore) setSubmitting(false);
       });
     return () => { ignore = true; };
   }, [msalClient, loginMicrosoft, navigate]);
@@ -139,6 +143,12 @@ export function LoginPage() {
           {!msalEnabled && (
             <div style={{ color: '#9bb2d3', fontSize: 13, marginBottom: '1rem', textAlign: 'center' }}>
               MSAL no está configurado. Añade VITE_AZURE_AD_CLIENT_ID y VITE_AZURE_AD_TENANT_ID si quieres iniciar con Microsoft.
+            </div>
+          )}
+          {submitting && (
+            <div style={{ color: '#4db8ff', fontSize: 13, marginBottom: '1rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+              <span className="spinner" style={{ width: 14, height: 14, border: '2px solid rgba(77,184,255,0.3)', borderTop: '2px solid #4db8ff', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              Conectando con el servidor, puede tardar unos segundos...
             </div>
           )}
           <form onSubmit={handleSubmit}>

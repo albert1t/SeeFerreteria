@@ -74,7 +74,7 @@ interface AlmacenOutletContext {
 
 export function AlmacenPage() {
   const { panelSeleccionado, setPanelSeleccionado } = useOutletContext<AlmacenOutletContext>();
-  const { isAdmin } = useAuth();
+  const { can } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [mostrarOcultos, setMostrarOcultos] = useState(false);
@@ -232,7 +232,7 @@ export function AlmacenPage() {
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {panelSeleccionado ? `Panel ${panelSeleccionado}` : 'Almacén — Vista General'}
-            {!panelSeleccionado && isAdmin && (
+            {!panelSeleccionado && can('recambios', 'create') && (
               <>
                 <input type="file" hidden ref={fileInputRef} accept=".xlsx,.xls" onChange={handleImport} />
                 <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px' }} onClick={() => fileInputRef.current?.click()} disabled={importing}>
@@ -241,7 +241,7 @@ export function AlmacenPage() {
               </>
             )}
           </h2>
-          {isAdmin && panelSeleccionado && (
+          {can('recambios', 'edit') && panelSeleccionado && (
             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
               <button
                 type="button"
