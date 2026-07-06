@@ -241,12 +241,10 @@
     align-items: flex-start !important;
   }
 
-  /* -- PEDIDOS CARDS - WRAP BADGES BELOW -- */
+  /* -- PEDIDOS CARDS - STACK VERTICAL -- */
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] {
     flex-direction: column !important;
-    align-items: stretch !important;
     padding: 0.9rem 0.75rem !important;
-    gap: 0.5rem !important;
     word-break: break-word !important;
   }
   main > div[style*="padding: 1.5rem"] > div[style*="flex-direction: column"] > div[style*="border-left"] > div[style*="flex-shrink: 0"] {
