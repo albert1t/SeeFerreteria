@@ -59,8 +59,12 @@ export function SearchBar({ onSelect, placeholder = 'Buscar por nombre o referen
               onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(77,184,255,0.08)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              {r.imagen && (
+              {r.imagen ? (
                 <img src={r.imagen} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#4a7aaa', flexShrink: 0 }}>
+                  📦
+                </div>
               )}
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{r.nombre}</div>
