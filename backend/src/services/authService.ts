@@ -66,7 +66,7 @@ async function verifyMsalToken(idToken: string): Promise<JWTPayload> {
   }
 
   const issuer = `https://login.microsoftonline.com/${tenantId}/v2.0`;
-  const jwks = createRemoteJWKSet(new URL(`${issuer}/discovery/v2.0/keys`));
+  const jwks = createRemoteJWKSet(new URL(`https://login.microsoftonline.com/${tenantId}/discovery/v2.0/keys`));
   const { payload } = await jwtVerify(idToken, jwks, {
     issuer,
     audience: env.AZURE_AD_CLIENT_ID,
