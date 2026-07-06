@@ -67,6 +67,7 @@ export function LoginPage() {
     setError('');
 
     try {
+      await msalClient.initialize();
       const response: AuthenticationResult = await msalClient.loginPopup({ scopes: msalScopes });
       const idToken = response.idToken;
       if (!idToken) {
