@@ -48,7 +48,7 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         display: 'flex', alignItems: 'center', justifyContent: 'center',
       }}
     >
-      {filled && !image && <span style={{ fontSize: 10, lineHeight: 1, opacity: 0.5 }}>📦</span>}
+      {filled && !image && <span style={{ fontSize: 18, lineHeight: 1, opacity: 0.6 }}>📦</span>}
     </div>
   );
 }
