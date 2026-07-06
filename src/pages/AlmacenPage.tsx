@@ -44,7 +44,7 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         border: filled ? '1px solid rgba(77,184,255,0.4)' : '1px solid rgba(255,255,255,0.06)',
-        boxShadow: filled && image ? 'inset 0 0 0 1px rgba(255,255,255,0.12)' : undefined,
+        boxShadow: filled && image ? 'inset 0 0 0 1px rgba(77,184,255,0.5)' : undefined,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
         containerType: 'size',
