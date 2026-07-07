@@ -39,10 +39,10 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
     marca: recambio?.marca ?? '',
     descripcion: recambio?.descripcion ?? '',
     metrica: recambio?.metrica ?? '',
-    unidadEmbalaje: recambio?.unidadEmbalaje ?? 'Unidad',
+    unidadEmbalaje: recambio?.unidadEmbalaje ?? '',
     imagen: recambio?.imagen ?? '',
     plazoEntrega: recambio?.plazoEntrega ?? '',
-    familiaId: recambio?.familiaId ?? familias[0]?.id ?? 1,
+    familiaId: recambio?.familiaId ?? 0,
     nReposicion: recambio?.nReposicion ?? null,
     panel: recambio?.panel ?? '',
     col: recambio?.col ?? 0,
@@ -129,20 +129,21 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
         <label style={labelStyle}>Métrica</label>
         <input style={inputStyle} value={form.metrica ?? ''} onChange={(e) => upd('metrica', e.target.value)} placeholder='Ej: M8x30, 1/2", 35mm²' />
       </div>
-      {([['unidadEmbalaje', 'Unidad de embalaje'], ['plazoEntrega', 'Plazo de entrega']] as const).map(([k, lbl]) => (
+      {([['unidadEmbalaje', 'Unidad de embalaje *'], ['plazoEntrega', 'Plazo de entrega']] as const).map(([k, lbl]) => (
         <div key={k}>
           <label style={labelStyle}>{lbl}</label>
-          <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} />
+          <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} placeholder={k === 'unidadEmbalaje' ? 'Ej: Unidad' : undefined} />
         </div>
       ))}
 
       <div>
-        <label style={labelStyle}>Familia</label>
+        <label style={labelStyle}>Familia *</label>
         <select
           style={inputStyle}
           value={form.familiaId}
           onChange={(e) => upd('familiaId', parseInt(e.target.value, 10))}
         >
+          <option value={0} disabled>-- Seleccionar --</option>
           {familias.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
         </select>
       </div>
@@ -226,7 +227,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}
-          disabled={saveMut.isPending || uploading || !form.referenciaCMH || !form.nombre || !form.panel.trim() || form.col < 1 || form.row < 1}
+          disabled={saveMut.isPending || uploading || !form.referenciaCMH || !form.nombre || !form.panel.trim() || form.col < 1 || form.row < 1 || !form.familiaId || !(form.unidadEmbalaje ?? '').trim()}
           onClick={() => saveMut.mutate()}
         >
           {saveMut.isPending ? 'Guardando...' : recambio ? 'Guardar cambios' : 'Crear recambio'}
