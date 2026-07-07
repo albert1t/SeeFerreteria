@@ -7,6 +7,7 @@ export interface PedidosFilters {
   fecha?: string;
   orden?: 'reciente' | 'antiguo';
   incluirFinalizados?: boolean;
+  incluirOcultos?: boolean;
 }
 
 export function getPedidos(filters: PedidosFilters = {}) {
@@ -16,6 +17,7 @@ export function getPedidos(filters: PedidosFilters = {}) {
   if (filters.fecha) params.set('fecha', filters.fecha);
   if (filters.orden) params.set('orden', filters.orden);
   if (filters.incluirFinalizados) params.set('incluirFinalizados', 'true');
+  if (filters.incluirOcultos) params.set('incluirOcultos', 'true');
   const qs = params.toString();
   return apiFetch<Pedido[]>(`/api/pedidos${qs ? `?${qs}` : ''}`);
 }
@@ -46,4 +48,19 @@ export function updatePedidoEstado(id: number, estado: PedidoEstado) {
     method: 'PATCH',
     body: JSON.stringify({ estado }),
   });
+}
+
+export function updatePedido(id: number, data: { cantidad?: number; plazoDeseado?: string | null; observaciones?: string | null }) {
+  return apiFetch<Pedido>(`/api/pedidos/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export function deletePedido(id: number) {
+  return apiFetch<void>(`/api/pedidos/${id}`, { method: 'DELETE' });
+}
+
+export function toggleOcultoPedido(id: number) {
+  return apiFetch<Pedido>(`/api/pedidos/${id}/oculto`, { method: 'PATCH' });
 }

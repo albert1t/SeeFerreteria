@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import * as pedidosService from '../services/pedidosService.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
-import { pedidoCreateSchema, pedidoEstadoSchema, pedidosQuerySchema } from '../schemas/index.js';
+import { pedidoCreateSchema, pedidoEstadoSchema, pedidoUpdateSchema, pedidosQuerySchema } from '../schemas/index.js';
 
 const router = Router();
 
@@ -25,6 +25,7 @@ router.get('/', validateQuery(pedidosQuerySchema), async (req, res, next) => {
       fecha?: string;
       orden?: 'reciente' | 'antiguo';
       incluirFinalizados?: string;
+      incluirOcultos?: string;
     };
     const pedidos = await pedidosService.listPedidos({
       busqueda: q.busqueda,
@@ -32,6 +33,7 @@ router.get('/', validateQuery(pedidosQuerySchema), async (req, res, next) => {
       fecha: q.fecha,
       orden: q.orden,
       incluirFinalizados: q.incluirFinalizados === 'true',
+      incluirOcultos: q.incluirOcultos === 'true',
     });
     res.json(pedidos);
   } catch (err) {
@@ -62,6 +64,36 @@ router.patch('/:id/estado', validateBody(pedidoEstadoSchema), async (req, res, n
   try {
     const id = parseInt(String(req.params.id), 10);
     const pedido = await pedidosService.advanceEstado(id, req.body.estado, req.user!.userId);
+    res.json(pedido);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.put('/:id', requirePermission('pedidos', 'edit'), validateBody(pedidoUpdateSchema), async (req, res, next) => {
+  try {
+    const id = parseInt(String(req.params.id), 10);
+    const pedido = await pedidosService.updatePedido(id, req.body);
+    res.json(pedido);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id', requirePermission('pedidos', 'delete'), async (req, res, next) => {
+  try {
+    const id = parseInt(String(req.params.id), 10);
+    await pedidosService.deletePedido(id);
+    res.status(204).end();
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.patch('/:id/oculto', requirePermission('pedidos', 'edit'), async (req, res, next) => {
+  try {
+    const id = parseInt(String(req.params.id), 10);
+    const pedido = await pedidosService.toggleOcultoPedido(id);
     res.json(pedido);
   } catch (err) {
     next(err);

@@ -12,6 +12,7 @@ function mapPedido(row: Record<string, unknown>): Pedido {
     estado: row.estado as PedidoEstado,
     prioritario: row.prioritario as boolean,
     observaciones: row.observaciones as string | null,
+    oculto: row.oculto as boolean,
     fechaSolicitud: (row.fechaSolicitud as Date).toISOString(),
     fechaActualizacion: (row.fechaActualizacion as Date).toISOString(),
     recambioRef: row.recambioRef as string | undefined,
@@ -34,11 +35,15 @@ export async function findAll(filters: {
   fecha?: string;
   orden?: 'reciente' | 'antiguo';
   incluirFinalizados?: boolean;
+  incluirOcultos?: boolean;
 }): Promise<Pedido[]> {
   const pool = await getPool();
   const request = pool.request();
   let where = 'WHERE 1=1';
 
+  if (!filters.incluirOcultos) {
+    where += " AND p.oculto = 0";
+  }
   if (!filters.incluirFinalizados) {
     where += " AND p.estado != 'Finalizado'";
   }
@@ -178,4 +183,33 @@ export async function getHistorial(pedidoId: number): Promise<PedidoHistorial[]>
     fecha: (row.fecha as Date).toISOString(),
     usuarioNombre: row.usuarioNombre as string,
   }));
+}
+
+export async function updatePedido(id: number, data: { cantidad?: number; plazoDeseado?: string | null; observaciones?: string | null }): Promise<Pedido | null> {
+  const pool = await getPool();
+  const request = pool.request().input('id', sql.Int, id);
+  const sets: string[] = [];
+  if (data.cantidad !== undefined) { sets.push('cantidad = @cantidad'); request.input('cantidad', sql.Int, data.cantidad); }
+  if (data.plazoDeseado !== undefined) { sets.push('plazoDeseado = @plazoDeseado'); request.input('plazoDeseado', sql.NVarChar(50), data.plazoDeseado); }
+  if (data.observaciones !== undefined) { sets.push('observaciones = @observaciones'); request.input('observaciones', sql.NVarChar(sql.MAX), data.observaciones); }
+  if (sets.length === 0) return findById(id);
+  sets.push('fechaActualizacion = SYSUTCDATETIME()');
+  await request.query(`UPDATE Pedidos SET ${sets.join(', ')} WHERE id = @id`);
+  return findById(id);
+}
+
+export async function deletePedido(id: number): Promise<boolean> {
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('id', sql.Int, id)
+    .query('DELETE FROM Pedidos WHERE id = @id');
+  return result.rowsAffected[0] > 0;
+}
+
+export async function toggleOculto(id: number): Promise<Pedido | null> {
+  const pool = await getPool();
+  await pool.request()
+    .input('id', sql.Int, id)
+    .query('UPDATE Pedidos SET oculto = ~oculto, fechaActualizacion = SYSUTCDATETIME() WHERE id = @id');
+  return findById(id);
 }

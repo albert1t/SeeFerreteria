@@ -11,6 +11,7 @@ export async function listPedidos(filters: {
   fecha?: string;
   orden?: 'reciente' | 'antiguo';
   incluirFinalizados?: boolean;
+  incluirOcultos?: boolean;
 }): Promise<Pedido[]> {
   return pedidosRepo.findAll(filters);
 }
@@ -99,4 +100,24 @@ export function getNextEstado(estado: PedidoEstado): PedidoEstado | null {
   const idx = ESTADO_ORDEN.indexOf(estado);
   if (idx < 0 || idx >= ESTADO_ORDEN.length - 1) return null;
   return ESTADO_ORDEN[idx + 1];
+}
+
+export async function updatePedido(id: number, data: { cantidad?: number; plazoDeseado?: string | null; observaciones?: string | null }): Promise<Pedido> {
+  const pedido = await pedidosRepo.findById(id);
+  if (!pedido) throw new AppError(404, 'Pedido no encontrado');
+  const updated = await pedidosRepo.updatePedido(id, data);
+  if (!updated) throw new AppError(404, 'Pedido no encontrado');
+  return updated;
+}
+
+export async function deletePedido(id: number): Promise<void> {
+  const pedido = await pedidosRepo.findById(id);
+  if (!pedido) throw new AppError(404, 'Pedido no encontrado');
+  await pedidosRepo.deletePedido(id);
+}
+
+export async function toggleOcultoPedido(id: number): Promise<Pedido> {
+  const pedido = await pedidosRepo.toggleOculto(id);
+  if (!pedido) throw new AppError(404, 'Pedido no encontrado');
+  return pedido;
 }
