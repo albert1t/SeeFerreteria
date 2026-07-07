@@ -79,6 +79,10 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
   });
 
   function confirmarCreacion(tipo: PedidoTipo) {
+    if (tipo === 'Reposición' && r.nReposicion == null) {
+      showToast('Este recambio no tiene un número de reposición. Configúralo antes de crear un pedido automático.', 'error');
+      return;
+    }
     if (tipo === 'Solicitud' && (!cantidad || !plazoDeseado)) {
       showToast('Indica cantidad y plazo deseado');
       return;
@@ -243,14 +247,14 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
                 </div>
               )}
               {([
-                { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${(() => { const paq = r.nReposicion ?? 1; const emb = parseEmbalaje(r.unidadEmbalaje); const total = paq * emb; return emb > 1 ? `${paq} paquetes × ${r.unidadEmbalaje} = ${total} uds` : `${paq} uds`; })()} · Plazo: ${r.plazoEntrega || '—'}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
+                { tipo: 'Reposición' as PedidoTipo, label: 'Automático', desc: `${(() => { if (r.nReposicion == null) return 'Número de reposición no configurado'; const paq = r.nReposicion; const emb = parseEmbalaje(r.unidadEmbalaje); const total = paq * emb; return emb > 1 ? `${paq} paquetes × ${r.unidadEmbalaje} = ${total} uds` : `${paq} uds`; })()}`, color: '#4db8ff', bgCard: '#0f2744', borderColor: '#2a5080' },
                 { tipo: 'Solicitud' as PedidoTipo, label: 'Personalizado', desc: 'Cantidad y plazo a definir', color: '#4dff9b', bgCard: '#0a2a1a', borderColor: '#1a5a3a' },
                 { tipo: 'Solicitud Express' as PedidoTipo, label: 'Urgente', desc: 'Prioritario · entrega inmediata', color: '#ff6b6b', bgCard: '#2a0a0a', borderColor: '#5a2020' },
               ]).map((opt) => (
                 <button
                   key={opt.tipo}
                   onClick={() => opt.tipo === 'Reposición' ? confirmarCreacion(opt.tipo) : setPedidoTipo(opt.tipo)}
-                  disabled={createPedidoMut.isPending}
+                  disabled={createPedidoMut.isPending || (opt.tipo === 'Reposición' && r.nReposicion == null)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 14, padding: 0,
                     background: opt.bgCard, border: `1px solid ${opt.borderColor}`, borderRadius: 12,
