@@ -45,8 +45,8 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
     familiaId: recambio?.familiaId ?? 0,
     nReposicion: recambio?.nReposicion ?? null,
     panel: recambio?.panel ?? '',
-    col: recambio?.col ?? 0,
-    row: recambio?.row ?? 0,
+    col: recambio?.col ?? null,
+    row: recambio?.row ?? null,
   });
 
   const [uploading, setUploading] = useState(false);
@@ -157,11 +157,11 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
       </div>
       <div>
         <label style={labelStyle}>Columna * (1-{panelLimits.cols})</label>
-        <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col} onChange={(e) => { const v = parseInt(e.target.value, 10); upd('col', isNaN(v) ? 0 : v); }} placeholder="Ej: 1" />
+        <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col ?? ''} onChange={(e) => { const v = e.target.value; upd('col', v === '' ? null : parseInt(v, 10)); }} placeholder="Ej: 1" />
       </div>
       <div>
         <label style={labelStyle}>Fila * (1-{panelLimits.rows})</label>
-        <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row} onChange={(e) => { const v = parseInt(e.target.value, 10); upd('row', isNaN(v) ? 0 : v); }} placeholder="Ej: 1" />
+        <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row ?? ''} onChange={(e) => { const v = e.target.value; upd('row', v === '' ? null : parseInt(v, 10)); }} placeholder="Ej: 1" />
       </div>
       {/* Image upload section */}
       <div style={{ gridColumn: '1/-1' }}>
@@ -227,7 +227,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}
-          disabled={saveMut.isPending || uploading || !form.referenciaCMH || !form.nombre || !form.panel.trim() || form.col < 1 || form.row < 1 || !form.familiaId || !(form.unidadEmbalaje ?? '').trim()}
+          disabled={saveMut.isPending || uploading || !form.referenciaCMH || !form.nombre || !form.panel.trim() || form.col == null || form.col < 1 || form.row == null || form.row < 1 || !form.familiaId || !(form.unidadEmbalaje ?? '').trim()}
           onClick={() => saveMut.mutate()}
         >
           {saveMut.isPending ? 'Guardando...' : recambio ? 'Guardar cambios' : 'Crear recambio'}
