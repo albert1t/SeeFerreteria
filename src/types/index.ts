@@ -110,6 +110,6 @@ export interface RecambioFormData {
   familiaId: number;
   nReposicion: number | null;
   panel: string;
-  col: number;
-  row: number;
+  col: number | null;
+  row: number | null;
 }
