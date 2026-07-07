@@ -44,9 +44,9 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
     plazoEntrega: recambio?.plazoEntrega ?? '',
     familiaId: recambio?.familiaId ?? familias[0]?.id ?? 1,
     nReposicion: recambio?.nReposicion ?? null,
-    panel: recambio?.panel ?? 'A1',
-    col: recambio?.col ?? 1,
-    row: recambio?.row ?? 1,
+    panel: recambio?.panel ?? '',
+    col: recambio?.col ?? 0,
+    row: recambio?.row ?? 0,
   });
 
   const [uploading, setUploading] = useState(false);
@@ -156,11 +156,11 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
       </div>
       <div>
         <label style={labelStyle}>Columna * (1-{panelLimits.cols})</label>
-        <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col} onChange={(e) => upd('col', parseInt(e.target.value, 10))} />
+        <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col} onChange={(e) => { const v = parseInt(e.target.value, 10); upd('col', isNaN(v) ? 0 : v); }} placeholder="Ej: 1" />
       </div>
       <div>
         <label style={labelStyle}>Fila * (1-{panelLimits.rows})</label>
-        <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row} onChange={(e) => upd('row', parseInt(e.target.value, 10))} />
+        <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row} onChange={(e) => { const v = parseInt(e.target.value, 10); upd('row', isNaN(v) ? 0 : v); }} placeholder="Ej: 1" />
       </div>
       {/* Image upload section */}
       <div style={{ gridColumn: '1/-1' }}>
