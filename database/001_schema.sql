@@ -88,7 +88,7 @@ BEGIN
         prioritario BIT NOT NULL DEFAULT 0,
         observaciones NVARCHAR(MAX),
         fechaSolicitud DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        fechaActualizacion DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        fechaActualizacion DATETIME2 NOT NULL DEFAULssssssT SYSUTCDATETIME(),
         CONSTRAINT FK_Ped_Recambio FOREIGN KEY (recambioId) REFERENCES Recambios(id),
         CONSTRAINT FK_Ped_Solicitante FOREIGN KEY (solicitanteId) REFERENCES Users(id)
     );

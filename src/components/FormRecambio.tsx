@@ -151,15 +151,15 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
         <input style={inputStyle} type="number" min="1" value={form.nReposicion ?? ''} onChange={(e) => { const v = e.target.value; upd('nReposicion', v === '' ? null : parseInt(v, 10)); }} />
       </div>
       <div>
-        <label style={labelStyle}>Panel</label>
+        <label style={labelStyle}>Panel *</label>
         <input style={inputStyle} value={form.panel} onChange={(e) => upd('panel', e.target.value.toUpperCase())} placeholder="Ej: A1" />
       </div>
       <div>
-        <label style={labelStyle}>Columna (1-{panelLimits.cols})</label>
+        <label style={labelStyle}>Columna * (1-{panelLimits.cols})</label>
         <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col} onChange={(e) => upd('col', parseInt(e.target.value, 10))} />
       </div>
       <div>
-        <label style={labelStyle}>Fila (1-{panelLimits.rows})</label>
+        <label style={labelStyle}>Fila * (1-{panelLimits.rows})</label>
         <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row} onChange={(e) => upd('row', parseInt(e.target.value, 10))} />
       </div>
       {/* Image upload section */}
@@ -226,7 +226,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}
-          disabled={saveMut.isPending || uploading || !form.referenciaCMH || !form.nombre}
+          disabled={saveMut.isPending || uploading || !form.referenciaCMH || !form.nombre || !form.panel.trim() || form.col < 1 || form.row < 1}
           onClick={() => saveMut.mutate()}
         >
           {saveMut.isPending ? 'Guardando...' : recambio ? 'Guardar cambios' : 'Crear recambio'}
