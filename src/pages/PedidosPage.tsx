@@ -82,6 +82,11 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [confirmEstado, setConfirmEstado] = useState<PedidoEstado | null>(null);
+  const [editando, setEditando] = useState(false);
+  const [editCantidad, setEditCantidad] = useState('');
+  const [editPlazo, setEditPlazo] = useState('');
+  const [editObs, setEditObs] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: detail } = useQuery({
     queryKey: ['pedidos', pedido.id],
@@ -100,8 +105,50 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
     onError: (err: Error) => showToast(err.message),
   });
 
+  const editMut = useMutation({
+    mutationFn: (data: { cantidad?: number; plazoDeseado?: string | null; observaciones?: string | null }) =>
+      pedidosApi.updatePedido(pedido.id, data),
+    onSuccess: () => {
+      showToast('Pedido actualizado', 'success');
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+      setEditando(false);
+      onClose();
+    },
+    onError: (err: Error) => showToast(err.message),
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: () => pedidosApi.deletePedido(pedido.id),
+    onSuccess: () => {
+      showToast('Pedido eliminado', 'success');
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+      setConfirmDelete(false);
+      onClose();
+    },
+    onError: (err: Error) => showToast(err.message),
+  });
+
+  const toggleOcultoMut = useMutation({
+    mutationFn: () => pedidosApi.toggleOcultoPedido(pedido.id),
+    onSuccess: (r) => {
+      showToast(r.oculto ? 'Pedido ocultado' : 'Pedido visible', 'success');
+      queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+      onClose();
+    },
+    onError: (err: Error) => showToast(err.message),
+  });
+
+  function abrirEditar() {
+    setEditCantidad(String(detail.cantidad));
+    setEditPlazo(detail.plazoDeseado ?? '');
+    setEditObs(detail.observaciones ?? '');
+    setEditando(true);
+  }
+
   const next = SIGUIENTE_ESTADO[detail.estado];
   const puedeAvanzar = !!(next && can('pedidos', 'edit'));
+  const puedeEditar = can('pedidos', 'edit');
+  const puedeEliminar = can('pedidos', 'delete');
   const labelStyle: React.CSSProperties = {
     fontSize: 12, color: '#7aade0', fontWeight: 600, textTransform: 'uppercase', marginBottom: 2, display: 'block',
   };
@@ -113,6 +160,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
         {detail.prioritario && <span style={{ fontSize: 11, color: '#ff6b6b', fontWeight: 700, marginRight: 4 }}>URGENTE</span>}
         <span style={badgeStyle(detail.tipo)}>{detail.tipo}</span>
         <span style={badgeStyle(detail.estado)}>{detail.estado}</span>
+        {detail.oculto && <span style={{ ...badgeStyle('Finalizado'), fontSize: 11 }}>Oculto</span>}
       </div>
 
       {/* Progress steps */}
@@ -142,6 +190,25 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
         <div style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(42,80,128,0.2)' }}>
           <div style={labelStyle}>Observaciones</div>
           <div style={{ fontSize: 13, color: '#a8bdd0' }}>{detail.observaciones}</div>
+        </div>
+      )}
+
+      {/* Admin actions */}
+      {(puedeEditar || puedeEliminar) && (
+        <div style={{ display: 'flex', gap: 8, marginBottom: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(42,80,128,0.3)' }}>
+          {puedeEditar && (
+            <>
+              <button style={btnStyle('primary')} onClick={abrirEditar} disabled={editMut.isPending}>Editar</button>
+              <button style={btnStyle('ghost')} onClick={() => toggleOcultoMut.mutate()} disabled={toggleOcultoMut.isPending}>
+                {detail.oculto ? 'Mostrar' : 'Ocultar'}
+              </button>
+            </>
+          )}
+          {puedeEliminar && (
+            <button style={{ ...btnStyle('danger'), marginLeft: 'auto' }} onClick={() => setConfirmDelete(true)} disabled={deleteMut.isPending}>
+              Eliminar
+            </button>
+          )}
         </div>
       )}
 
@@ -179,7 +246,50 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
         </div>
       )}
 
-      {/* Confirm modal */}
+      {/* Edit modal */}
+      <Modal open={editando} onClose={() => setEditando(false)} title="Editar pedido">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 300 }}>
+          <div>
+            <label style={labelStyle}>Cantidad</label>
+            <input type="number" min="1" value={editCantidad} onChange={(e) => setEditCantidad(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Plazo deseado</label>
+            <input type="text" value={editPlazo} onChange={(e) => setEditPlazo(e.target.value)}
+              style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={labelStyle}>Observaciones</label>
+            <textarea value={editObs} onChange={(e) => setEditObs(e.target.value)}
+              style={{ width: '100%', minHeight: 60, padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, boxSizing: 'border-box', resize: 'vertical' }} />
+          </div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: '0.5rem' }}>
+            <button style={btnStyle('ghost')} onClick={() => setEditando(false)}>Cancelar</button>
+            <button style={btnStyle('primary')} disabled={editMut.isPending || !editCantidad || parseInt(editCantidad, 10) < 1}
+              onClick={() => editMut.mutate({ cantidad: parseInt(editCantidad, 10), plazoDeseado: editPlazo || null, observaciones: editObs || null })}>
+              {editMut.isPending ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Delete confirmation */}
+      <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Confirmar eliminación">
+        <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+          <p style={{ fontSize: 14, color: '#c8ddf0', marginBottom: '1.25rem' }}>
+            ¿Eliminar el pedido <strong>#{pedido.id}</strong>? Esta acción no se puede deshacer.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <button style={btnStyle('ghost')} onClick={() => setConfirmDelete(false)}>Cancelar</button>
+            <button style={btnStyle('danger')} disabled={deleteMut.isPending} onClick={() => deleteMut.mutate()}>
+              {deleteMut.isPending ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Confirm state advance */}
       <Modal open={!!confirmEstado} onClose={() => setConfirmEstado(null)} title="Confirmar avance">
         {confirmEstado && (
           <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
@@ -205,17 +315,19 @@ export function PedidosPage() {
   const [filtroFecha, setFiltroFecha] = useState('');
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente');
   const [mostrarFinalizados, setMostrarFinalizados] = useState(false);
+  const [mostrarOcultos, setMostrarOcultos] = useState(false);
   const [pedidoDetalle, setPedidoDetalle] = useState<Pedido | null>(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   const { data: pedidos = [], isLoading } = useQuery({
-    queryKey: ['pedidos', busqueda, filtroTipo, filtroFecha, orden, mostrarFinalizados],
+    queryKey: ['pedidos', busqueda, filtroTipo, filtroFecha, orden, mostrarFinalizados, mostrarOcultos],
     queryFn: () => pedidosApi.getPedidos({
       busqueda: busqueda || undefined,
       tipo: filtroTipo,
       fecha: filtroFecha || undefined,
       orden,
       incluirFinalizados: mostrarFinalizados,
+      incluirOcultos: mostrarOcultos,
     }),
   });
 
@@ -274,6 +386,9 @@ export function PedidosPage() {
           <button style={{ ...btnStyle('ghost'), fontSize: 12, padding: '6px 12px' }} onClick={() => setMostrarFinalizados((v) => !v)}>
             {mostrarFinalizados ? 'Ocultar finalizados' : 'Ver finalizados'}
           </button>
+          <button style={{ ...btnStyle('ghost'), fontSize: 12, padding: '6px 12px' }} onClick={() => setMostrarOcultos((v) => !v)}>
+            {mostrarOcultos ? 'Ocultar ocultos' : 'Mostrar ocultos'}
+          </button>
         </div>
       </div>
 
@@ -301,8 +416,8 @@ export function PedidosPage() {
                 className="pedido-card"
                 onClick={() => setPedidoDetalle(p)}
                 style={{
-                  background: p.prioritario ? 'rgba(192,57,43,0.08)' : 'rgba(255,255,255,0.03)',
-                  border: `1px solid ${p.prioritario ? 'rgba(192,57,43,0.35)' : 'rgba(42,80,128,0.2)'}`,
+                  background: p.oculto ? 'rgba(100,100,100,0.05)' : p.prioritario ? 'rgba(192,57,43,0.08)' : 'rgba(255,255,255,0.03)',
+                  border: `1px solid ${p.oculto ? 'rgba(100,100,100,0.2)' : p.prioritario ? 'rgba(192,57,43,0.35)' : 'rgba(42,80,128,0.2)'}`,
                   borderLeft: `4px solid ${p.prioritario ? '#c0392b' : borderColor}`,
                   borderRadius: 10, padding: '1rem 1.2rem', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: '0.75rem',
@@ -315,6 +430,7 @@ export function PedidosPage() {
                 <img className="pedido-card-img" src={p.recambioImagen} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
               )}
               {p.prioritario && <span className="urgente-tag" style={{ fontSize: 10, color: '#ff6b6b', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
+              {p.oculto && <span style={{ fontSize: 10, color: '#888', fontWeight: 700, flexShrink: 0 }}>OCULTO</span>}
                 <div className="pedido-card-info" style={{ flex: 1, minWidth: 140 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
                   <div className="pedido-card-meta" style={{ fontSize: 12, color: '#7aade0' }}>

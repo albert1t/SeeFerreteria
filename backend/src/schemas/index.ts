@@ -88,6 +88,12 @@ export const pedidoEstadoSchema = z.object({
   estado: z.enum(['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado']),
 });
 
+export const pedidoUpdateSchema = z.object({
+  cantidad: z.number().int().positive().optional(),
+  plazoDeseado: z.string().max(50).optional().nullable(),
+  observaciones: z.string().optional().nullable(),
+});
+
 export const recambiosQuerySchema = z.object({
   panel: z.string().optional(),
   busqueda: z.string().optional(),
@@ -100,6 +106,7 @@ export const pedidosQuerySchema = z.object({
   fecha: z.string().optional(),
   orden: z.enum(['reciente', 'antiguo']).optional(),
   incluirFinalizados: z.enum(['true', 'false']).optional(),
+  incluirOcultos: z.enum(['true', 'false']).optional(),
 });
 
 export const userIdSchema = z.object({

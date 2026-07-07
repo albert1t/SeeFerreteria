@@ -67,6 +67,7 @@ export interface Pedido {
   estado: PedidoEstado;
   prioritario: boolean;
   observaciones: string | null;
+  oculto: boolean;
   fechaSolicitud: string;
   fechaActualizacion: string;
   recambioRef?: string;
