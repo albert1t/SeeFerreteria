@@ -110,6 +110,10 @@ export async function loginMicrosoft(idToken: string): Promise<{ user: User; tok
     user = await usersRepo.findByUsernameAll(username);
   }
 
+  if (!user) {
+    throw new AppError(500, 'No se pudo obtener el usuario de Microsoft');
+  }
+
   const { passwordHash: _, ...safeUser } = user;
   return buildTokenResponse(safeUser);
 }
