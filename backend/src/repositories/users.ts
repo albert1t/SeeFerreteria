@@ -37,6 +37,20 @@ export async function findByUsername(username: string): Promise<UserWithHash | n
   return { ...mapUser(row), passwordHash: row.passwordHash as string };
 }
 
+export async function findByUsernameAll(username: string): Promise<UserWithHash | null> {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input('username', sql.NVarChar(50), username)
+    .query(`
+      SELECT id, username, passwordHash, name, role, isActive, permissions
+      FROM Users WHERE username = @username
+    `);
+  const row = result.recordset[0];
+  if (!row) return null;
+  return { ...mapUser(row), passwordHash: row.passwordHash as string };
+}
+
 export async function findById(id: number): Promise<User | null> {
   const pool = await getPool();
   const result = await pool

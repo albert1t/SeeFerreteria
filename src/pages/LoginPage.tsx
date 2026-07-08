@@ -8,13 +8,10 @@ import { ApiError } from '../api/client';
 const msalScopes = ['openid', 'profile', 'email'];
 
 export function LoginPage() {
-  const { user, isLoading, login, register, loginMicrosoft } = useAuth();
+  const { user, isLoading, login, loginMicrosoft } = useAuth();
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [username, setUsername] = useState('');
-  const [name, setName] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -74,17 +71,7 @@ export function LoginPage() {
     setError('');
 
     try {
-      if (mode === 'register') {
-        if (!name.trim()) {
-          throw new Error('El nombre es obligatorio');
-        }
-        if (password !== confirmPassword) {
-          throw new Error('Las contraseñas no coinciden');
-        }
-        await register(username, name, password);
-      } else {
-        await login(username, password);
-      }
+      await login(username, password);
       navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : String(err || 'Error en la acción'));
@@ -156,48 +143,20 @@ export function LoginPage() {
               <label style={labelStyle}>Usuario</label>
               <input style={inputStyle} value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Introduce tu usuario" autoFocus />
             </div>
-            {mode === 'register' && (
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={labelStyle}>Nombre</label>
-                <input style={inputStyle} value={name} onChange={(e) => setName(e.target.value)} placeholder="Tu nombre completo" />
-              </div>
-            )}
             <div style={{ marginBottom: '1.25rem' }}>
               <label style={labelStyle}>Contraseña</label>
               <input style={inputStyle} type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" />
             </div>
-            {mode === 'register' && (
-              <div style={{ marginBottom: '1.5rem' }}>
-                <label style={labelStyle}>Confirmar contraseña</label>
-                <input style={inputStyle} type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="••••••••" />
-              </div>
-            )}
             {error && <div style={{ color: '#ff6b6b', fontSize: 13, marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
             <button
               type="submit"
               style={{ ...btnStyle('primary'), width: '100%', justifyContent: 'center', padding: '12px', fontSize: 15 }}
               disabled={submitting || isLoading}
             >
-              {mode === 'register' ? (submitting ? 'Registrando...' : 'Registrarse') : (submitting ? 'Accediendo...' : 'Acceder')}
+              {submitting ? 'Accediendo...' : 'Acceder'}
             </button>
           </form>
-          <div style={{ marginTop: '1rem', textAlign: 'center', color: '#9bb2d3', fontSize: 13 }}>
-            {mode === 'register' ? (
-              <span>
-                ¿Ya tienes cuenta?{' '}
-                <button type="button" style={{ color: '#4db8ff', background: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => setMode('login')}>
-                  Inicia sesión
-                </button>
-              </span>
-            ) : (
-              <span>
-                ¿No tienes cuenta?{' '}
-                <button type="button" style={{ color: '#4db8ff', background: 'transparent', border: 'none', cursor: 'pointer' }} onClick={() => setMode('register')}>
-                  Regístrate
-                </button>
-              </span>
-            )}
-          </div>
+
         </div>
       </div>
     </div>
