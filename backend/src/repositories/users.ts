@@ -2,12 +2,26 @@ import { getPool, sql } from '../config/db.js';
 import type { User, UserWithHash, AllowedEmail, UserRole, Permissions } from '../types/index.js';
 import { getDefaultPermissions } from '../middleware/auth.js';
 
+function deepMergePerms(stored: Partial<Permissions>, defaults: Permissions): Permissions {
+  const result = { ...defaults };
+  for (const key of Object.keys(defaults) as (keyof Permissions)[]) {
+    if (key === 'admin' && typeof stored.admin === 'boolean') {
+      result.admin = stored.admin;
+    } else if (key !== 'admin' && stored[key] && typeof stored[key] === 'object') {
+      result[key] = { ...defaults[key], ...stored[key] } as Permissions[typeof key];
+    }
+  }
+  return result;
+}
+
 function parsePermissions(json: string | null | undefined, role: UserRole): Permissions {
-  if (!json) return getDefaultPermissions(role);
+  const defaults = getDefaultPermissions(role);
+  if (!json) return defaults;
   try {
-    return JSON.parse(json) as Permissions;
+    const stored = JSON.parse(json) as Partial<Permissions>;
+    return deepMergePerms(stored, defaults);
   } catch {
-    return getDefaultPermissions(role);
+    return defaults;
   }
 }
 
