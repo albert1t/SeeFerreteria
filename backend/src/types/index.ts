@@ -14,6 +14,12 @@ export interface Permissions {
     edit: boolean;
     delete: boolean;
   };
+  familias: {
+    create: boolean;
+    view: boolean;
+    edit: boolean;
+    delete: boolean;
+  };
 }
 
 export interface User {

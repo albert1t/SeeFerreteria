@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
 import type { WheelEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { Modal } from '../components/Modal';
 import { FichaTecnica } from '../components/FichaTecnica';
@@ -114,6 +114,10 @@ export function AlmacenPage() {
   const [targetPanelCubetas, setTargetPanelCubetas] = useState<any[]>([]);
   const [loadingPickPanel, setLoadingPickPanel] = useState(false);
   const [swapLoading, setSwapLoading] = useState<'swap' | 'move' | null>(null);
+  const [showFamiliasModal, setShowFamiliasModal] = useState(false);
+  const [editandoFamilia, setEditandoFamilia] = useState<{ id: number; nombre: string; descripcion: string } | null>(null);
+  const [nuevaFamiliaNombre, setNuevaFamiliaNombre] = useState('');
+  const [nuevaFamiliaDesc, setNuevaFamiliaDesc] = useState('');
 
   useEffect(() => {
     if (!swapLoading) return;
@@ -150,6 +154,24 @@ export function AlmacenPage() {
   const { data: familias = [], isLoading: loadingCatalogos } = useQuery({
     queryKey: ['catalogos', 'familias'],
     queryFn: catalogosApi.getFamilias,
+  });
+
+  const createFamiliaMut = useMutation({
+    mutationFn: ({ nombre, descripcion }: { nombre: string; descripcion?: string | null }) => catalogosApi.createFamilia(nombre, descripcion),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogos', 'familias'] }); showToast('Familia creada', 'success'); setNuevaFamiliaNombre(''); setNuevaFamiliaDesc(''); },
+    onError: (err: Error) => showToast(err.message, 'error'),
+  });
+
+  const updateFamiliaMut = useMutation({
+    mutationFn: ({ id, nombre, descripcion }: { id: number; nombre: string; descripcion?: string | null }) => catalogosApi.updateFamilia(id, nombre, descripcion),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogos', 'familias'] }); showToast('Familia actualizada', 'success'); setEditandoFamilia(null); },
+    onError: (err: Error) => showToast(err.message, 'error'),
+  });
+
+  const deleteFamiliaMut = useMutation({
+    mutationFn: (id: number) => catalogosApi.deleteFamilia(id),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogos', 'familias'] }); showToast('Familia eliminada', 'success'); },
+    onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   type PanelTitleOption = { kind: 'familia'; id: number; label: string };
@@ -232,6 +254,80 @@ export function AlmacenPage() {
 
   return (
     <>
+      <Modal open={showFamiliasModal} onClose={() => setShowFamiliasModal(false)} title="Gestión de Familias" wide>
+        <div style={{ minWidth: 400 }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'end' }}>
+            <div>
+              <label style={{ color: '#7aade0', fontSize: 12, display: 'block', marginBottom: 4 }}>Nombre</label>
+              <input value={nuevaFamiliaNombre} onChange={(e) => setNuevaFamiliaNombre(e.target.value)}
+                style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)' }} />
+            </div>
+            <div>
+              <label style={{ color: '#7aade0', fontSize: 12, display: 'block', marginBottom: 4 }}>Descripción</label>
+              <input value={nuevaFamiliaDesc} onChange={(e) => setNuevaFamiliaDesc(e.target.value)}
+                style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)' }} />
+            </div>
+            <button type="button" disabled={!nuevaFamiliaNombre || createFamiliaMut.isPending}
+              style={{ ...btnStyle('primary'), padding: '8px 16px' }}
+              onClick={() => createFamiliaMut.mutate({ nombre: nuevaFamiliaNombre, descripcion: nuevaFamiliaDesc || null })}>
+              {createFamiliaMut.isPending ? '...' : 'Añadir'}
+            </button>
+          </div>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+            <thead>
+              <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
+                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#7aade0', fontWeight: 600 }}>Nombre</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#7aade0', fontWeight: 600 }}>Descripción</th>
+                {can('familias', 'delete') && <th style={{ padding: '10px 12px', textAlign: 'left', color: '#7aade0', fontWeight: 600 }}>Acciones</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {familias.map((f) => (
+                <tr key={f.id} style={{ borderTop: '1px solid rgba(77,184,255,0.1)' }}>
+                  <td style={{ padding: '10px 12px' }}>
+                    {editandoFamilia?.id === f.id ? (
+                      <input value={editandoFamilia.nombre} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, nombre: e.target.value })}
+                        style={{ padding: '6px 10px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)', width: '100%' }} />
+                    ) : f.nombre}
+                  </td>
+                  <td style={{ padding: '10px 12px' }}>
+                    {editandoFamilia?.id === f.id ? (
+                      <input value={editandoFamilia.descripcion} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, descripcion: e.target.value })}
+                        style={{ padding: '6px 10px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)', width: '100%' }} />
+                    ) : (f.descripcion || '—')}
+                  </td>
+                  {can('familias', 'delete') && (
+                    <td style={{ padding: '10px 12px' }}>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        {editandoFamilia?.id === f.id ? (
+                          <>
+                            <button type="button" style={btnStyle('primary')} disabled={updateFamiliaMut.isPending || !editandoFamilia.nombre}
+                              onClick={() => updateFamiliaMut.mutate({ id: f.id, nombre: editandoFamilia.nombre, descripcion: editandoFamilia.descripcion || null })}>
+                              Guardar
+                            </button>
+                            <button type="button" style={btnStyle('ghost')} onClick={() => setEditandoFamilia(null)}>Cancelar</button>
+                          </>
+                        ) : (
+                          <>
+                            {can('familias', 'edit') && (
+                              <button type="button" style={btnStyle('ghost')} onClick={() => setEditandoFamilia({ id: f.id, nombre: f.nombre, descripcion: f.descripcion || '' })}>Editar</button>
+                            )}
+                            {can('familias', 'delete') && (
+                              <button type="button" style={btnStyle('danger')} disabled={deleteFamiliaMut.isPending}
+                                onClick={() => deleteFamiliaMut.mutate(f.id)}>Eliminar</button>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Modal>
+
       {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo recambio...'} />}
       <div className="almacen-page-root" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
       <div className="almacen-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexShrink: 0 }}>
@@ -241,6 +337,11 @@ export function AlmacenPage() {
             {!panelSeleccionado && can('recambios', 'create') && (
               <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px' }} onClick={() => setCrearRecambio(true)}>
                 + Nuevo Recambio
+              </button>
+            )}
+            {!panelSeleccionado && can('familias', 'edit') && (
+              <button type="button" style={{ ...btnStyle('ghost'), fontSize: 13, padding: '6px 12px', marginLeft: 8 }} onClick={() => setShowFamiliasModal(true)}>
+                Gestionar familias
               </button>
             )}
           </h2>
