@@ -142,6 +142,14 @@ export const updatePermissionsSchema = z.object({
   permissions: permissionsSchema.optional(),
 });
 
+export const createUserSchema = z.object({
+  username: z.string().min(1, 'Usuario requerido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+  name: z.string().min(1, 'Nombre requerido'),
+  role: z.enum(['admin', 'user', 'viewer', 'operario']),
+  permissions: permissionsSchema.optional(),
+});
+
 export const allowedEmailSchema = z.object({
   email: z.string().email(),
   role: z.enum(['admin', 'user', 'viewer', 'operario']),

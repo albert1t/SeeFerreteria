@@ -96,6 +96,8 @@ export function UsersPage() {
   const [newEmail, setNewEmail] = useState('');
   const [newEmailRole, setNewEmailRole] = useState<UserRole>('user');
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [createForm, setCreateForm] = useState({ username: '', password: '', name: '', role: 'user' as UserRole });
 
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['users'],
@@ -121,6 +123,18 @@ export function UsersPage() {
       showToast('Usuario actualizado', 'success');
       setEditingUser(null);
       setEditingPermissions(null);
+    },
+    onError: (err: Error) => showToast(err.message, 'error'),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: (data: { username: string; password: string; name: string; role: UserRole }) =>
+      usersApi.createUser(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      showToast('Usuario creado', 'success');
+      setShowCreate(false);
+      setCreateForm({ username: '', password: '', name: '', role: 'user' });
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
@@ -183,7 +197,10 @@ export function UsersPage() {
 
   return (
     <div style={{ padding: '1.5rem', color: colors.text }}>
-      <h2 style={{ margin: '0 0 1.5rem', fontSize: 22 }}>Gestión de Usuarios</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+        <h2 style={{ margin: 0, fontSize: 22 }}>Gestión de Usuarios</h2>
+        <button type="button" onClick={() => setShowCreate(true)} style={btnStyle('primary')}>+ Nuevo usuario</button>
+      </div>
 
       {usersLoading && <div style={{ color: colors.textMuted, marginBottom: '1rem' }}>Cargando usuarios...</div>}
 
@@ -250,6 +267,43 @@ export function UsersPage() {
           </table>
         </div>
       )}
+
+      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Crear usuario">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 320 }}>
+          <div>
+            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Usuario</label>
+            <input value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Nombre</label>
+            <input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Contraseña</label>
+            <input type="password" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
+          </div>
+          <div>
+            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Rol</label>
+            <select value={createForm.role} onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as UserRole })}
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}` }}>
+              <option value="admin">Administrador</option>
+              <option value="operario">Operario</option>
+              <option value="user">Usuario</option>
+              <option value="viewer">Solo lectura</option>
+            </select>
+          </div>
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+            <button style={btnStyle('ghost')} onClick={() => setShowCreate(false)}>Cancelar</button>
+            <button style={btnStyle('primary')} disabled={!createForm.username || !createForm.password || !createForm.name || createMutation.isPending}
+              onClick={() => createMutation.mutate(createForm)}>
+              {createMutation.isPending ? 'Creando...' : 'Crear'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <Modal open={!!deletingUser} onClose={() => setDeletingUser(null)} title="Confirmar eliminación">
         <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>

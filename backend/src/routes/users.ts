@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validate.js';
+import bcrypt from 'bcrypt';
 import {
   userIdSchema,
+  createUserSchema,
   updateRoleSchema,
   updateActiveSchema,
   updatePermissionsSchema,
@@ -11,6 +13,7 @@ import {
 } from '../schemas/index.js';
 import * as usersRepo from '../repositories/users.js';
 import { AppError } from '../middleware/errorHandler.js';
+import { getDefaultPermissions } from '../middleware/auth.js';
 
 const router = Router();
 
@@ -20,6 +23,21 @@ router.get('/', async (_req, res, next) => {
   try {
     const users = await usersRepo.findAll();
     res.json({ users });
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/', validateBody(createUserSchema), async (req, res, next) => {
+  try {
+    const { username, password, name, role, permissions } = req.body;
+    const passwordHash = await bcrypt.hash(password, 10);
+    const perms = permissions ?? getDefaultPermissions(role);
+    const created = await usersRepo.createUser(username, passwordHash, name, role, perms);
+    if (!created) {
+      throw new AppError(409, 'El usuario ya existe');
+    }
+    res.status(201).json({ ok: true });
   } catch (err) {
     next(err);
   }

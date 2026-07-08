@@ -5,6 +5,13 @@ export function getUsers() {
   return apiFetch<{ users: User[] }>('/api/users');
 }
 
+export function createUser(data: { username: string; password: string; name: string; role: UserRole; permissions?: Permissions }) {
+  return apiFetch<{ ok: boolean }>('/api/users', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
 export function updateUserRoleAndPermissions(
   id: number,
   role: UserRole,
