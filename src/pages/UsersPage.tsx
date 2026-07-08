@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
+import { Modal } from '../components/Modal';
 import { badgeStyle, btnStyle, colors } from '../styles/theme';
 import * as usersApi from '../api/users';
 import type { User, UserRole, Permissions } from '../types';
@@ -94,6 +95,7 @@ export function UsersPage() {
   const [editingPermissions, setEditingPermissions] = useState<Permissions | null>(null);
   const [newEmail, setNewEmail] = useState('');
   const [newEmailRole, setNewEmailRole] = useState<UserRole>('user');
+  const [deletingUser, setDeletingUser] = useState<User | null>(null);
 
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['users'],
@@ -148,6 +150,16 @@ export function UsersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['allowed-emails'] });
       showToast('Correo actualizado', 'success');
+    },
+    onError: (err: Error) => showToast(err.message, 'error'),
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id: number) => usersApi.deleteUser(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      showToast('Usuario eliminado', 'success');
+      setDeletingUser(null);
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
@@ -222,6 +234,14 @@ export function UsersPage() {
                       >
                         {user.isActive ? 'Desactivar' : 'Activar'}
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeletingUser(user)}
+                        disabled={deleteUserMutation.isPending}
+                        style={btnStyle('danger')}
+                      >
+                        Eliminar
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -230,6 +250,24 @@ export function UsersPage() {
           </table>
         </div>
       )}
+
+      <Modal open={!!deletingUser} onClose={() => setDeletingUser(null)} title="Confirmar eliminación">
+        <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
+          <p style={{ fontSize: 14, color: '#c8ddf0', marginBottom: '1.25rem' }}>
+            ¿Eliminar el usuario <strong>{deletingUser?.name}</strong> ({deletingUser?.username})? Esta acción no se puede deshacer.
+          </p>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
+            <button style={btnStyle('ghost')} onClick={() => setDeletingUser(null)}>Cancelar</button>
+            <button
+              style={btnStyle('danger')}
+              disabled={deleteUserMutation.isPending}
+              onClick={() => deletingUser && deleteUserMutation.mutate(deletingUser.id)}
+            >
+              {deleteUserMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       {editingUser && editingPermissions && (
         <div style={{ background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, padding: '1.5rem', marginBottom: '2rem' }}>

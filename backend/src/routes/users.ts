@@ -79,6 +79,19 @@ router.patch(
   },
 );
 
+router.delete('/:id', validateParams(userIdSchema), async (req, res, next) => {
+  try {
+    const { id } = req.params as unknown as { id: number };
+    const deleted = await usersRepo.deleteUser(id);
+    if (!deleted) {
+      throw new AppError(404, 'Usuario no encontrado');
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // Allowed emails for MSAL
 router.get('/allowed-emails', async (_req, res, next) => {
   try {
