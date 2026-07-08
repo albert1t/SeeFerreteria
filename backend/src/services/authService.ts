@@ -85,19 +85,15 @@ export async function loginMicrosoft(idToken: string): Promise<{ user: User; tok
 
   const name = (payload.name || username) as string;
 
-  // Check allowed emails
+  // Check whitelist — solo emails autorizados pueden acceder
   const allowed = await usersRepo.findAllowedEmailByEmail(username);
-  if (allowed && !allowed.isActive) {
-    throw new AppError(403, 'Este correo no tiene permiso para acceder');
+  if (!allowed || !allowed.isActive) {
+    throw new AppError(403, 'No tienes permiso para acceder');
   }
 
-  let user = await usersRepo.findByUsername(username);
+  let user = await usersRepo.findByUsernameAll(username);
 
   if (!user) {
-    if (!allowed) {
-      throw new AppError(403, 'Este correo no está autorizado para acceder');
-    }
-
     const passwordHash = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
     const role = allowed.role;
     const permissions = allowed.permissions ?? getDefaultPermissions(role);
@@ -105,10 +101,13 @@ export async function loginMicrosoft(idToken: string): Promise<{ user: User; tok
     if (!created) {
       throw new AppError(409, 'El usuario ya existe');
     }
-    user = await usersRepo.findByUsername(username);
+    user = await usersRepo.findByUsernameAll(username);
     if (!user) {
       throw new AppError(500, 'No se pudo crear el usuario de Microsoft');
     }
+  } else if (!user.isActive) {
+    await usersRepo.updateActive(user.id, true);
+    user = await usersRepo.findByUsernameAll(username);
   }
 
   const { passwordHash: _, ...safeUser } = user;
