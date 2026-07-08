@@ -7,6 +7,7 @@ import { LoginPage } from './pages/LoginPage';
 import { AlmacenPage } from './pages/AlmacenPage';
 import { PedidosPage } from './pages/PedidosPage';
 import { UsersPage } from './pages/UsersPage';
+import { DatosPage } from './pages/DatosPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -61,6 +62,7 @@ export default function App() {
                 <Route index element={<AlmacenPage />} />
                 <Route path="pedidos" element={<PedidosPage />} />
                 <Route path="usuarios" element={<AdminRoute><UsersPage /></AdminRoute>} />
+                <Route path="datos" element={<DatosPage />} />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
