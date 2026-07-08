@@ -165,11 +165,30 @@ export async function updateActive(id: number, isActive: boolean): Promise<boole
 
 export async function deleteUser(id: number): Promise<boolean> {
   const pool = await getPool();
-  const result = await pool
-    .request()
-    .input('id', sql.Int, id)
-    .query('DELETE FROM Users WHERE id = @id');
-  return result.rowsAffected[0] > 0;
+  const transaction = pool.transaction();
+  await transaction.begin();
+  try {
+    await transaction
+      .request()
+      .input('id', sql.Int, id)
+      .query('DELETE FROM PedidosEstadoHistorial WHERE usuarioId = @id');
+
+    await transaction
+      .request()
+      .input('id', sql.Int, id)
+      .query('DELETE FROM Pedidos WHERE solicitanteId = @id');
+
+    const result = await transaction
+      .request()
+      .input('id', sql.Int, id)
+      .query('DELETE FROM Users WHERE id = @id');
+
+    await transaction.commit();
+    return result.rowsAffected[0] > 0;
+  } catch (err) {
+    await transaction.rollback();
+    throw err;
+  }
 }
 
 // Allowed emails for MSAL
