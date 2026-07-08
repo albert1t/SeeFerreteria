@@ -163,6 +163,15 @@ export async function updateActive(id: number, isActive: boolean): Promise<boole
   return result.rowsAffected[0] > 0;
 }
 
+export async function deleteUser(id: number): Promise<boolean> {
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input('id', sql.Int, id)
+    .query('DELETE FROM Users WHERE id = @id');
+  return result.rowsAffected[0] > 0;
+}
+
 // Allowed emails for MSAL
 export async function findAllowedEmails(): Promise<AllowedEmail[]> {
   const pool = await getPool();

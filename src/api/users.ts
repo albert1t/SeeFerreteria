@@ -50,6 +50,12 @@ export function updateAllowedEmail(
   });
 }
 
+export function deleteUser(id: number) {
+  return apiFetch<{ ok: boolean }>(`/api/users/${id}`, {
+    method: 'DELETE',
+  });
+}
+
 export function deleteAllowedEmail(id: number) {
   return apiFetch<{ ok: boolean }>(`/api/users/allowed-emails/${id}`, {
     method: 'DELETE',
