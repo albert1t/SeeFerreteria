@@ -135,6 +135,12 @@ const permissionsSchema = z.object({
     edit: z.boolean(),
     delete: z.boolean(),
   }),
+  familias: z.object({
+    create: z.boolean(),
+    view: z.boolean(),
+    edit: z.boolean(),
+    delete: z.boolean(),
+  }),
 });
 
 export const updatePermissionsSchema = z.object({

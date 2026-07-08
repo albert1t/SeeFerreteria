@@ -19,21 +19,25 @@ const DEFAULT_PERMISSIONS: Record<UserRole, Permissions> = {
     admin: true,
     pedidos: { create: true, view: true, edit: true, delete: true },
     recambios: { create: true, view: true, edit: true, delete: true },
+    familias: { create: true, view: true, edit: true, delete: true },
   },
   operario: {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false },
+    familias: { create: false, view: false, edit: false, delete: false },
   },
   user: {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false },
+    familias: { create: false, view: false, edit: false, delete: false },
   },
   viewer: {
     admin: false,
     pedidos: { create: false, view: true, edit: false, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false },
+    familias: { create: false, view: false, edit: false, delete: false },
   },
 };
 
@@ -44,7 +48,7 @@ function PermissionsEditor({
   permissions: Permissions;
   onChange: (p: Permissions) => void;
 }) {
-  const toggle = (resource: 'pedidos' | 'recambios', action: keyof Permissions['pedidos']) => {
+  const toggle = (resource: 'pedidos' | 'recambios' | 'familias', action: 'create' | 'view' | 'edit' | 'delete') => {
     onChange({
       ...permissions,
       [resource]: {
@@ -66,10 +70,12 @@ function PermissionsEditor({
       </label>
       {!permissions.admin && (
         <>
-          {(['pedidos', 'recambios'] as const).map((resource) => (
+          {(['pedidos', 'recambios', 'familias'] as const).map((resource) => {
+            const actions = ['create', 'view', 'edit', 'delete'] as const;
+            return (
             <div key={resource} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
               <span style={{ width: 80, color: colors.textMuted, textTransform: 'capitalize' }}>{resource}</span>
-              {(['create', 'view', 'edit', 'delete'] as const).map((action) => (
+              {actions.map((action) => (
                 <label key={action} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                   <input
                     type="checkbox"
@@ -80,7 +86,8 @@ function PermissionsEditor({
                 </label>
               ))}
             </div>
-          ))}
+            );
+          })}
         </>
       )}
     </div>
