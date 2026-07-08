@@ -1,12 +1,14 @@
 export class ApiError extends Error {
   status: number;
   code?: string;
+  details?: Record<string, string[]>;
 
-  constructor(status: number, message: string, code?: string) {
+  constructor(status: number, message: string, code?: string, details?: Record<string, string[]>) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
     this.code = code;
+    this.details = details;
   }
 }
 
@@ -41,7 +43,7 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new ApiError(res.status, body.error || 'Error de servidor', body.code);
+    throw new ApiError(res.status, body.error || 'Error de servidor', body.code, body.details);
   }
 
   if (res.status === 204) return undefined as T;

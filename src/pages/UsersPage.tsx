@@ -6,6 +6,7 @@ import { Modal } from '../components/Modal';
 import { badgeStyle, btnStyle, colors } from '../styles/theme';
 import * as usersApi from '../api/users';
 import type { User, UserRole, Permissions } from '../types';
+import { ApiError } from '../api/client';
 
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Administrador',
@@ -105,6 +106,7 @@ export function UsersPage() {
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [showCreate, setShowCreate] = useState(false);
   const [createForm, setCreateForm] = useState({ username: '', password: '', name: '', role: 'user' as UserRole });
+  const [createError, setCreateError] = useState('');
 
   const { data: users, isLoading: usersLoading } = useQuery({
     queryKey: ['users'],
@@ -142,8 +144,12 @@ export function UsersPage() {
       showToast('Usuario creado', 'success');
       setShowCreate(false);
       setCreateForm({ username: '', password: '', name: '', role: 'user' });
+      setCreateError('');
     },
-    onError: (err: Error) => showToast(err.message, 'error'),
+    onError: (err: ApiError) => {
+      const msgs = err.details ? Object.entries(err.details).map(([k, v]) => `${k}: ${v.join(', ')}`).join('; ') : null;
+      setCreateError(msgs || err.message);
+    },
   });
 
   const activeMutation = useMutation({
@@ -288,7 +294,7 @@ export function UsersPage() {
               style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
           </div>
           <div>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Contraseña</label>
+            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Contraseña (mín. 6 caracteres)</label>
             <input type="password" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
               style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
           </div>
@@ -302,9 +308,10 @@ export function UsersPage() {
               <option value="viewer">Solo lectura</option>
             </select>
           </div>
+          {createError && <div style={{ color: '#ff6b6b', fontSize: 13, textAlign: 'center' }}>{createError}</div>}
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
             <button style={btnStyle('ghost')} onClick={() => setShowCreate(false)}>Cancelar</button>
-            <button style={btnStyle('primary')} disabled={!createForm.username || !createForm.password || !createForm.name || createMutation.isPending}
+            <button style={btnStyle('primary')} disabled={!createForm.username || !createForm.password || !createForm.name || createForm.password.length < 6 || createMutation.isPending}
               onClick={() => createMutation.mutate(createForm)}>
               {createMutation.isPending ? 'Creando...' : 'Crear'}
             </button>
