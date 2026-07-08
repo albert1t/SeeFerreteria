@@ -1,9 +1,14 @@
 import { apiFetch, BASE_URL } from './client';
 import type { Pedido, Recambio, RecambioFormData } from '../types';
 
-export function searchRecambios(busqueda: string) {
+export function searchRecambios(busqueda: string, incluirOcultos = false) {
   const params = new URLSearchParams({ busqueda });
+  if (incluirOcultos) params.set('incluirOcultos', 'true');
   return apiFetch<Recambio[]>(`/api/recambios?${params}`);
+}
+
+export function getAllRecambios() {
+  return apiFetch<Recambio[]>('/api/recambios?incluirOcultos=true');
 }
 
 export function getRecambio(id: number) {

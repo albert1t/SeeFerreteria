@@ -18,7 +18,7 @@ const navBtn: React.CSSProperties = {
 };
 
 export function Layout() {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin, can } = useAuth();
   const [qrOpen, setQrOpen] = useState(false);
   const [fichaRecambio, setFichaRecambio] = useState<Recambio | null>(null);
   const [crearRecambio, setCrearRecambio] = useState(false);
@@ -107,6 +107,11 @@ export function Layout() {
               Usuarios
             </NavLink>
           )}
+          {can('recambios', 'edit') && (
+            <NavLink to="/datos" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}) })}>
+              Datos
+            </NavLink>
+          )}
         </nav>
 
         <div className="desktop-only" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -152,6 +157,14 @@ export function Layout() {
             ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}),
           })}>
             Usuarios
+          </NavLink>
+        )}
+        {can('recambios', 'edit') && (
+          <NavLink to="/datos" onClick={closeMenu} style={({ isActive }) => ({
+            ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
+            ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}),
+          })}>
+            Datos
           </NavLink>
         )}
         <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(42,80,128,0.5)', paddingTop: 12 }}>
