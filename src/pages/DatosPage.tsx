@@ -49,6 +49,7 @@ export function DatosPage() {
   const queryClient = useQueryClient();
   const [busqueda, setBusqueda] = useState('');
   const [showCrear, setShowCrear] = useState(false);
+  const [editandoRecambio, setEditandoRecambio] = useState<Recambio | null>(null);
   const [editando, setEditando] = useState<Record<string, string>>({});
   const [celdaActiva, setCeldaActiva] = useState<{ id: number; field: keyof Recambio } | null>(null);
 
@@ -239,7 +240,11 @@ export function DatosPage() {
                     <td key={String(f.key)} style={CELL_STYLES}>{renderCell(r, f.key)}</td>
                   ))}
                   {puedeEditar && (
-                    <td style={CELL_STYLES}>
+                    <td style={{ ...CELL_STYLES, display: 'flex', gap: 4 }}>
+                      <button type="button" style={{ ...btnStyle('primary'), fontSize: 11, padding: '2px 6px' }}
+                        onClick={() => setEditandoRecambio(r)}>
+                        Editar
+                      </button>
                       <button type="button" style={{ ...btnStyle('danger'), fontSize: 11, padding: '2px 6px' }}
                         disabled={deleteMut.isPending} onClick={() => { if (window.confirm(`¿Eliminar ${r.referenciaCMH}?`)) deleteMut.mutate(r.id); }}>
                         Eliminar
@@ -261,6 +266,19 @@ export function DatosPage() {
           <FormRecambio
             onCancel={() => setShowCrear(false)}
             onSave={() => { setShowCrear(false); queryClient.invalidateQueries({ queryKey: ['recambios', 'all'] }); }}
+          />
+        </Modal>
+      )}
+
+      {editandoRecambio && (
+        <Modal open onClose={() => setEditandoRecambio(null)} title={`Editar ${editandoRecambio.referenciaCMH}`} wide>
+          <FormRecambio
+            recambio={editandoRecambio}
+            onCancel={() => setEditandoRecambio(null)}
+            onSave={() => {
+              setEditandoRecambio(null);
+              queryClient.invalidateQueries({ queryKey: ['recambios', 'all'] });
+            }}
           />
         </Modal>
       )}
