@@ -19,25 +19,25 @@ const DEFAULT_PERMISSIONS: Record<UserRole, Permissions> = {
   admin: {
     admin: true,
     pedidos: { create: true, view: true, edit: true, delete: true },
-    recambios: { create: true, view: true, edit: true, delete: true },
+    recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
     familias: { create: true, view: true, edit: true, delete: true },
   },
   operario: {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false },
+    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
   },
   user: {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false },
+    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
   },
   viewer: {
     admin: false,
     pedidos: { create: false, view: true, edit: false, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false },
+    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
   },
 };
@@ -49,12 +49,13 @@ function PermissionsEditor({
   permissions: Permissions;
   onChange: (p: Permissions) => void;
 }) {
-  const toggle = (resource: 'pedidos' | 'recambios' | 'familias', action: 'create' | 'view' | 'edit' | 'delete') => {
+  const toggle = (resource: 'pedidos' | 'recambios' | 'familias', action: 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage') => {
+    const current = (permissions[resource] as any)[action];
     onChange({
       ...permissions,
       [resource]: {
         ...permissions[resource],
-        [action]: !permissions[resource][action],
+        [action]: !current,
       },
     });
   };
@@ -72,18 +73,21 @@ function PermissionsEditor({
       {!permissions.admin && (
         <>
           {(['pedidos', 'recambios', 'familias'] as const).map((resource) => {
-            const actions = ['create', 'view', 'edit', 'delete'] as const;
+            const actions: ('create' | 'view' | 'edit' | 'delete' | 'viewDataPage')[] =
+              resource === 'recambios'
+                ? ['create', 'view', 'edit', 'delete', 'viewDataPage']
+                : ['create', 'view', 'edit', 'delete'];
             return (
-            <div key={resource} style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+            <div key={resource} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ width: 80, color: colors.textMuted, textTransform: 'capitalize' }}>{resource}</span>
               {actions.map((action) => (
                 <label key={action} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
                   <input
                     type="checkbox"
-                    checked={permissions[resource][action]}
+                    checked={(permissions[resource] as any)[action]}
                     onChange={() => toggle(resource, action)}
                   />
-                  <span style={{ textTransform: 'capitalize' }}>{action}</span>
+                  <span style={{ textTransform: 'capitalize' }}>{action === 'viewDataPage' ? 'Ver Datos' : action}</span>
                 </label>
               ))}
             </div>

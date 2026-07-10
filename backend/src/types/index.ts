@@ -13,6 +13,7 @@ export interface Permissions {
     view: boolean;
     edit: boolean;
     delete: boolean;
+    viewDataPage: boolean;
   };
   familias: {
     create: boolean;
