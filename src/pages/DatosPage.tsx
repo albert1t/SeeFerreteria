@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
@@ -36,10 +36,79 @@ const INPUT_STYLES: React.CSSProperties = {
   border: '1px solid #4db8ff', borderRadius: 3, color: '#e8eef6', boxSizing: 'border-box', outline: 'none',
 };
 
+const FILTER_DROPDOWN: React.CSSProperties = {
+  position: 'absolute', top: '100%', left: 0, zIndex: 100,
+  background: '#0f1d30', border: '1px solid rgba(77,184,255,0.3)',
+  borderRadius: 6, padding: 8, minWidth: 180, boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+};
+
+function FilterDropdown({ value, onChange, onClose, field, familias }: {
+  value: string; onChange: (v: string) => void; onClose: () => void;
+  field: string; familias: { id: number; nombre: string }[];
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [onClose]);
+
+  if (field === 'panel') {
+    const panels = Array.from({ length: 25 }, (_, i) => `A${i + 1}`);
+    return (
+      <div ref={ref} style={FILTER_DROPDOWN}>
+        <select value={value} onChange={(e) => { onChange(e.target.value); onClose(); }}
+          style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'rgba(0,0,0,0.3)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.3)', borderRadius: 3, outline: 'none' }} autoFocus>
+          <option value="">Todos</option>
+          {panels.map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
+      </div>
+    );
+  }
+
+  if (field === 'familiaNombre') {
+    return (
+      <div ref={ref} style={FILTER_DROPDOWN}>
+        <select value={value} onChange={(e) => { onChange(e.target.value); onClose(); }}
+          style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'rgba(0,0,0,0.3)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.3)', borderRadius: 3, outline: 'none' }} autoFocus>
+          <option value="">Todas</option>
+          {familias.map((f) => <option key={f.id} value={f.nombre}>{f.nombre}</option>)}
+        </select>
+      </div>
+    );
+  }
+
+  if (field === 'oculto') {
+    const opts = [['', 'Todos'], ['false', 'No'], ['true', 'Sí']];
+    return (
+      <div ref={ref} style={FILTER_DROPDOWN}>
+        {opts.map(([val, label]) => (
+          <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '4px 0', fontSize: 12, color: colors.text, cursor: 'pointer' }}>
+            <input type="radio" name="oculto-filtro" checked={value === val} onChange={() => { onChange(val); onClose(); }}
+              style={{ accentColor: '#4db8ff' }} />
+            {label}
+          </label>
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div ref={ref} style={FILTER_DROPDOWN}>
+      <input placeholder="Filtrar..." value={value} onChange={(e) => onChange(e.target.value)}
+        onKeyDown={(e) => { if (e.key === 'Enter') onClose(); if (e.key === 'Escape') onClose(); }}
+        style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'rgba(0,0,0,0.3)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.3)', borderRadius: 3, outline: 'none', boxSizing: 'border-box' }} autoFocus />
+      <div style={{ fontSize: 10, color: colors.textMuted, marginTop: 4 }}>Enter ↵ cerrar</div>
+    </div>
+  );
+}
+
 function cellValue(r: Recambio, key: keyof Recambio): string {
   const v = r[key];
   if (v === null || v === undefined) return '';
-  if (typeof v === 'boolean') return '';
+  if (typeof v === 'boolean') return v ? 'Sí' : 'No';
   return String(v);
 }
 
@@ -51,6 +120,8 @@ export function DatosPage() {
   const [filtroPanel, setFiltroPanel] = useState('');
   const [filtroFamilia, setFiltroFamilia] = useState<number | ''>('');
   const [filtroOculto, setFiltroOculto] = useState<boolean | null>(null);
+  const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
+  const [filterOpen, setFilterOpen] = useState<string | null>(null);
   const [showCrear, setShowCrear] = useState(false);
   const [editandoRecambio, setEditandoRecambio] = useState<Recambio | null>(null);
   const [editando, setEditando] = useState<Record<string, string>>({});
@@ -104,9 +175,25 @@ export function DatosPage() {
       if (filtroOculto !== null) {
         if (r.oculto !== filtroOculto) return false;
       }
+      for (const [field, filterVal] of Object.entries(columnFilters)) {
+        if (!filterVal) continue;
+        if (field === 'oculto') {
+          const showOculto = filterVal === 'true';
+          if (r.oculto !== showOculto) return false;
+          continue;
+        }
+        const cellText = cellValue(r, field as keyof Recambio).toLowerCase();
+        if (!cellText.includes(filterVal.toLowerCase())) return false;
+      }
       return true;
     });
-  }, [recambios, busqueda, filtroPanel, filtroFamilia, filtroOculto]);
+  }, [recambios, busqueda, filtroPanel, filtroFamilia, filtroOculto, columnFilters]);
+
+  const hasAnyFilter = busqueda || filtroPanel || filtroFamilia !== '' || filtroOculto !== null || Object.values(columnFilters).some(Boolean);
+
+  function clearAllFilters() {
+    setBusqueda(''); setFiltroPanel(''); setFiltroFamilia(''); setFiltroOculto(null); setColumnFilters({});
+  }
 
   function iniciarEdicion(id: number, field: keyof Recambio, currentValue: string) {
     setEditando((prev) => ({ ...prev, [`${id}_${String(field)}`]: currentValue }));
@@ -145,6 +232,10 @@ export function DatosPage() {
       setEditando((prev) => { const n = { ...prev }; delete n[`${id}_${String(field)}`]; return n; });
       setCeldaActiva(null);
     }
+  }
+
+  function handleHeaderClick(field: string) {
+    setFilterOpen((prev) => prev === field ? null : field);
   }
 
   function renderCell(r: Recambio, field: keyof Recambio) {
@@ -226,27 +317,8 @@ export function DatosPage() {
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
             <input placeholder="Buscar en todos los campos..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
               style={{ padding: '5px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12, width: 220 }} />
-            <select value={filtroPanel} onChange={(e) => setFiltroPanel(e.target.value)}
-              style={{ padding: '5px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12 }}>
-              <option value="">Todos los paneles</option>
-              {Array.from({ length: 25 }, (_, i) => `A${i + 1}`).map((p) => (
-                <option key={p} value={p}>{p}</option>
-              ))}
-            </select>
-            <select value={filtroFamilia} onChange={(e) => setFiltroFamilia(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
-              style={{ padding: '5px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12 }}>
-              <option value="">Todas las familias</option>
-              {familias.map((f) => (
-                <option key={f.id} value={f.id}>{f.nombre}</option>
-              ))}
-            </select>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: colors.textMuted, cursor: 'pointer' }}>
-              <input type="checkbox" checked={filtroOculto === true} onChange={(e) => setFiltroOculto(e.target.checked ? true : null)}
-                style={{ accentColor: '#4db8ff' }} />
-              Solo ocultos
-            </label>
-            {(busqueda || filtroPanel || filtroFamilia !== '' || filtroOculto !== null) && (
-              <button type="button" onClick={() => { setBusqueda(''); setFiltroPanel(''); setFiltroFamilia(''); setFiltroOculto(null); }}
+            {hasAnyFilter && (
+              <button type="button" onClick={clearAllFilters}
                 style={{ ...btnStyle('ghost'), fontSize: 11, padding: '3px 8px', color: '#ff6b6b' }}>
                 Limpiar filtros
               </button>
@@ -267,11 +339,34 @@ export function DatosPage() {
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
               <tr style={{ position: 'sticky', top: 0, background: '#0a1628', zIndex: 1 }}>
-                {FIELDS.map((f) => (
-                  <th key={String(f.key)} style={{ padding: '8px', fontSize: 11, color: '#7aade0', fontWeight: 600, textAlign: 'left', whiteSpace: 'nowrap', borderBottom: `1px solid ${colors.border}`, minWidth: f.width }}>
-                    {f.label}
-                  </th>
-                ))}
+                {FIELDS.map((f) => {
+                  const hasFilter = Boolean(columnFilters[String(f.key)]);
+                  return (
+                    <th key={String(f.key)}
+                      onClick={() => handleHeaderClick(String(f.key))}
+                      style={{
+                        padding: '8px', fontSize: 11, color: '#7aade0', fontWeight: 600,
+                        textAlign: 'left', whiteSpace: 'nowrap', borderBottom: `1px solid ${colors.border}`,
+                        minWidth: f.width, cursor: 'pointer', position: 'relative', userSelect: 'none',
+                      }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {f.label}
+                        <span style={{ fontSize: 8, color: hasFilter ? '#4db8ff' : 'rgba(122,173,224,0.3)' }}>
+                          {hasFilter ? '▼' : '▽'}
+                        </span>
+                      </span>
+                      {filterOpen === String(f.key) && (
+                        <FilterDropdown
+                          value={columnFilters[String(f.key)] ?? ''}
+                          onChange={(v) => setColumnFilters((prev) => ({ ...prev, [String(f.key)]: v }))}
+                          onClose={() => setFilterOpen(null)}
+                          field={String(f.key)}
+                          familias={familias}
+                        />
+                      )}
+                    </th>
+                  );
+                })}
                 {puedeEditar && (
                   <th style={{ padding: '8px', fontSize: 11, color: '#7aade0', fontWeight: 600, borderBottom: `1px solid ${colors.border}`, minWidth: 60 }}>Acción</th>
                 )}
