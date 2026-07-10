@@ -98,6 +98,7 @@ export const recambiosQuerySchema = z.object({
   panel: z.string().optional(),
   busqueda: z.string().optional(),
   incluirOcultos: z.enum(['true', 'false']).optional(),
+  preview: z.enum(['true', 'false']).optional(),
 });
 
 export const pedidosQuerySchema = z.object({

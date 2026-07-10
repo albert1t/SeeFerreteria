@@ -1,7 +1,7 @@
 import * as recambiosRepo from '../repositories/recambios.js';
 import { AppError } from '../middleware/errorHandler.js';
 import * as xlsx from 'xlsx';
-import type { Recambio } from '../types/index.js';
+import type { Recambio, RecambioPreview } from '../types/index.js';
 import * as catalogosRepo from '../repositories/catalogos.js';
 
 export async function listRecambios(filters: {
@@ -10,6 +10,10 @@ export async function listRecambios(filters: {
   incluirOcultos?: boolean;
 }): Promise<Recambio[]> {
   return recambiosRepo.findAll(filters);
+}
+
+export async function getPreview(incluirOcultos = false): Promise<RecambioPreview[]> {
+  return recambiosRepo.findPreview(incluirOcultos);
 }
 
 export async function getRecambio(id: number): Promise<Recambio> {
@@ -46,10 +50,15 @@ async function validateUbicacion(panel: string, col: number, row: number, exclud
   }
 }
 
-export async function createRecambio(data: Parameters<typeof recambiosRepo.create>[0]): Promise<Recambio> {
-  const existingRef = await recambiosRepo.findByReferencia(data.referenciaCMH);
-  if (existingRef) {
-    throw new AppError(409, 'La referencia CMH ya existe');
+export async function createRecambio(
+  data: Parameters<typeof recambiosRepo.create>[0],
+  skipDupeCheck = false,
+): Promise<Recambio> {
+  if (!skipDupeCheck) {
+    const existingRef = await recambiosRepo.findByReferencia(data.referenciaCMH);
+    if (existingRef) {
+      throw new AppError(409, 'La referencia CMH ya existe');
+    }
   }
   await validateUbicacion(data.panel, data.col, data.row);
   return recambiosRepo.create({
@@ -113,9 +122,12 @@ export async function swapPositions(id1: number, id2: number): Promise<{ r1: Rec
   if (!r2) throw new AppError(404, `Recambio ${id2} no encontrado`);
 
   await recambiosRepo.swapPositions(id1, id2);
-  const updated1 = await recambiosRepo.findById(id1);
-  const updated2 = await recambiosRepo.findById(id2);
-  return { r1: updated1!, r2: updated2! };
+
+  const tmpPanel = r1.panel, tmpCol = r1.col, tmpRow = r1.row;
+  r1.panel = r2.panel; r1.col = r2.col; r1.row = r2.row;
+  r2.panel = tmpPanel; r2.col = tmpCol; r2.row = tmpRow;
+
+  return { r1, r2 };
 }
 
 export async function getPanelOcupacion(panel: string) {
@@ -126,31 +138,49 @@ export async function importarDesdeExcel(buffer: Buffer): Promise<{ total: numbe
   const workbook = xlsx.read(buffer, { type: 'buffer' });
   const familiasDB = await catalogosRepo.getFamilias();
 
+  // First pass: collect all references to batch-check duplicates
+  const allRows: { sheetName: string; row: Record<string, any> }[] = [];
+  for (const sheetName of workbook.SheetNames) {
+    const worksheet = workbook.Sheets[sheetName];
+    const rows = xlsx.utils.sheet_to_json<Record<string, any>>(worksheet);
+    rows.forEach((row) => allRows.push({ sheetName, row }));
+  }
+
+  const allRefs = allRows
+    .map(({ row }) => {
+      const getVal = (keys: string[]) => {
+        for (const key of keys) {
+          const match = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
+          if (match) return row[match];
+        }
+        return undefined;
+      };
+      return getVal(['Referencia CMH', 'Ref CMH', 'Referencia', 'Ref', 'referenciacmh']);
+    })
+    .filter(Boolean)
+    .map(String);
+
+  const existingRefs = allRefs.length > 0 ? await recambiosRepo.findExistingReferencias(allRefs) : new Set<string>();
+
   let total = 0;
   let insertados = 0;
   const errores: any[] = [];
 
-  // Recorrer todas las hojas del Excel; cada hoja = un panel
-  for (const sheetName of workbook.SheetNames) {
-    const worksheet = workbook.Sheets[sheetName];
-    const rows = xlsx.utils.sheet_to_json<Record<string, any>>(worksheet);
+  for (const { sheetName, row } of allRows) {
+    total++;
+    try {
+      const getVal = (keys: string[]) => {
+        for (const key of keys) {
+          const match = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
+          if (match) return row[match];
+        }
+        return undefined;
+      };
 
-    for (const row of rows) {
-      total++;
-      try {
-        const getVal = (keys: string[]) => {
-          for (const key of keys) {
-            const match = Object.keys(row).find(k => k.trim().toLowerCase() === key.toLowerCase());
-            if (match) return row[match];
-          }
-          return undefined;
-        };
+      const referenciaCMH = getVal(['Referencia CMH', 'Ref CMH', 'Referencia', 'Ref', 'referenciacmh']);
+      if (!referenciaCMH) { total--; continue; }
 
-        const referenciaCMH = getVal(['Referencia CMH', 'Ref CMH', 'Referencia', 'Ref', 'referenciacmh']);
-        if (!referenciaCMH) { total--; continue; }
-
-        const existing = await recambiosRepo.findByReferencia(String(referenciaCMH));
-        if (existing) { total--; continue; }
+      if (existingRefs.has(String(referenciaCMH))) { total--; continue; }
 
         const colRaw = parseInt(getVal(['Col', 'Columna', 'C']) ?? '1', 10);
         const rowNumRaw = parseInt(getVal(['Row', 'Fila', 'F']) ?? '1', 10);
@@ -186,12 +216,11 @@ export async function importarDesdeExcel(buffer: Buffer): Promise<{ total: numbe
           row: isNaN(rowNumRaw) ? 1 : rowNumRaw,
         };
 
-        await createRecambio(newRecambio);
+        await createRecambio(newRecambio, true);
         insertados++;
       } catch (error: any) {
         errores.push({ hoja: sheetName, fila: row, error: error.message });
       }
-    }
   }
 
   return { total, insertados, errores };

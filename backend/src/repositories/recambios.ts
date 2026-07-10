@@ -1,5 +1,5 @@
 import { getPool, sql } from '../config/db.js';
-import type { Recambio } from '../types/index.js';
+import type { Recambio, RecambioPreview } from '../types/index.js';
 
 function mapRecambio(row: Record<string, unknown>): Recambio {
   return {
@@ -57,6 +57,31 @@ export async function findAll(filters: {
   return result.recordset.map(mapRecambio);
 }
 
+const SELECT_PREVIEW = `
+  SELECT r.id, r.panel, r.col, r.row, r.imagen, r.referenciaCMH, f.nombre AS familiaNombre
+  FROM Recambios r
+  INNER JOIN Familias f ON f.id = r.familiaId
+`;
+
+function mapPreview(row: Record<string, unknown>): RecambioPreview {
+  return {
+    id: row.id as number,
+    panel: row.panel as string,
+    col: row.col as number,
+    row: row.row as number,
+    imagen: row.imagen as string | null,
+    referenciaCMH: row.referenciaCMH as string,
+    familiaNombre: row.familiaNombre as string | undefined,
+  };
+}
+
+export async function findPreview(incluirOcultos = false): Promise<RecambioPreview[]> {
+  const pool = await getPool();
+  const where = incluirOcultos ? '' : 'WHERE r.oculto = 0';
+  const result = await pool.query(`${SELECT_PREVIEW} ${where} ORDER BY r.panel, r.col, r.row`);
+  return result.recordset.map(mapPreview);
+}
+
 export async function findById(id: number): Promise<Recambio | null> {
   const pool = await getPool();
   const result = await pool
@@ -75,6 +100,19 @@ export async function findByReferencia(ref: string): Promise<Recambio | null> {
     .query(`${SELECT_BASE} WHERE r.referenciaCMH = @ref OR r.referenciaCliente = @ref`);
   const row = result.recordset[0];
   return row ? mapRecambio(row) : null;
+}
+
+export async function findExistingReferencias(refs: string[]): Promise<Set<string>> {
+  if (refs.length === 0) return new Set();
+  const pool = await getPool();
+  const vals = refs.map((_, i) => `@ref${i}`).join(', ');
+  const request = pool.request();
+  refs.forEach((r, i) => request.input(`ref${i}`, sql.NVarChar(50), r));
+  const result = await request.query(`
+    SELECT DISTINCT referenciaCMH FROM Recambios
+    WHERE referenciaCMH IN (${vals})
+  `);
+  return new Set(result.recordset.map((row: any) => row.referenciaCMH as string));
 }
 
 export async function findByUbicacion(panel: string, col: number, row: number, excludeId?: number): Promise<Recambio | null> {

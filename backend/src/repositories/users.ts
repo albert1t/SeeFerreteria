@@ -177,7 +177,7 @@ export async function updateActive(id: number, isActive: boolean): Promise<boole
   return result.rowsAffected[0] > 0;
 }
 
-export async function deleteUser(id: number): Promise<boolean> {
+export async function deleteUser(id: number, reassignToId: number): Promise<boolean> {
   const pool = await getPool();
   const transaction = pool.transaction();
   await transaction.begin();
@@ -185,12 +185,16 @@ export async function deleteUser(id: number): Promise<boolean> {
     await transaction
       .request()
       .input('id', sql.Int, id)
-      .query('DELETE FROM PedidosEstadoHistorial WHERE usuarioId = @id');
+      .input('reassignToId', sql.Int, reassignToId)
+      .query(`
+        UPDATE Pedidos SET solicitanteId = @reassignToId
+        WHERE solicitanteId = @id
+      `);
 
     await transaction
       .request()
       .input('id', sql.Int, id)
-      .query('DELETE FROM Pedidos WHERE solicitanteId = @id');
+      .query('DELETE FROM PedidosEstadoHistorial WHERE usuarioId = @id');
 
     const result = await transaction
       .request()
