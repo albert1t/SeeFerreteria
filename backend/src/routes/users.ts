@@ -100,7 +100,7 @@ router.patch(
 router.delete('/:id', validateParams(userIdSchema), async (req, res, next) => {
   try {
     const { id } = req.params as unknown as { id: number };
-    const deleted = await usersRepo.deleteUser(id);
+    const deleted = await usersRepo.deleteUser(id, req.user!.userId);
     if (!deleted) {
       throw new AppError(404, 'Usuario no encontrado');
     }

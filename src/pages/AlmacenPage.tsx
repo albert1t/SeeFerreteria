@@ -9,9 +9,8 @@ import { useToast } from '../components/Toast';
 import { btnStyle } from '../styles/theme';
 import * as panelesApi from '../api/paneles';
 import * as recambiosApi from '../api/recambios';
-import * as panelesFrontApi from '../api/paneles';
 import * as catalogosApi from '../api/catalogos';
-import type { Recambio } from '../types';
+import type { Recambio, RecambioPreview } from '../types';
 
 function LoadingOverlay({ message }: { message: string }) {
   return (
@@ -129,25 +128,28 @@ export function AlmacenPage() {
   }, [swapLoading]);
   const panelListRef = useRef<HTMLDivElement | null>(null);
 
-  const { data: panelesRaw = [], isLoading: loadingPaneles } = useQuery({
-    queryKey: ['paneles'],
-    queryFn: panelesApi.getPaneles,
-  });
-
   const { data: previewRecambios = [], isLoading: loadingPreview } = useQuery({
     queryKey: ['paneles', 'preview'],
-    queryFn: () => recambiosApi.searchRecambios(''),
+    queryFn: () => recambiosApi.getPreviewRecambios(),
   });
+
+  const paneles = useMemo(() => {
+    const counts = new Map<string, number>();
+    previewRecambios.forEach((r) => {
+      const p = r.panel.toUpperCase();
+      counts.set(p, (counts.get(p) ?? 0) + 1);
+    });
+    return Array.from({ length: 25 }, (_, i) => {
+      const panel = `A${i + 1}`;
+      return { panel, totalRecambios: counts.get(panel) ?? 0 };
+    });
+  }, [previewRecambios]);
 
   const { data: cubetasData, isLoading: loadingCubetas } = useQuery({
     queryKey: ['paneles', panelSeleccionado, 'cubetas', mostrarOcultos],
     queryFn: () => panelesApi.getCubetasPanel(panelSeleccionado!, mostrarOcultos),
     enabled: !!panelSeleccionado,
   });
-
-  const paneles = [...panelesRaw].sort((a, b) =>
-    a.panel.localeCompare(b.panel, undefined, { numeric: true, sensitivity: 'base' })
-  );
 
   const cubetas = cubetasData?.cubetas ?? [];
 
@@ -194,7 +196,7 @@ export function AlmacenPage() {
   }, [familias]);
 
   const panelPreviewMap = useMemo(() => {
-    const map = new Map<string, Recambio[]>();
+    const map = new Map<string, RecambioPreview[]>();
     previewRecambios.forEach((recambio) => {
       const panel = recambio.panel.toUpperCase();
       const current = map.get(panel) ?? [];
@@ -204,7 +206,7 @@ export function AlmacenPage() {
     return map;
   }, [previewRecambios]);
 
-  const loadingPanelSummary = loadingPaneles || loadingPreview || loadingCatalogos;
+  const loadingPanelSummary = loadingPreview || loadingCatalogos;
 
   useEffect(() => {
     window.localStorage.setItem('panelTitles', JSON.stringify(panelTitles));
@@ -736,7 +738,7 @@ export function AlmacenPage() {
                       setPickPanelName(p.panel);
                       setLoadingPickPanel(true);
                       try {
-                        const data = await panelesFrontApi.getCubetasPanel(p.panel, true);
+                        const data = await panelesApi.getCubetasPanel(p.panel, true);
                         setTargetPanelCubetas(data.cubetas);
                       } catch { setTargetPanelCubetas([]); }
                       setLoadingPickPanel(false);

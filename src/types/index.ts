@@ -92,6 +92,16 @@ export interface PedidoHistorial {
   usuarioNombre?: string;
 }
 
+export interface RecambioPreview {
+  id: number;
+  panel: string;
+  col: number;
+  row: number;
+  imagen: string | null;
+  referenciaCMH: string;
+  familiaNombre: string | undefined;
+}
+
 export interface PanelResumen {
   panel: string;
   totalRecambios: number;

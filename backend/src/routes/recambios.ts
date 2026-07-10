@@ -133,7 +133,12 @@ router.post(
 
 router.get('/', validateQuery(recambiosQuerySchema), async (req, res, next) => {
   try {
-    const q = req.query as { panel?: string; busqueda?: string; incluirOcultos?: string };
+    const q = req.query as { panel?: string; busqueda?: string; incluirOcultos?: string; preview?: string };
+    if (q.preview === 'true') {
+      const items = await recambiosService.getPreview(q.incluirOcultos === 'true');
+      res.json(items);
+      return;
+    }
     const items = await recambiosService.listRecambios({
       panel: q.panel,
       busqueda: q.busqueda,
