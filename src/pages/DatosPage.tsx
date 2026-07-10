@@ -57,10 +57,12 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
     return () => document.removeEventListener('mousedown', handleClick);
   }, [onClose]);
 
+  const btnBase: React.CSSProperties = { display: 'block', width: '100%', textAlign: 'left', background: 'transparent', border: 'none', borderRadius: 3, cursor: 'pointer', color: colors.text };
+
   const sortBtn = (dir: 'asc' | 'desc', label: string) => (
     <button type="button" onClick={() => { onSort(dir); onClose(); }}
       style={{
-        ...btnStyle('ghost'), fontSize: 12, padding: '4px 8px', textAlign: 'left', width: '100%',
+        ...btnBase, fontSize: 12, padding: '4px 8px',
         background: sortDir === dir ? 'rgba(77,184,255,0.15)' : 'transparent',
         fontWeight: sortDir === dir ? 600 : 400,
       }}>
@@ -69,12 +71,12 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
   );
 
   return (
-    <div ref={ref} style={FILTER_DROPDOWN}>
+    <div ref={ref} style={{ ...FILTER_DROPDOWN, display: 'flex', flexDirection: 'column' }}>
       {sortBtn('asc', 'Ordenar A→Z')}
       {sortBtn('desc', 'Ordenar Z→A')}
       {sortDir && (
         <button type="button" onClick={() => { onSort(null); onClose(); }}
-          style={{ ...btnStyle('ghost'), fontSize: 11, padding: '2px 8px', textAlign: 'left', width: '100%', color: '#ff6b6b' }}>
+          style={{ ...btnBase, fontSize: 11, padding: '3px 8px', color: '#ff6b6b' }}>
           Quitar orden
         </button>
       )}
