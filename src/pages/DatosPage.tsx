@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
@@ -48,6 +48,9 @@ export function DatosPage() {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [busqueda, setBusqueda] = useState('');
+  const [filtroPanel, setFiltroPanel] = useState('');
+  const [filtroFamilia, setFiltroFamilia] = useState<number | ''>('');
+  const [filtroOculto, setFiltroOculto] = useState<boolean | null>(null);
   const [showCrear, setShowCrear] = useState(false);
   const [editandoRecambio, setEditandoRecambio] = useState<Recambio | null>(null);
   const [editando, setEditando] = useState<Record<string, string>>({});
@@ -84,12 +87,26 @@ export function DatosPage() {
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
-  const filtrados = busqueda
-    ? recambios.filter((r) =>
-        [r.referenciaCMH, r.referenciaCliente, r.codigo, r.nombre, r.marca, r.familiaNombre]
-          .some((v) => v && v.toLowerCase().includes(busqueda.toLowerCase()))
-      )
-    : recambios;
+  const filtrados = useMemo(() => {
+    return recambios.filter((r) => {
+      if (busqueda) {
+        const q = busqueda.toLowerCase();
+        const match = [r.referenciaCMH, r.referenciaCliente, r.codigo, r.nombre, r.marca, r.descripcion, r.metrica, r.unidadEmbalaje, r.panel, String(r.col), String(r.row), r.familiaNombre, r.plazoEntrega]
+          .some((v) => v && v.toLowerCase().includes(q));
+        if (!match) return false;
+      }
+      if (filtroPanel) {
+        if (r.panel.toUpperCase() !== filtroPanel.toUpperCase()) return false;
+      }
+      if (filtroFamilia !== '') {
+        if (r.familiaId !== filtroFamilia) return false;
+      }
+      if (filtroOculto !== null) {
+        if (r.oculto !== filtroOculto) return false;
+      }
+      return true;
+    });
+  }, [recambios, busqueda, filtroPanel, filtroFamilia, filtroOculto]);
 
   function iniciarEdicion(id: number, field: keyof Recambio, currentValue: string) {
     setEditando((prev) => ({ ...prev, [`${id}_${String(field)}`]: currentValue }));
@@ -203,17 +220,44 @@ export function DatosPage() {
 
   return (
     <div style={{ padding: '1.5rem', color: colors.text, height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexShrink: 0 }}>
-        <h2 style={{ margin: 0, fontSize: 20 }}>Base de Datos</h2>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          <input placeholder="Buscar..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
-            style={{ padding: '6px 10px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 13, width: 200 }} />
-          {puedeCrear && (
-            <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px' }} onClick={() => setShowCrear(true)}>
-              + Añadir
-            </button>
-          )}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexShrink: 0, gap: 8 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
+          <h2 style={{ margin: 0, fontSize: 20 }}>Base de Datos</h2>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+            <input placeholder="Buscar en todos los campos..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
+              style={{ padding: '5px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12, width: 220 }} />
+            <select value={filtroPanel} onChange={(e) => setFiltroPanel(e.target.value)}
+              style={{ padding: '5px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12 }}>
+              <option value="">Todos los paneles</option>
+              {Array.from({ length: 25 }, (_, i) => `A${i + 1}`).map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
+            <select value={filtroFamilia} onChange={(e) => setFiltroFamilia(e.target.value === '' ? '' : parseInt(e.target.value, 10))}
+              style={{ padding: '5px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12 }}>
+              <option value="">Todas las familias</option>
+              {familias.map((f) => (
+                <option key={f.id} value={f.id}>{f.nombre}</option>
+              ))}
+            </select>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: colors.textMuted, cursor: 'pointer' }}>
+              <input type="checkbox" checked={filtroOculto === true} onChange={(e) => setFiltroOculto(e.target.checked ? true : null)}
+                style={{ accentColor: '#4db8ff' }} />
+              Solo ocultos
+            </label>
+            {(busqueda || filtroPanel || filtroFamilia !== '' || filtroOculto !== null) && (
+              <button type="button" onClick={() => { setBusqueda(''); setFiltroPanel(''); setFiltroFamilia(''); setFiltroOculto(null); }}
+                style={{ ...btnStyle('ghost'), fontSize: 11, padding: '3px 8px', color: '#ff6b6b' }}>
+                Limpiar filtros
+              </button>
+            )}
+          </div>
         </div>
+        {puedeCrear && (
+          <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px', whiteSpace: 'nowrap' }} onClick={() => setShowCrear(true)}>
+            + Añadir
+          </button>
+        )}
       </div>
 
       <div style={{ flex: 1, overflow: 'auto', border: `1px solid ${colors.border}`, borderRadius: 8, background: colors.bgCard }}>
