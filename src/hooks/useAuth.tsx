@@ -5,7 +5,7 @@ import { ApiError, clearToken, setToken, getToken } from '../api/client';
 import type { User } from '../types';
 
 type Resource = 'pedidos' | 'recambios' | 'familias';
-type Action = 'create' | 'view' | 'edit' | 'delete';
+type Action = 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage';
 
 interface AuthContextValue {
   user: User | null;
@@ -81,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const perms = user?.permissions;
     if (!perms) return false;
     if (perms.admin) return true;
-    return Boolean(perms[resource]?.[action]);
+    return Boolean((perms[resource] as any)?.[action]);
   }, [user]);
 
   return (

@@ -107,7 +107,7 @@ export function Layout() {
               Usuarios
             </NavLink>
           )}
-          {can('recambios', 'edit') && (
+          {can('recambios', 'viewDataPage') && (
             <NavLink to="/datos" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}) })}>
               Datos
             </NavLink>
@@ -159,7 +159,7 @@ export function Layout() {
             Usuarios
           </NavLink>
         )}
-        {can('recambios', 'edit') && (
+        {can('recambios', 'viewDataPage') && (
           <NavLink to="/datos" onClick={closeMenu} style={({ isActive }) => ({
             ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
             ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}),

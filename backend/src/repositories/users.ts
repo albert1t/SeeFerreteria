@@ -8,7 +8,7 @@ function deepMergePerms(stored: Partial<Permissions>, defaults: Permissions): Pe
     if (key === 'admin' && typeof stored.admin === 'boolean') {
       result.admin = stored.admin;
     } else if (key !== 'admin' && stored[key] && typeof stored[key] === 'object') {
-      result[key] = { ...defaults[key], ...stored[key] } as Permissions[typeof key];
+      result[key] = { ...defaults[key], ...stored[key] as any };
     }
   }
   return result;
