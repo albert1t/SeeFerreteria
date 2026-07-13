@@ -1,36 +1,53 @@
-import sql from 'mssql';
+import mysql from 'mysql2/promise';
 import { env } from './env.js';
 
-const config: sql.config = {
-  server: env.AZURE_SQL_SERVER,
-  database: env.AZURE_SQL_DATABASE,
-  user: env.AZURE_SQL_USER,
-  password: env.AZURE_SQL_PASSWORD,
-  options: {
-    encrypt: env.AZURE_SQL_ENCRYPT,
-    trustServerCertificate: env.AZURE_SQL_TRUST_SERVER_CERTIFICATE,
-  },
-  pool: {
-    max: 10,
-    min: 0,
-    idleTimeoutMillis: 30000,
-  },
+const config: mysql.PoolOptions = {
+  host: env.DB_HOST,
+  port: env.DB_PORT,
+  database: env.DB_NAME,
+  user: env.DB_USER,
+  password: env.DB_PASSWORD,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  timezone: '+00:00',
 };
 
-let pool: sql.ConnectionPool | null = null;
+let pool: mysql.Pool | null = null;
 
-export async function getPool(): Promise<sql.ConnectionPool> {
+export async function getPool(): Promise<mysql.Pool> {
   if (!pool) {
-    pool = await new sql.ConnectionPool(config).connect();
+    pool = mysql.createPool(config);
   }
   return pool;
 }
 
 export async function closePool(): Promise<void> {
   if (pool) {
-    await pool.close();
+    await pool.end();
     pool = null;
   }
 }
 
-export { sql };
+export async function query(sql: string, params?: any[]) {
+  const p = await getPool();
+  const [rows] = await p.query(sql, params);
+  return rows as any[];
+}
+
+export async function execute(sql: string, params?: any[]) {
+  const p = await getPool();
+  const [rows] = await p.execute(sql, params);
+  return rows as any[];
+}
+
+// Backward compatibility for scripts that import `sql` (formerly mssql template tag)
+export const sql = {
+  NVarChar: (_n: number) => 'VARCHAR',
+  NVarCharMax: 'VARCHAR(MAX)',
+  Int: 'INT',
+  VarChar: (_n: number) => 'VARCHAR',
+  Bit: 'BIT',
+  DateTime: 'DATETIME',
+  DateTime2: (_n: number) => 'DATETIME2',
+};
