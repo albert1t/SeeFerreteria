@@ -1,4 +1,4 @@
-import { getPool, sql } from '../config/db.js';
+import { getPool } from '../config/db.js';
 import type { Pedido, PedidoEstado, PedidoHistorial, PedidoTipo } from '../types/index.js';
 
 function mapPedido(row: Record<string, unknown>): Pedido {
@@ -38,60 +38,57 @@ export async function findAll(filters: {
   incluirOcultos?: boolean;
 }): Promise<Pedido[]> {
   const pool = await getPool();
-  const request = pool.request();
-  let where = 'WHERE 1=1';
+  const conditions: string[] = [];
+  const params: any[] = [];
 
   if (!filters.incluirOcultos) {
-    where += " AND p.oculto = 0";
+    conditions.push('p.oculto = 0');
   }
   if (!filters.incluirFinalizados) {
-    where += " AND p.estado != 'Finalizado'";
+    conditions.push("p.estado != 'Finalizado'");
   }
   if (filters.tipo) {
-    where += ' AND p.tipo = @tipo';
-    request.input('tipo', sql.NVarChar(30), filters.tipo);
+    conditions.push('p.tipo = ?');
+    params.push(filters.tipo);
   }
   if (filters.fecha) {
-    where += ' AND CAST(p.fechaSolicitud AS DATE) = @fecha';
-    request.input('fecha', sql.Date, filters.fecha);
+    conditions.push('DATE(p.fechaSolicitud) = ?');
+    params.push(filters.fecha);
   }
   if (filters.busqueda) {
-    where += ' AND (r.nombre LIKE @busqueda OR r.referenciaCMH LIKE @busqueda OR u.name LIKE @busqueda)';
-    request.input('busqueda', sql.NVarChar(200), `%${filters.busqueda}%`);
+    conditions.push('(r.nombre LIKE ? OR r.referenciaCMH LIKE ? OR u.name LIKE ?)');
+    const p = `%${filters.busqueda}%`;
+    params.push(p, p, p);
   }
 
+  const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
   const orderDir = filters.orden === 'antiguo' ? 'ASC' : 'DESC';
-  const result = await request.query(`
-    ${SELECT_BASE} ${where}
-    ORDER BY p.prioritario DESC, p.fechaSolicitud ${orderDir}
-  `);
-  return result.recordset.map(mapPedido);
+  const [rows] = await pool.query(
+    `${SELECT_BASE} ${where} ORDER BY p.prioritario DESC, p.fechaSolicitud ${orderDir}`,
+    params
+  );
+  return (rows as any[]).map(mapPedido);
 }
 
 export async function findById(id: number): Promise<Pedido | null> {
   const pool = await getPool();
-  const result = await pool.request()
-    .input('id', sql.Int, id)
-    .query(`${SELECT_BASE} WHERE p.id = @id`);
-  const row = result.recordset[0];
+  const [rows] = await pool.query(`${SELECT_BASE} WHERE p.id = ?`, [id]);
+  const row = (rows as any[])[0];
   return row ? mapPedido(row) : null;
 }
 
 export async function findByRecambioId(recambioId: number): Promise<Pedido[]> {
   const pool = await getPool();
-  const result = await pool.request()
-    .input('recambioId', sql.Int, recambioId)
-    .query(`${SELECT_BASE} WHERE p.recambioId = @recambioId ORDER BY p.fechaSolicitud DESC`);
-  return result.recordset.map(mapPedido);
+  const [rows] = await pool.query(`${SELECT_BASE} WHERE p.recambioId = ? ORDER BY p.fechaSolicitud DESC`, [recambioId]);
+  return (rows as any[]).map(mapPedido);
 }
 
 export async function countUrgentes(): Promise<number> {
   const pool = await getPool();
-  const result = await pool.request().query(`
-    SELECT COUNT(*) AS cnt FROM Pedidos
-    WHERE prioritario = 1 AND estado != 'Finalizado'
-  `);
-  return result.recordset[0].cnt as number;
+  const [rows] = await pool.query(
+    "SELECT COUNT(*) AS cnt FROM Pedidos WHERE prioritario = 1 AND estado != 'Finalizado'"
+  );
+  return (rows as any[])[0].cnt as number;
 }
 
 export async function create(data: {
@@ -104,30 +101,18 @@ export async function create(data: {
   observaciones: string | null;
 }): Promise<Pedido> {
   const pool = await getPool();
-  const result = await pool.request()
-    .input('recambioId', sql.Int, data.recambioId)
-    .input('solicitanteId', sql.Int, data.solicitanteId)
-    .input('tipo', sql.NVarChar(30), data.tipo)
-    .input('cantidad', sql.Int, data.cantidad)
-    .input('plazoDeseado', sql.NVarChar(50), data.plazoDeseado)
-    .input('prioritario', sql.Bit, data.prioritario)
-    .input('observaciones', sql.NVarChar(sql.MAX), data.observaciones)
-    .query(`
-      INSERT INTO Pedidos (recambioId, solicitanteId, tipo, cantidad, plazoDeseado, prioritario, observaciones)
-      OUTPUT INSERTED.id
-      VALUES (@recambioId, @solicitanteId, @tipo, @cantidad, @plazoDeseado, @prioritario, @observaciones)
-    `);
+  const [result] = await pool.query(
+    `INSERT INTO Pedidos (recambioId, solicitanteId, tipo, cantidad, plazoDeseado, prioritario, observaciones)
+    VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [data.recambioId, data.solicitanteId, data.tipo, data.cantidad, data.plazoDeseado, data.prioritario, data.observaciones]
+  );
+  const id = (result as any).insertId;
 
-  const id = result.recordset[0].id as number;
-
-  await pool.request()
-    .input('pedidoId', sql.Int, id)
-    .input('usuarioId', sql.Int, data.solicitanteId)
-    .input('estadoNuevo', sql.NVarChar(30), 'Solicitado')
-    .query(`
-      INSERT INTO PedidosEstadoHistorial (pedidoId, usuarioId, estadoAnterior, estadoNuevo)
-      VALUES (@pedidoId, @usuarioId, NULL, @estadoNuevo)
-    `);
+  await pool.query(
+    `INSERT INTO PedidosEstadoHistorial (pedidoId, usuarioId, estadoAnterior, estadoNuevo)
+    VALUES (?, ?, NULL, ?)`,
+    [id, data.solicitanteId, 'Solicitado']
+  );
 
   const pedido = await findById(id);
   if (!pedido) throw new Error('Failed to create pedido');
@@ -143,38 +128,31 @@ export async function updateEstado(
   const existing = await findById(id);
   if (!existing) return null;
 
-  await pool.request()
-    .input('id', sql.Int, id)
-    .input('estado', sql.NVarChar(30), nuevoEstado)
-    .query(`
-      UPDATE Pedidos SET estado = @estado, fechaActualizacion = SYSUTCDATETIME() WHERE id = @id
-    `);
+  await pool.query(
+    'UPDATE Pedidos SET estado = ?, fechaActualizacion = UTC_TIMESTAMP(6) WHERE id = ?',
+    [nuevoEstado, id]
+  );
 
-  await pool.request()
-    .input('pedidoId', sql.Int, id)
-    .input('usuarioId', sql.Int, usuarioId)
-    .input('estadoAnterior', sql.NVarChar(30), existing.estado)
-    .input('estadoNuevo', sql.NVarChar(30), nuevoEstado)
-    .query(`
-      INSERT INTO PedidosEstadoHistorial (pedidoId, usuarioId, estadoAnterior, estadoNuevo)
-      VALUES (@pedidoId, @usuarioId, @estadoAnterior, @estadoNuevo)
-    `);
+  await pool.query(
+    `INSERT INTO PedidosEstadoHistorial (pedidoId, usuarioId, estadoAnterior, estadoNuevo)
+    VALUES (?, ?, ?, ?)`,
+    [id, usuarioId, existing.estado, nuevoEstado]
+  );
 
   return findById(id);
 }
 
 export async function getHistorial(pedidoId: number): Promise<PedidoHistorial[]> {
   const pool = await getPool();
-  const result = await pool.request()
-    .input('pedidoId', sql.Int, pedidoId)
-    .query(`
-      SELECT h.*, u.name AS usuarioNombre
-      FROM PedidosEstadoHistorial h
-      INNER JOIN Users u ON u.id = h.usuarioId
-      WHERE h.pedidoId = @pedidoId
-      ORDER BY h.fecha ASC
-    `);
-  return result.recordset.map((row) => ({
+  const [rows] = await pool.query(
+    `SELECT h.*, u.name AS usuarioNombre
+    FROM PedidosEstadoHistorial h
+    INNER JOIN Users u ON u.id = h.usuarioId
+    WHERE h.pedidoId = ?
+    ORDER BY h.fecha ASC`,
+    [pedidoId]
+  );
+  return (rows as any[]).map((row: any) => ({
     id: row.id as number,
     pedidoId: row.pedidoId as number,
     usuarioId: row.usuarioId as number,
@@ -187,29 +165,29 @@ export async function getHistorial(pedidoId: number): Promise<PedidoHistorial[]>
 
 export async function updatePedido(id: number, data: { cantidad?: number; plazoDeseado?: string | null; observaciones?: string | null }): Promise<Pedido | null> {
   const pool = await getPool();
-  const request = pool.request().input('id', sql.Int, id);
   const sets: string[] = [];
-  if (data.cantidad !== undefined) { sets.push('cantidad = @cantidad'); request.input('cantidad', sql.Int, data.cantidad); }
-  if (data.plazoDeseado !== undefined) { sets.push('plazoDeseado = @plazoDeseado'); request.input('plazoDeseado', sql.NVarChar(50), data.plazoDeseado); }
-  if (data.observaciones !== undefined) { sets.push('observaciones = @observaciones'); request.input('observaciones', sql.NVarChar(sql.MAX), data.observaciones); }
+  const params: any[] = [];
+  if (data.cantidad !== undefined) { sets.push('cantidad = ?'); params.push(data.cantidad); }
+  if (data.plazoDeseado !== undefined) { sets.push('plazoDeseado = ?'); params.push(data.plazoDeseado); }
+  if (data.observaciones !== undefined) { sets.push('observaciones = ?'); params.push(data.observaciones); }
   if (sets.length === 0) return findById(id);
-  sets.push('fechaActualizacion = SYSUTCDATETIME()');
-  await request.query(`UPDATE Pedidos SET ${sets.join(', ')} WHERE id = @id`);
+  sets.push('fechaActualizacion = UTC_TIMESTAMP(6)');
+  params.push(id);
+  await pool.query(`UPDATE Pedidos SET ${sets.join(', ')} WHERE id = ?`, params);
   return findById(id);
 }
 
 export async function deletePedido(id: number): Promise<boolean> {
   const pool = await getPool();
-  const result = await pool.request()
-    .input('id', sql.Int, id)
-    .query('DELETE FROM Pedidos WHERE id = @id');
-  return result.rowsAffected[0] > 0;
+  const [result] = await pool.query('DELETE FROM Pedidos WHERE id = ?', [id]);
+  return (result as any).affectedRows > 0;
 }
 
 export async function toggleOculto(id: number): Promise<Pedido | null> {
   const pool = await getPool();
-  await pool.request()
-    .input('id', sql.Int, id)
-    .query('UPDATE Pedidos SET oculto = ~oculto, fechaActualizacion = SYSUTCDATETIME() WHERE id = @id');
+  const [rows] = await pool.query('SELECT oculto FROM Pedidos WHERE id = ?', [id]);
+  const current = (rows as any[])[0]?.oculto;
+  if (current === undefined) return null;
+  await pool.query('UPDATE Pedidos SET oculto = ?, fechaActualizacion = UTC_TIMESTAMP(6) WHERE id = ?', [!current, id]);
   return findById(id);
 }

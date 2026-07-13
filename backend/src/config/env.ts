@@ -4,12 +4,11 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const envSchema = z.object({
-  AZURE_SQL_SERVER: z.string().min(1),
-  AZURE_SQL_DATABASE: z.string().min(1),
-  AZURE_SQL_USER: z.string().min(1),
-  AZURE_SQL_PASSWORD: z.string().min(1),
-  AZURE_SQL_ENCRYPT: z.string().default('true'),
-  AZURE_SQL_TRUST_SERVER_CERTIFICATE: z.string().default('false'),
+  DB_HOST: z.string().min(1),
+  DB_PORT: z.coerce.number().default(3306),
+  DB_NAME: z.string().min(1),
+  DB_USER: z.string().min(1),
+  DB_PASSWORD: z.string().min(1),
   JWT_SECRET: z.string().min(32),
   JWT_EXPIRES_IN: z.string().default('8h'),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
@@ -30,6 +29,4 @@ if (!parsed.success) {
 export const env = {
   ...parsed.data,
   PORT: parseInt(parsed.data.PORT, 10),
-  AZURE_SQL_ENCRYPT: parsed.data.AZURE_SQL_ENCRYPT === 'true',
-  AZURE_SQL_TRUST_SERVER_CERTIFICATE: parsed.data.AZURE_SQL_TRUST_SERVER_CERTIFICATE === 'true',
 };
