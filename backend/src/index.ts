@@ -42,10 +42,10 @@ app.use(errorHandler);
 async function start() {
   try {
     await getPool();
-    console.log('Connected to Azure SQL');
+    console.log('Connected to database');
   } catch (err) {
     console.error('Database connection failed:', err);
-    console.error('Ensure Azure SQL is configured and firewall allows your IP.');
+    console.error('Ensure database credentials are correct and IP is allowed.');
     process.exit(1);
   }
 
