@@ -1,4 +1,4 @@
-DirectoryIndex dist/index.html
+DirectoryIndex frontend/dist/index.html
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
@@ -11,5 +11,5 @@ DirectoryIndex dist/index.html
     RewriteCond %{REQUEST_FILENAME} !-d
     
     # Route all other requests to the SPA
-    RewriteRule ^(.*)$ dist/index.html [L]
+    RewriteRule ^(.*)$ frontend/dist/index.html [L]
 </IfModule>
