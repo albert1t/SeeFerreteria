@@ -1,1 +1,15 @@
 DirectoryIndex dist/index.html
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Skip /api requests (handled by cPanel Node.js Selector)
+    RewriteRule ^api/ - [L]
+    
+    # Skip existing files and directories
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Route all other requests to the SPA
+    RewriteRule ^(.*)$ dist/index.html [L]
+</IfModule>
