@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import * as usersRepo from '../repositories/users.js';
