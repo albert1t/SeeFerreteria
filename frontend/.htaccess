@@ -3,6 +3,11 @@ Options -Indexes
 
 RewriteEngine On
 
+# Proxy API requests to backend (same-origin, no CORS needed)
+<IfModule mod_proxy.c>
+    RewriteRule ^api/(.*)$ https://cmhautomacion.com/api/$1 [P,L]
+</IfModule>
+
 # Skip all dist/ assets
 RewriteRule ^dist/ - [L]
 
