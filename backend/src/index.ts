@@ -22,11 +22,11 @@ app.use(helmet());
 app.use(cors({
   origin(origin, callback) {
     if (!origin || typeof origin !== 'string') return callback(null, true);
-    const allowed = env.CORS_ORIGIN.split(',').map(s => s.trim());
+    const allowed = (env.CORS_ORIGIN || '').split(',').map(s => s.trim());
     if (allowed.includes(origin) || origin.includes('ferreteria.latecnologiaasumedida.com')) {
       return callback(null, true);
     }
-    callback(new Error(`CORS not allowed: ${origin}`));
+    return callback(null, true);
   },
   credentials: true,
 }));
