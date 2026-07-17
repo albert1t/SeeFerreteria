@@ -20,7 +20,14 @@ app.set('trust proxy', 1);
 
 app.use(helmet());
 app.use(cors({
-  origin: env.CORS_ORIGIN,
+  origin(origin, callback) {
+    if (!origin || typeof origin !== 'string') return callback(null, true);
+    const allowed = env.CORS_ORIGIN.split(',').map(s => s.trim());
+    if (allowed.includes(origin) || origin.includes('ferreteria.latecnologiaasumedida.com')) {
+      return callback(null, true);
+    }
+    callback(new Error(`CORS not allowed: ${origin}`));
+  },
   credentials: true,
 }));
 app.use(express.json());
