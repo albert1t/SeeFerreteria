@@ -1,13 +1,12 @@
 DirectoryIndex dist/index.html
-Options -Indexes -MultiViews
+Options -Indexes
 
 RewriteEngine On
-RewriteBase /
 
-# Skip real files and directories
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
+# Skip all dist/ assets
+RewriteRule ^dist/ - [L]
 
 # Route everything else to the SPA
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ dist/index.html [L]
