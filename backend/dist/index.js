@@ -19,13 +19,15 @@ app.use(cors({
     origin(origin, callback) {
         if (!origin || typeof origin !== 'string')
             return callback(null, true);
-        const allowed = env.CORS_ORIGIN.split(',').map(s => s.trim());
-        if (allowed.includes(origin) || origin.includes('ferreteria.latecnologiaasumedida.com')) {
+        const allowed = (env.CORS_ORIGIN || '').split(',').map(s => s.trim());
+        if (allowed.some(a => origin === a || origin.includes(a.replace(/^https?:\/\//, '')))) {
             return callback(null, true);
         }
-        callback(new Error(`CORS not allowed: ${origin}`));
+        return callback(null, false);
     },
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 app.use(express.json());
 app.use(cookieParser());
