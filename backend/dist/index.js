@@ -19,11 +19,11 @@ app.use(cors({
     origin(origin, callback) {
         if (!origin || typeof origin !== 'string')
             return callback(null, true);
-        const allowed = (env.CORS_ORIGIN || '').split(',').map(s => s.trim());
-        if (allowed.some(a => origin === a || origin.includes(a.replace(/^https?:\/\//, '')))) {
+        const allowedOrigins = (env.CORS_ORIGIN || '').split(',').map(s => s.trim());
+        if (allowedOrigins.includes(origin)) {
             return callback(null, true);
         }
-        return callback(null, false);
+        return callback(new Error('Not allowed by CORS'));
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
