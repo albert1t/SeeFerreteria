@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "postinstall": "npm run build",
+
     "start": "node dist/index.js",
     "seed": "tsx src/scripts/seed.ts",
     "seed:excel": "tsx src/scripts/importExcel.ts"
