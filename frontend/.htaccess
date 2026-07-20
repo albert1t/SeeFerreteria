@@ -3,9 +3,6 @@ Options -Indexes
 
 RewriteEngine On
 
-# Redirect API requests to PHP proxy (same-origin, no CORS needed)
-RewriteRule ^api/ api/index.php [L,QSA]
-
 # Skip all dist/ assets
 RewriteRule ^dist/ - [L]
 
