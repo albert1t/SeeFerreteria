@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { getPool, closePool } from '../config/db.js';
 import * as usersRepo from '../repositories/users.js';
 

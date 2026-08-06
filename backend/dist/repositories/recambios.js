@@ -10,6 +10,8 @@ function mapRecambio(row) {
         descripcion: row.descripcion,
         metrica: row.metrica,
         unidadEmbalaje: row.unidadEmbalaje,
+        pvpOrientativo: row.pvpOrientativo,
+        pvpOrientativoMoneda: row.pvpOrientativoMoneda,
         imagen: row.imagen,
         plazoEntrega: row.plazoEntrega,
         familiaId: row.familiaId,

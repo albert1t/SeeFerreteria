@@ -153,6 +153,17 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
     fontSize: 12, color: '#7aade0', fontWeight: 600, textTransform: 'uppercase', marginBottom: 2, display: 'block',
   };
 
+  function parseEmbalaje(embalaje: string | null | undefined): number {
+    if (!embalaje) return 1;
+    const match = embalaje.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : 1;
+  }
+
+  const embalaje = parseEmbalaje(detail.recambioEmbalaje);
+  const paquetes = detail.cantidad;
+  const totalUnidades = paquetes * embalaje;
+  const precioTotal = detail.recambioPrecio != null ? paquetes * detail.recambioPrecio : null;
+
   return (
     <div>
       {/* Header badges */}
@@ -173,10 +184,12 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
         {[
           ['Recambio', detail.recambioNombre],
           ['Referencia CMH', detail.recambioRef],
-          ['Cantidad', detail.cantidad],
+          ['Cantidad', `${detail.cantidad} paquete${detail.cantidad === 1 ? '' : 's'}${detail.recambioEmbalaje ? ` × ${embalaje} uds = ${totalUnidades} uds` : ''}`],
           ['Plazo deseado', detail.plazoDeseado ?? '—'],
           ['Solicitante', detail.solicitanteNombre],
           ['Fecha solicitud', fmtDate(detail.fechaSolicitud)],
+          ['PVP orientativo', detail.recambioPrecio != null ? `${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(detail.recambioPrecio)}/paquete` : '—'],
+          ['Total orientativo', precioTotal != null ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(precioTotal) : '—'],
         ].map(([k, v]) => (
           <div key={k as string}>
             <div style={labelStyle}>{k}</div>
@@ -250,7 +263,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       <Modal open={editando} onClose={() => setEditando(false)} title="Editar pedido">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 300 }}>
           <div>
-            <label style={labelStyle}>Cantidad</label>
+            <label style={labelStyle}>Cantidad (paquetes)</label>
             <input type="number" min="1" value={editCantidad} onChange={(e) => setEditCantidad(e.target.value)}
               style={{ width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, boxSizing: 'border-box' }} />
           </div>
@@ -434,8 +447,13 @@ export function PedidosPage() {
                 <div className="pedido-card-info" style={{ flex: 1, minWidth: 140 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
                   <div className="pedido-card-meta" style={{ fontSize: 12, color: '#7aade0' }}>
-                    {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad}
+                    {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad} paq
                   </div>
+                  {p.recambioPrecio != null && (
+                    <div style={{ fontSize: 12, fontWeight: 700, color: '#4dff9b' }}>
+                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(p.recambioPrecio * p.cantidad)}
+                    </div>
+                  )}
                 </div>
                 <div className="pedido-badges-row" style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
                   <span style={{ ...badgeStyle(p.tipo), fontSize: 11 }}>{p.tipo}</span>

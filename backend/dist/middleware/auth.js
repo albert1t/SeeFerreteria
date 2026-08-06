@@ -62,24 +62,28 @@ export function getDefaultPermissions(role) {
         pedidos: { create: true, view: true, edit: true, delete: true },
         recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
         familias: { create: true, view: true, edit: true, delete: true },
+        tarifas: { create: true, view: true, edit: true, delete: true },
     };
     const user = {
         admin: false,
         pedidos: { create: true, view: true, edit: true, delete: false },
         recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
         familias: { create: false, view: false, edit: false, delete: false },
+        tarifas: { create: false, view: false, edit: false, delete: false },
     };
     const viewer = {
         admin: false,
         pedidos: { create: false, view: true, edit: false, delete: false },
         recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
         familias: { create: false, view: false, edit: false, delete: false },
+        tarifas: { create: false, view: false, edit: false, delete: false },
     };
     const operario = {
         admin: false,
         pedidos: { create: true, view: true, edit: true, delete: false },
         recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
         familias: { create: false, view: false, edit: false, delete: false },
+        tarifas: { create: false, view: false, edit: false, delete: false },
     };
     switch (role) {
         case 'admin': return full;

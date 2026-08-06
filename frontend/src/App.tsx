@@ -8,6 +8,7 @@ import { AlmacenPage } from './pages/AlmacenPage';
 import { PedidosPage } from './pages/PedidosPage';
 import { UsersPage } from './pages/UsersPage';
 import { DatosPage } from './pages/DatosPage';
+import { FestoImportPage } from './pages/FestoImportPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,20 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function EditPermRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading, can } = useAuth();
+  if (isLoading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#4a7aaa' }}>
+        Cargando...
+      </div>
+    );
+  }
+  if (!user) return <Navigate to="/login" replace />;
+  if (!can('tarifas', 'edit')) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -63,6 +78,10 @@ export default function App() {
                 <Route path="pedidos" element={<PedidosPage />} />
                 <Route path="usuarios" element={<AdminRoute><UsersPage /></AdminRoute>} />
                 <Route path="datos" element={<DatosPage />} />
+                <Route
+                  path="admin/importar-tarifas-festo"
+                  element={<EditPermRoute><FestoImportPage /></EditPermRoute>}
+                />
               </Route>
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

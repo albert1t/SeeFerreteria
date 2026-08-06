@@ -16,11 +16,13 @@ function mapPedido(row) {
         recambioRef: row.recambioRef,
         recambioNombre: row.recambioNombre,
         recambioImagen: row.recambioImagen,
+        recambioPrecio: row.recambioPrecio,
+        recambioEmbalaje: row.recambioEmbalaje,
         solicitanteNombre: row.solicitanteNombre,
     };
 }
 const SELECT_BASE = `
-  SELECT p.*, r.referenciaCMH AS recambioRef, r.nombre AS recambioNombre, r.imagen AS recambioImagen, u.name AS solicitanteNombre
+  SELECT p.*, r.referenciaCMH AS recambioRef, r.nombre AS recambioNombre, r.imagen AS recambioImagen, r.pvpOrientativo AS recambioPrecio, r.unidadEmbalaje AS recambioEmbalaje, u.name AS solicitanteNombre
   FROM Pedidos p
   INNER JOIN Recambios r ON r.id = p.recambioId
   INNER JOIN Users u ON u.id = p.solicitanteId

@@ -18,12 +18,14 @@ function mapPedido(row: Record<string, unknown>): Pedido {
     recambioRef: row.recambioRef as string | undefined,
     recambioNombre: row.recambioNombre as string | undefined,
     recambioImagen: row.recambioImagen as string | undefined,
+    recambioPrecio: row.recambioPrecio as number | undefined,
+    recambioEmbalaje: row.recambioEmbalaje as string | undefined,
     solicitanteNombre: row.solicitanteNombre as string | undefined,
   };
 }
 
 const SELECT_BASE = `
-  SELECT p.*, r.referenciaCMH AS recambioRef, r.nombre AS recambioNombre, r.imagen AS recambioImagen, u.name AS solicitanteNombre
+  SELECT p.*, r.referenciaCMH AS recambioRef, r.nombre AS recambioNombre, r.imagen AS recambioImagen, r.pvpOrientativo AS recambioPrecio, r.unidadEmbalaje AS recambioEmbalaje, u.name AS solicitanteNombre
   FROM Pedidos p
   INNER JOIN Recambios r ON r.id = p.recambioId
   INNER JOIN Users u ON u.id = p.solicitanteId

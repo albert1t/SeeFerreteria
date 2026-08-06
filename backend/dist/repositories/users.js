@@ -57,13 +57,13 @@ export async function findById(id) {
     const row = rows[0];
     return row ? mapUser(row) : null;
 }
-export async function createUser(username, passwordHash, name, role, permissions) {
+export async function createUser(username, passwordHash, name, role, permissions, isActive = false) {
     const pool = await getPool();
     const [rows] = await pool.query('SELECT 1 AS existsUser FROM Users WHERE username = ? LIMIT 1', [username]);
     if (rows.length > 0)
         return false;
     const perms = permissions ?? getDefaultPermissions(role);
-    await pool.query('INSERT INTO Users (username, passwordHash, name, role, permissions) VALUES (?, ?, ?, ?, ?)', [username, passwordHash, name, role, JSON.stringify(perms)]);
+    await pool.query('INSERT INTO Users (username, passwordHash, name, role, permissions, isActive) VALUES (?, ?, ?, ?, ?, ?)', [username, passwordHash, name, role, JSON.stringify(perms), isActive ? 1 : 0]);
     return true;
 }
 export async function upsertUser(username, passwordHash, name, role, permissions) {

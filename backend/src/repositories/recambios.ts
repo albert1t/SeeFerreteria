@@ -12,6 +12,8 @@ function mapRecambio(row: Record<string, unknown>): Recambio {
     descripcion: row.descripcion as string | null,
     metrica: row.metrica as string | null,
     unidadEmbalaje: row.unidadEmbalaje as string | null,
+    pvpOrientativo: row.pvpOrientativo as number | null,
+    pvpOrientativoMoneda: row.pvpOrientativoMoneda as string | null,
     imagen: row.imagen as string | null,
     plazoEntrega: row.plazoEntrega as string | null,
     familiaId: row.familiaId as number,

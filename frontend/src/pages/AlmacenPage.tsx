@@ -587,14 +587,16 @@ export function AlmacenPage() {
                         }}
                         onMouseEnter={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = 'rgba(26,110,196,0.14)'; e.currentTarget.style.borderColor = 'rgba(77,184,255,0.45)';
+                            e.currentTarget.style.background = r.oculto ? 'rgba(196,26,26,0.18)' : 'rgba(26,110,196,0.14)';
+                            e.currentTarget.style.borderColor = r.oculto ? 'rgba(196,26,26,0.6)' : 'rgba(77,184,255,0.45)';
                           } else if (swapMode && selectedForSwap) {
                             e.currentTarget.style.background = 'rgba(235,245,255,0.22)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = 'rgba(26,110,196,0.06)'; e.currentTarget.style.borderColor = 'rgba(77,184,255,0.22)';
+                            e.currentTarget.style.background = r.oculto ? 'rgba(196,26,26,0.10)' : 'rgba(26,110,196,0.06)';
+                            e.currentTarget.style.borderColor = r.oculto ? 'rgba(196,26,26,0.45)' : 'rgba(77,184,255,0.22)';
                           } else if (swapMode && selectedForSwap) {
                             e.currentTarget.style.background = 'rgba(235,245,255,0.14)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
                           }

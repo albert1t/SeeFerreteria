@@ -4,7 +4,7 @@ import * as authApi from '../api/auth';
 import { ApiError, clearToken, setToken, getToken } from '../api/client';
 import type { User } from '../types';
 
-type Resource = 'pedidos' | 'recambios' | 'familias';
+type Resource = 'pedidos' | 'recambios' | 'familias' | 'tarifas';
 type Action = 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage';
 
 interface AuthContextValue {

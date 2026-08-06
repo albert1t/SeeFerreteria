@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { authMiddleware, requireRole } from '../middleware/auth.js';
 import { validateBody, validateParams } from '../middleware/validate.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { userIdSchema, createUserSchema, updateRoleSchema, updateActiveSchema, updatePermissionsSchema, allowedEmailSchema, allowedEmailUpdateSchema, } from '../schemas/index.js';
 import * as usersRepo from '../repositories/users.js';
 import { AppError } from '../middleware/errorHandler.js';

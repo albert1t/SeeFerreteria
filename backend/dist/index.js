@@ -11,6 +11,7 @@ import recambiosRoutes from './routes/recambios.js';
 import panelesRoutes from './routes/paneles.js';
 import pedidosRoutes from './routes/pedidos.js';
 import catalogosRoutes from './routes/catalogos.js';
+import importacionesRoutes from './routes/importaciones.js';
 // Las imágenes se almacenan en Azure Blob Storage; no se sirven estáticos locales.
 const app = express();
 app.set('trust proxy', 1);
@@ -40,6 +41,7 @@ app.use('/api/recambios', recambiosRoutes);
 app.use('/api/paneles', panelesRoutes);
 app.use('/api/pedidos', pedidosRoutes);
 app.use('/api/catalogos', catalogosRoutes);
+app.use('/api/catalogos', importacionesRoutes);
 app.use(errorHandler);
 async function start() {
     try {

@@ -129,6 +129,12 @@ const permissionsSchema = z.object({
         edit: z.boolean(),
         delete: z.boolean(),
     }),
+    tarifas: z.object({
+        create: z.boolean(),
+        view: z.boolean(),
+        edit: z.boolean(),
+        delete: z.boolean(),
+    }),
 });
 export const updatePermissionsSchema = z.object({
     role: z.enum(['admin', 'user', 'viewer', 'operario']),
@@ -150,4 +156,7 @@ export const allowedEmailUpdateSchema = z.object({
     role: z.enum(['admin', 'user', 'viewer', 'operario']),
     isActive: z.boolean(),
     permissions: permissionsSchema.optional(),
+});
+export const importarMarcaSchema = z.object({
+    marca: z.string().min(1).max(50),
 });

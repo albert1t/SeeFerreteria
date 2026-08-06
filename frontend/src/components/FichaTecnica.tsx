@@ -35,6 +35,11 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
     return match ? parseInt(match[1], 10) : 1;
   }
 
+  function fmtPrecio(v: number | null | undefined): string | null {
+    if (v == null) return null;
+    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(v);
+  }
+
   const { data: detail } = useQuery({
     queryKey: ['recambios', recambio.id],
     queryFn: () => recambiosApi.getRecambio(recambio.id),
@@ -95,19 +100,17 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
     });
   }
 
-  function totalPedido(): number {
-    const emb = parseEmbalaje(r.unidadEmbalaje);
-    if (confirmacion?.tipo === 'Reposición') return (confirmacion?.cantidad ?? r.nReposicion ?? 1) * emb;
-    return (confirmacion?.cantidad ?? 0) * emb;
+  function paquetesPedido(): number {
+    if (confirmacion?.tipo === 'Reposición') return confirmacion.cantidad ?? r.nReposicion ?? 1;
+    return confirmacion?.cantidad ?? 0;
   }
 
   function ejecutarPedido() {
     if (!confirmacion) return;
-    const cantidadTotal = totalPedido();
     createPedidoMut.mutate({
       recambioId: recambio.id,
       tipo: confirmacion.tipo,
-      cantidad: cantidadTotal,
+      cantidad: paquetesPedido(),
       plazoDeseado: confirmacion.plazoDeseado,
       observaciones: confirmacion.observaciones,
     });
@@ -189,6 +192,7 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               ['Plazo de entrega', r.plazoEntrega ?? '—'],
               ['Familia', r.familiaNombre ?? '—'],
               ['N° Reposición', r.nReposicion ?? '—'],
+              ['PVP orientativo', r.pvpOrientativo != null ? fmtPrecio(r.pvpOrientativo) : '—'],
               ['Ubicación', `${r.panel} - Col ${r.col} Fila ${r.row}`],
             ].map(([k, v]) => (
               <div key={k as string}>
@@ -241,6 +245,11 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
           {!pedidoTipo ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <p style={{ color: '#7aade0', fontSize: 12, margin: '0 0 2px' }}>Selecciona el tipo de pedido:</p>
+              {r.pvpOrientativo != null && (
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#4dff9b', background: 'rgba(26,138,74,0.12)', border: '1px solid rgba(26,138,74,0.4)', padding: '8px 14px', borderRadius: 8, marginBottom: 6 }}>
+                  PVP orientativo: {fmtPrecio(r.pvpOrientativo)}/paquete
+                </div>
+              )}
               {r.unidadEmbalaje && (
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#f3f6ff', background: 'rgba(77,184,255,0.15)', border: '1px solid rgba(77,184,255,0.4)', padding: '8px 14px', borderRadius: 8, marginBottom: 6 }}>
                   Ud. embalaje: {r.unidadEmbalaje}
@@ -299,6 +308,11 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
                     Ud. embalaje: {r.unidadEmbalaje}
                   </span>
                 )}
+                {r.pvpOrientativo != null && (
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#4dff9b', background: 'rgba(26,138,74,0.12)', border: '1px solid rgba(26,138,74,0.4)', padding: '5px 12px', borderRadius: 6, whiteSpace: 'nowrap' }}>
+                    {fmtPrecio(r.pvpOrientativo)}/paquete
+                  </span>
+                )}
               </div>
               {pedidoTipo !== 'Reposición' && (
                 <div style={{ marginBottom: '0.75rem' }}>
@@ -311,6 +325,9 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
                   {r.unidadEmbalaje && cantidad && !isNaN(parseInt(cantidad, 10)) && (
                     <div style={{ fontSize: 12, color: '#7aade0', marginTop: 4 }}>
                       {parseInt(cantidad, 10)} × {r.unidadEmbalaje} = <strong style={{ color: '#4db8ff' }}>{parseInt(cantidad, 10) * parseEmbalaje(r.unidadEmbalaje)} uds</strong> total
+                      {r.pvpOrientativo != null && (
+                        <> · Total: <strong style={{ color: '#4dff9b' }}>{fmtPrecio(parseInt(cantidad, 10) * r.pvpOrientativo)}</strong></>
+                      )}
                     </div>
                   )}
                 </div>
@@ -365,19 +382,29 @@ export function FichaTecnica({ recambio, onClose, onUpdated }: FichaTecnicaProps
               </div>
               {r.metrica && <div style={{ fontSize: 12, color: '#a8cce8', marginBottom: 2 }}>Métrica: {r.metrica}</div>}
               {r.unidadEmbalaje && <div style={{ fontSize: 12, color: '#a8cce8', marginBottom: 2 }}>Ud. embalaje: {r.unidadEmbalaje}</div>}
+              {r.pvpOrientativo != null && (
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#4dff9b', marginBottom: 2 }}>
+                  PVP orientativo: {fmtPrecio(r.pvpOrientativo)}/paquete
+                </div>
+              )}
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
-              <div style={labelStyle}>Cantidad</div>
+              <div style={labelStyle}>Cantidad (paquetes)</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: '#f3f6ff' }}>
                 {(() => {
                   const emb = parseEmbalaje(r.unidadEmbalaje);
                   const paquetes = confirmacion.cantidad ?? r.nReposicion ?? 1;
                   const total = paquetes * emb;
-                  if (emb <= 1) return `${paquetes} uds`;
-                  return `${paquetes} ${r.unidadEmbalaje ? `(x ${r.unidadEmbalaje})` : ''} = ${total} uds total`;
+                  if (emb <= 1) return `${paquetes} paquete${paquetes === 1 ? '' : 's'}`;
+                  return `${paquetes} paquete${paquetes === 1 ? '' : 's'} × ${emb} uds = ${total} uds`;
                 })()}
               </div>
+              {r.pvpOrientativo != null && (
+                <div style={{ fontSize: 13, color: '#4dff9b', fontWeight: 700, marginTop: 4 }}>
+                  Total orientativo ({paquetesPedido()} paquetes): {fmtPrecio(paquetesPedido() * r.pvpOrientativo)}
+                </div>
+              )}
             </div>
             {confirmacion.plazoDeseado && (
               <div style={{ marginBottom: '0.75rem' }}>

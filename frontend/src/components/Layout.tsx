@@ -9,7 +9,10 @@ import { FichaTecnica } from './FichaTecnica';
 import { FormRecambio } from './FormRecambio';
 import { btnStyle } from '../styles/theme';
 import * as pedidosApi from '../api/pedidos';
+import * as importacionesApi from '../api/importaciones';
 import type { Recambio } from '../types';
+
+const TARIFA_OBSOLESCENCIA_DIAS = 180;
 
 const navBtn: React.CSSProperties = {
   padding: '8px 18px', background: 'transparent', border: '1px solid rgba(77,184,255,0.3)',
@@ -25,6 +28,16 @@ export function Layout() {
   const [panelSeleccionado, setPanelSeleccionado] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [tarifaAlertDescartada, setTarifaAlertDescartada] = useState(false);
+
+  const puedeTarifas = can('tarifas', 'edit');
+
+  const { data: tarifaStatus } = useQuery({
+    queryKey: ['importaciones', 'festo', 'status'],
+    queryFn: () => importacionesApi.getImportacionStatus('festo'),
+    enabled: puedeTarifas,
+    refetchInterval: 30_000,
+  });
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)');
@@ -112,6 +125,11 @@ export function Layout() {
               Datos
             </NavLink>
           )}
+          {can('tarifas', 'edit') && (
+            <NavLink to="/admin/importar-tarifas-festo" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}) })}>
+              Tarifa Festo
+            </NavLink>
+          )}
         </nav>
 
         <div className="desktop-only" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -122,6 +140,31 @@ export function Layout() {
           <button style={{ ...btnStyle('ghost'), padding: '6px 10px', fontSize: 12 }} onClick={() => logout()}>Salir</button>
         </div>
       </header>
+
+      {puedeTarifas && tarifaStatus?.diasDesdeUltima != null && tarifaStatus.diasDesdeUltima > TARIFA_OBSOLESCENCIA_DIAS && !tarifaAlertDescartada && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12, margin: '0 1.5rem',
+          marginTop: '1rem', padding: '0.75rem 1rem',
+          background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.4)',
+          borderRadius: 8, color: '#ff6b6b', fontSize: 13,
+        }}>
+          <span style={{ flex: 1 }}>
+            ⚠️ La tarifa de precios de Festo tiene más de 6 meses de antigüedad ({tarifaStatus.diasDesdeUltima} días). Importa un nuevo CSV para mantener los PVP orientativos al día.{' '}
+            <NavLink to="/admin/importar-tarifas-festo" onClick={closeMenu} style={{ color: '#ff6b6b', fontWeight: 700 }}>Ir a importar</NavLink>
+          </span>
+          <button
+            type="button"
+            onClick={() => setTarifaAlertDescartada(true)}
+            style={{
+              background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer',
+              fontSize: 16, lineHeight: 1, padding: 2, flexShrink: 0,
+            }}
+            title="Descartar"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* Mobile drawer — dropdown desde la izquierda del navbar */}
       {menuOpen && (
@@ -165,6 +208,14 @@ export function Layout() {
             ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}),
           })}>
             Datos
+          </NavLink>
+        )}
+        {can('tarifas', 'edit') && (
+          <NavLink to="/admin/importar-tarifas-festo" onClick={closeMenu} style={({ isActive }) => ({
+            ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
+            ...(isActive ? { background: 'rgba(77,184,255,0.15)', borderColor: '#4db8ff', color: '#4db8ff' } : {}),
+          })}>
+            Tarifa Festo
           </NavLink>
         )}
         <div style={{ marginTop: 'auto', borderTop: '1px solid rgba(42,80,128,0.5)', paddingTop: 12 }}>

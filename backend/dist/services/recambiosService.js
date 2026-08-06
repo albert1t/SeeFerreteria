@@ -51,6 +51,8 @@ export async function createRecambio(data, skipDupeCheck = false) {
     await validateUbicacion(data.panel, data.col, data.row);
     return recambiosRepo.create({
         ...data,
+        pvpOrientativo: data.pvpOrientativo ?? null,
+        pvpOrientativoMoneda: data.pvpOrientativoMoneda ?? 'EUR',
         imagen: data.imagen || `https://placehold.co/120x120/1e3a5f/ffffff?text=${encodeURIComponent(data.referenciaCMH)}`,
         oculto: false,
     });
@@ -191,6 +193,8 @@ export async function importarDesdeExcel(buffer) {
                 descripcion: getVal(['Descripcion', 'Descripción', 'Descripcion Larga', 'Descripción Larga', 'Descripcion Corta', 'Descripción Corta']) ? String(getVal(['Descripcion', 'Descripción', 'Descripcion Larga', 'Descripción Larga', 'Descripcion Corta', 'Descripción Corta'])) : null,
                 metrica: getVal(['Metrica', 'Métrica', 'Dimensiones', 'Medida']) ? String(getVal(['Metrica', 'Métrica', 'Dimensiones', 'Medida'])) : null,
                 unidadEmbalaje: getVal(['Unidad Embalaje', 'Ud. Embalaje', 'Uds', 'Unidad de embalaje', 'unidadembalaje']) ? String(getVal(['Unidad Embalaje', 'Ud. Embalaje', 'Uds', 'Unidad de embalaje', 'unidadembalaje'])) : null,
+                pvpOrientativo: null,
+                pvpOrientativoMoneda: 'EUR',
                 imagen: getVal(['Imagen']) ? String(getVal(['Imagen'])) : null,
                 plazoEntrega: getVal(['Plazo Entrega', 'Plazo', 'plazoentrega']) ? String(getVal(['Plazo Entrega', 'Plazo', 'plazoentrega'])) : null,
                 familiaId: famId,

@@ -47,7 +47,7 @@ export function requireRole(...roles: UserRole[]) {
   };
 }
 
-type Resource = 'pedidos' | 'recambios' | 'familias';
+type Resource = 'pedidos' | 'recambios' | 'familias' | 'tarifas';
 type Action = 'create' | 'view' | 'edit' | 'delete';
 
 export function requirePermission(resource: Resource, action: Action) {
@@ -71,24 +71,28 @@ export function getDefaultPermissions(role: UserRole): Permissions {
     pedidos: { create: true, view: true, edit: true, delete: true },
     recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
     familias: { create: true, view: true, edit: true, delete: true },
+    tarifas: { create: true, view: true, edit: true, delete: true },
   };
   const user: Permissions = {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
+    tarifas: { create: false, view: false, edit: false, delete: false },
   };
   const viewer: Permissions = {
     admin: false,
     pedidos: { create: false, view: true, edit: false, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
+    tarifas: { create: false, view: false, edit: false, delete: false },
   };
   const operario: Permissions = {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
+    tarifas: { create: false, view: false, edit: false, delete: false },
   };
 
   switch (role) {

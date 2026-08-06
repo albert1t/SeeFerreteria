@@ -19,7 +19,7 @@ function buildTokenResponse(user: User) {
 }
 
 export async function login(username: string, password: string): Promise<{ user: User; token: string }> {
-  const user = await usersRepo.findByUsername(username);
+  const user = await usersRepo.findByUsernameAll(username);
   if (!user) {
     throw new AppError(401, 'Credenciales incorrectas');
   }
@@ -27,6 +27,10 @@ export async function login(username: string, password: string): Promise<{ user:
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) {
     throw new AppError(401, 'Credenciales incorrectas');
+  }
+
+  if (!user.isActive) {
+    throw new AppError(403, 'Tu cuenta está pendiente de activación. Un administrador debe activarla y configurar tus permisos para poder acceder al sitio.');
   }
 
   const { passwordHash: _, ...safeUser } = user;
@@ -41,7 +45,7 @@ export async function register(username: string, name: string, password: string)
 
   const passwordHash = await bcrypt.hash(password, 10);
   const role: UserRole = 'user';
-  const created = await usersRepo.createUser(username, passwordHash, name, role);
+  const created = await usersRepo.createUser(username, passwordHash, name, role, undefined, true);
   if (!created) {
     throw new AppError(409, 'El usuario ya existe');
   }
@@ -97,7 +101,7 @@ export async function loginMicrosoft(idToken: string): Promise<{ user: User; tok
     const passwordHash = await bcrypt.hash(randomBytes(32).toString('hex'), 10);
     const role = allowed.role;
     const permissions = allowed.permissions ?? getDefaultPermissions(role);
-    const created = await usersRepo.createUser(username, passwordHash, name, role, permissions);
+    const created = await usersRepo.createUser(username, passwordHash, name, role, permissions, true);
     if (!created) {
       throw new AppError(409, 'El usuario ya existe');
     }

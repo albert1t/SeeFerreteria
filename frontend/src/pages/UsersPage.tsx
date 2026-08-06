@@ -21,24 +21,28 @@ const DEFAULT_PERMISSIONS: Record<UserRole, Permissions> = {
     pedidos: { create: true, view: true, edit: true, delete: true },
     recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
     familias: { create: true, view: true, edit: true, delete: true },
+    tarifas: { create: true, view: true, edit: true, delete: true },
   },
   operario: {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
+    tarifas: { create: false, view: false, edit: false, delete: false },
   },
   user: {
     admin: false,
     pedidos: { create: true, view: true, edit: true, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
+    tarifas: { create: false, view: false, edit: false, delete: false },
   },
   viewer: {
     admin: false,
     pedidos: { create: false, view: true, edit: false, delete: false },
     recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     familias: { create: false, view: false, edit: false, delete: false },
+    tarifas: { create: false, view: false, edit: false, delete: false },
   },
 };
 
@@ -49,7 +53,7 @@ function PermissionsEditor({
   permissions: Permissions;
   onChange: (p: Permissions) => void;
 }) {
-  const toggle = (resource: 'pedidos' | 'recambios' | 'familias', action: 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage') => {
+  const toggle = (resource: 'pedidos' | 'recambios' | 'familias' | 'tarifas', action: 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage') => {
     const current = (permissions[resource] as any)[action];
     onChange({
       ...permissions,
@@ -72,7 +76,7 @@ function PermissionsEditor({
       </label>
       {!permissions.admin && (
         <>
-          {(['pedidos', 'recambios', 'familias'] as const).map((resource) => {
+          {(['pedidos', 'recambios', 'familias', 'tarifas'] as const).map((resource) => {
             const actions: ('create' | 'view' | 'edit' | 'delete' | 'viewDataPage')[] =
               resource === 'recambios'
                 ? ['create', 'view', 'edit', 'delete', 'viewDataPage']
@@ -145,7 +149,7 @@ export function UsersPage() {
       usersApi.createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      showToast('Usuario creado', 'success');
+      showToast('Usuario creado (inactivo). Actívalo y configura sus permisos para que pueda acceder.', 'success');
       setShowCreate(false);
       setCreateForm({ username: '', password: '', name: '', role: 'user' });
       setCreateError('');
@@ -287,6 +291,9 @@ export function UsersPage() {
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Crear usuario">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 320 }}>
+          <div style={{ fontSize: 13, color: '#ffb86b', background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.4)', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
+            El usuario se creará <strong>desactivado</strong> y sin acceso. Para que pueda entrar, un administrador debe <strong>activarlo</strong> y asignarle los <strong>permisos</strong> en "Editar permisos".
+          </div>
           <div>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Usuario</label>
             <input value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}

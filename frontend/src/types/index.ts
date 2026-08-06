@@ -21,6 +21,12 @@ export interface Permissions {
     edit: boolean;
     delete: boolean;
   };
+  tarifas: {
+    create: boolean;
+    view: boolean;
+    edit: boolean;
+    delete: boolean;
+  };
 }
 
 export interface User {
@@ -53,6 +59,8 @@ export interface Recambio {
   descripcion: string | null;
   metrica: string | null;
   unidadEmbalaje: string | null;
+  pvpOrientativo: number | null;
+  pvpOrientativoMoneda: string | null;
   imagen: string | null;
   plazoEntrega: string | null;
   familiaId: number;
@@ -80,6 +88,8 @@ export interface Pedido {
   recambioRef?: string;
   recambioNombre?: string;
   recambioImagen?: string;
+  recambioPrecio?: number | null;
+  recambioEmbalaje?: string | null;
   solicitanteNombre?: string;
 }
 
@@ -114,6 +124,28 @@ export interface FamiliaConSubs {
   descripcion: string | null;
 }
 
+export type ImportacionEstado = 'procesando' | 'completado' | 'fallido';
+
+export interface ImportacionCatalogo {
+  id: number;
+  marca: string;
+  totalRegistros: number;
+  actualizados: number;
+  errores: number;
+  erroresDetalle: string | null;
+  estado: ImportacionEstado;
+  archivoNombre: string | null;
+  usuarioId: number;
+  fechaInicio: string;
+  fechaFin: string | null;
+}
+
+export interface ImportacionStatusResponse {
+  marca: string;
+  ultimaImportacion: string | null;
+  diasDesdeUltima: number | null;
+}
+
 export interface RecambioFormData {
   referenciaCMH: string;
   referenciaCliente?: string | null;
@@ -123,6 +155,8 @@ export interface RecambioFormData {
   descripcion?: string | null;
   metrica?: string | null;
   unidadEmbalaje?: string | null;
+  pvpOrientativo?: number | null;
+  pvpOrientativoMoneda?: string | null;
   imagen?: string | null;
   plazoEntrega?: string | null;
   familiaId: number;

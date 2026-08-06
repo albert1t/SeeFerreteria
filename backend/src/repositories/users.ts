@@ -75,6 +75,7 @@ export async function createUser(
   name: string,
   role: UserRole,
   permissions?: Permissions | null,
+  isActive = false,
 ): Promise<boolean> {
   const pool = await getPool();
   const [rows] = await pool.query('SELECT 1 AS existsUser FROM Users WHERE username = ? LIMIT 1', [username]);
@@ -82,8 +83,8 @@ export async function createUser(
 
   const perms = permissions ?? getDefaultPermissions(role);
   await pool.query(
-    'INSERT INTO Users (username, passwordHash, name, role, permissions) VALUES (?, ?, ?, ?, ?)',
-    [username, passwordHash, name, role, JSON.stringify(perms)]
+    'INSERT INTO Users (username, passwordHash, name, role, permissions, isActive) VALUES (?, ?, ?, ?, ?, ?)',
+    [username, passwordHash, name, role, JSON.stringify(perms), isActive ? 1 : 0]
   );
   return true;
 }
