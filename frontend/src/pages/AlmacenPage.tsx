@@ -16,15 +16,15 @@ function LoadingOverlay({ message }: { message: string }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)',
+      background: 'var(--overlay-soft)', backdropFilter: 'blur(2px)',
       display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16,
     }}>
       <div style={{
-        width: 40, height: 40, border: '3px solid rgba(77,184,255,0.2)',
-        borderTopColor: '#4db8ff', borderRadius: '50%',
+        width: 40, height: 40, border: '3px solid var(--border-input-strong)',
+        borderTopColor: 'var(--accent)', borderRadius: '50%',
         animation: 'spin 0.8s linear infinite',
       }} />
-      <div style={{ color: '#edf2fb', fontSize: 14, fontWeight: 600 }}>{message}</div>
+      <div style={{ color: 'var(--text-bright)', fontSize: 14, fontWeight: 600 }}>{message}</div>
       <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
     </div>
   );
@@ -37,12 +37,12 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
       title={title}
       style={{
         width: '100%', height: '100%', borderRadius: 3,
-        backgroundColor: filled ? 'rgba(26,110,196,0.08)' : 'rgba(235,245,255,0.14)',
+        backgroundColor: filled ? 'var(--bg-cubeta-filled-2)' : 'var(--bg-cubeta-empty)',
         backgroundImage: background,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        border: filled ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(255,255,255,0.22)',
+        border: filled ? '1px solid var(--border-white-soft)' : '1px solid var(--border-white)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
         containerType: 'size',
@@ -56,13 +56,13 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
             width: '70%',
             height: '70%',
             objectFit: 'contain',
-            filter: 'brightness(0) invert(1) drop-shadow(0 1px 1px rgba(0,0,0,0.4))',
+            filter: 'brightness(0) invert(1) drop-shadow(0 1px 1px var(--shadow-strong))',
           }}
         />
       )}
       {!filled && (
         <span style={{
-          color: 'rgba(255,255,255,0.55)',
+          color: 'var(--text-faint)',
           fontSize: 'clamp(7px, 18cqw, 10px)',
           fontWeight: 700,
           lineHeight: 1,
@@ -260,14 +260,14 @@ export function AlmacenPage() {
         <div style={{ minWidth: 400 }}>
           <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'end' }}>
             <div>
-              <label style={{ color: '#7aade0', fontSize: 12, display: 'block', marginBottom: 4 }}>Nombre</label>
+              <label style={{ color: 'var(--text-muted)', fontSize: 12, display: 'block', marginBottom: 4 }}>Nombre</label>
               <input value={nuevaFamiliaNombre} onChange={(e) => setNuevaFamiliaNombre(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)' }} />
+                style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)' }} />
             </div>
             <div>
-              <label style={{ color: '#7aade0', fontSize: 12, display: 'block', marginBottom: 4 }}>Descripción</label>
+              <label style={{ color: 'var(--text-muted)', fontSize: 12, display: 'block', marginBottom: 4 }}>Descripción</label>
               <input value={nuevaFamiliaDesc} onChange={(e) => setNuevaFamiliaDesc(e.target.value)}
-                style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)' }} />
+                style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)' }} />
             </div>
             <button type="button" disabled={!nuevaFamiliaNombre || createFamiliaMut.isPending}
               style={{ ...btnStyle('primary'), padding: '8px 16px' }}
@@ -277,25 +277,25 @@ export function AlmacenPage() {
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
-                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#7aade0', fontWeight: 600 }}>Nombre</th>
-                <th style={{ padding: '10px 12px', textAlign: 'left', color: '#7aade0', fontWeight: 600 }}>Descripción</th>
-                {can('familias', 'delete') && <th style={{ padding: '10px 12px', textAlign: 'left', color: '#7aade0', fontWeight: 600 }}>Acciones</th>}
+              <tr style={{ background: 'var(--bg-table-head)' }}>
+                <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Nombre</th>
+                <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Descripción</th>
+                {can('familias', 'delete') && <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Acciones</th>}
               </tr>
             </thead>
             <tbody>
               {familias.map((f) => (
-                <tr key={f.id} style={{ borderTop: '1px solid rgba(77,184,255,0.1)' }}>
+                <tr key={f.id} style={{ borderTop: '1px solid var(--border)' }}>
                   <td style={{ padding: '10px 12px' }}>
                     {editandoFamilia?.id === f.id ? (
                       <input value={editandoFamilia.nombre} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, nombre: e.target.value })}
-                        style={{ padding: '6px 10px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)', width: '100%' }} />
+                        style={{ padding: '6px 10px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)', width: '100%' }} />
                     ) : f.nombre}
                   </td>
                   <td style={{ padding: '10px 12px' }}>
                     {editandoFamilia?.id === f.id ? (
                       <input value={editandoFamilia.descripcion} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, descripcion: e.target.value })}
-                        style={{ padding: '6px 10px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.25)', width: '100%' }} />
+                        style={{ padding: '6px 10px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)', width: '100%' }} />
                     ) : (f.descripcion || '—')}
                   </td>
                   {can('familias', 'delete') && (
@@ -331,8 +331,8 @@ export function AlmacenPage() {
       </Modal>
 
       {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo recambio...'} />}
-      <div className="almacen-page-root" style={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 64px)', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
-      <div className="almacen-title-row" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexShrink: 0 }}>
+      <div className="almacen-page-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
+      <div className="almacen-title-row" style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexShrink: 0, gap: '1rem' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {panelSeleccionado ? `Panel ${panelSeleccionado}` : 'Almacén — Vista General'}
@@ -369,8 +369,8 @@ export function AlmacenPage() {
             <div style={{
               marginTop: 8,
               padding: '8px 12px',
-              background: 'rgba(232,168,77,0.08)',
-              border: '1px solid rgba(232,168,77,0.25)',
+              background: 'var(--bg-warning-soft)',
+              border: '1px solid var(--border-warning)',
               borderRadius: 8,
               fontSize: 12,
               display: 'flex',
@@ -379,16 +379,16 @@ export function AlmacenPage() {
               flexWrap: 'wrap',
             }}>
               {!selectedForSwap ? (
-                <span style={{ color: '#e8a84d' }}>Haz clic en un recambio para moverlo o intercambiarlo</span>
+                <span style={{ color: 'var(--warning-alt)' }}>Haz clic en un recambio para moverlo o intercambiarlo</span>
               ) : (
                 <>
-                  <span style={{ color: '#e8a84d', fontWeight: 600 }}>
+                  <span style={{ color: 'var(--warning-alt)', fontWeight: 600 }}>
                     {selectedForSwap.referenciaCMH}
                     <span style={{ fontWeight: 400, opacity: 0.6, marginLeft: 6 }}>
                       (P: {selectedForSwap.panel} · C: {selectedForSwap.col} · F: {selectedForSwap.row})
                     </span>
                   </span>
-                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>→</span>
+                  <span style={{ color: 'var(--text-faint-2)' }}>→</span>
                   <button
                     style={{ ...btnStyle('primary'), fontSize: 11, padding: '4px 10px' }}
                     onClick={() => setShowPanelPicker(true)}
@@ -396,8 +396,8 @@ export function AlmacenPage() {
                   >
                     Mover a otro panel
                   </button>
-                  <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>ó</span>
-                  <span style={{ color: 'rgba(255,255,255,0.5)' }}>Haz clic en otro recambio del mismo panel para intercambiarlo</span>
+                  <span style={{ color: 'var(--text-faint-2)', fontSize: 11 }}>ó</span>
+                  <span style={{ color: 'var(--text-faint-2)' }}>Haz clic en otro recambio del mismo panel para intercambiarlo</span>
                   <button style={{ ...btnStyle('ghost'), fontSize: 10, padding: '2px 8px', marginLeft: 'auto' }} onClick={() => setSelectedForSwap(null)}>
                     Cancelar
                   </button>
@@ -406,13 +406,26 @@ export function AlmacenPage() {
             </div>
           )}
         </div>
+        {!panelSeleccionado && (
+          <p className="almacen-hint" style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            color: 'var(--text-dim)', fontSize: 15, fontWeight: 600,
+            margin: 0, textAlign: 'center', whiteSpace: 'nowrap', pointerEvents: 'none',
+            maxWidth: 'calc(100% - 240px)',
+          }}>
+            Haz clic en un panel para ver en detalle
+          </p>
+        )}
         {panelSeleccionado && (
           <button style={btnStyle('ghost')} onClick={() => { setPanelSeleccionado(null); setSwapMode(false); setSelectedForSwap(null); }}>← Volver</button>
         )}
       </div>
 
       {loadingPanelSummary ? (
-        <div style={{ textAlign: 'center', color: '#4a7aaa', padding: '3rem' }}>Cargando paneles...</div>
+        <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '3rem' }}>Cargando paneles...</div>
       ) : !panelSeleccionado ? (
         <>
             <div ref={panelListRef} className="scrollbar-horizontal" style={{ flex: 1, minHeight: 0, overflowX: 'auto', overflowY: 'hidden', paddingBottom: '1rem' }} onWheel={handlePanelListWheel}>
@@ -429,17 +442,17 @@ export function AlmacenPage() {
                     key={p.panel}
                     onClick={() => setPanelSeleccionado(p.panel)}
                     style={{
-                      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(77,184,255,0.15)',
+                      background: 'var(--bg-card)', border: '1px solid var(--border)',
                       borderRadius: 10, padding: '0.6rem', cursor: 'pointer', flexShrink: 0, transition: 'all 0.2s',
                       minWidth: cardWidth, width: cardWidth, minHeight: 0, display: 'flex', flexDirection: 'column',
                       overflow: 'hidden',
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'rgba(77,184,255,0.4)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'rgba(77,184,255,0.15)'; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-accent)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
                   >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12, textAlign: 'center', width: '100%', overflow: 'hidden' }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: '#4db8ff' }}>{p.panel}</div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>{p.panel}</div>
                       </div>
                       {editingPanel === p.panel ? (
                         <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -448,8 +461,8 @@ export function AlmacenPage() {
                             onChange={(e) => handlePanelTitleChange(p.panel, e.target.value)}
                             onClick={(e) => e.stopPropagation()}
                             style={{
-                              width: '100%', border: '1px solid rgba(77,184,255,0.3)', borderRadius: 6, padding: '6px 8px',
-                              background: 'rgba(255,255,255,0.05)', color: '#edf2fb', fontSize: 12,
+                              width: '100%', border: '1px solid var(--border-input-strong)', borderRadius: 6, padding: '6px 8px',
+                              background: 'var(--bg-input)', color: 'var(--text-bright)', fontSize: 12,
                             }}
                           >
                             <option value="">-- Seleccionar familia --</option>
@@ -482,12 +495,12 @@ export function AlmacenPage() {
                           onClick={(e) => { e.stopPropagation(); setEditingPanel(p.panel); }}
                           style={{
                             fontSize: 11,
-                            color: '#f3f6ff',
+                            color: 'var(--text-bright)',
                             opacity: 0.86,
                             minHeight: 24,
                             padding: '6px 8px',
                             borderRadius: 6,
-                            background: 'rgba(255,255,255,0.05)',
+                            background: 'var(--bg-input)',
                             cursor: 'pointer',
                             overflow: 'hidden',
                             textOverflow: 'ellipsis',
@@ -522,10 +535,9 @@ export function AlmacenPage() {
               })}
             </div>
           </div>
-          <p style={{ color: '#4a7aaa', fontSize: 12, marginTop: '1rem', textAlign: 'center' }}>Haz clic en un panel para ver en detalle</p>
         </>
       ) : loadingCubetas ? (
-        <div style={{ textAlign: 'center', color: '#4a7aaa', padding: '3rem' }}>Cargando cubetas...</div>
+        <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '3rem' }}>Cargando cubetas...</div>
       ) : (
         (() => {
           const dims = getPanelDimensions(panelSeleccionado);
@@ -576,29 +588,29 @@ export function AlmacenPage() {
                         }}
                         className="panel-detail-cell"
                         style={{
-                          background: r ? (r.oculto ? 'rgba(196, 26, 26, 0.10)' : 'rgba(26,110,196,0.06)') : 'rgba(235,245,255,0.14)',
-                          border: selectedForSwap?.id === r?.id ? '2px solid rgba(77,184,255,0.8)' : r ? (r.oculto ? '1px dashed rgba(196, 26, 26, 0.45)' : '1px solid rgba(77,184,255,0.22)') : '1px solid rgba(255,255,255,0.18)',
+                          background: r ? (r.oculto ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)') : 'var(--bg-cubeta-empty-detail)',
+                          border: selectedForSwap && selectedForSwap.id === r?.id ? '2px solid var(--accent)' : r ? (r.oculto ? '1px dashed var(--border-danger)' : '1px solid var(--border-input-soft)') : '1px solid var(--border-cubeta-empty-detail)',
                           opacity: r?.oculto ? 0.84 : 1,
                           borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : (swapMode && selectedForSwap ? 'pointer' : 'default'),
                           minHeight: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
                           transition: 'all 0.2s',
                           boxSizing: 'border-box',
-                          boxShadow: selectedForSwap?.id === r?.id ? '0 0 12px rgba(77,184,255,0.35)' : undefined,
+                          boxShadow: selectedForSwap && selectedForSwap.id === r?.id ? '0 0 4px var(--accent)' : undefined,
                         }}
                         onMouseEnter={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = r.oculto ? 'rgba(196,26,26,0.18)' : 'rgba(26,110,196,0.14)';
-                            e.currentTarget.style.borderColor = r.oculto ? 'rgba(196,26,26,0.6)' : 'rgba(77,184,255,0.45)';
+                            e.currentTarget.style.background = r.oculto ? 'var(--bg-danger-hover)' : 'var(--bg-cubeta-hover)';
+                            e.currentTarget.style.borderColor = r.oculto ? 'var(--border-danger-strong)' : 'var(--border-input-strong)';
                           } else if (swapMode && selectedForSwap) {
-                            e.currentTarget.style.background = 'rgba(235,245,255,0.22)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)';
+                            e.currentTarget.style.background = 'var(--bg-cubeta-empty-detail)'; e.currentTarget.style.borderColor = 'var(--border-cubeta-empty-detail)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = r.oculto ? 'rgba(196,26,26,0.10)' : 'rgba(26,110,196,0.06)';
-                            e.currentTarget.style.borderColor = r.oculto ? 'rgba(196,26,26,0.45)' : 'rgba(77,184,255,0.22)';
+                            e.currentTarget.style.background = r.oculto ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)';
+                            e.currentTarget.style.borderColor = r.oculto ? 'var(--border-danger)' : 'var(--border-input-soft)';
                           } else if (swapMode && selectedForSwap) {
-                            e.currentTarget.style.background = 'rgba(235,245,255,0.14)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)';
+                            e.currentTarget.style.background = 'var(--bg-cubeta-empty-detail)'; e.currentTarget.style.borderColor = 'var(--border-cubeta-empty-detail)';
                           }
                         }}
                       >
@@ -613,25 +625,25 @@ export function AlmacenPage() {
                                 style={{
                                   width: 90, height: 90, borderRadius: 8, flexShrink: 0,
                                   objectFit: 'contain',
-                                  filter: 'brightness(0) invert(1) drop-shadow(0 1px 2px rgba(0,0,0,0.4))',
+                                  filter: 'brightness(0) invert(1) drop-shadow(0 1px 2px var(--shadow-strong))',
                                 }}
                               />
                             )}
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%', flex: 1 }}>
-                              <div style={{ fontSize: 14, fontWeight: 700, color: '#4db8ff', textAlign: 'center', wordBreak: 'break-all' }}>{r.referenciaCMH}</div>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)', textAlign: 'center', wordBreak: 'break-all' }}>{r.referenciaCMH}</div>
                               {r.referenciaCliente && (
-                                <div style={{ fontSize: 11, color: '#e8a84d', fontStyle: 'italic', textAlign: 'center', wordBreak: 'break-all' }}>
+                                <div style={{ fontSize: 11, color: 'var(--warning-alt)', fontStyle: 'italic', textAlign: 'center', wordBreak: 'break-all' }}>
                                   {r.referenciaCliente}
                                 </div>
                               )}
                               {r.oculto && (
-                                <span style={{ fontSize: 10, color: '#c0392b', background: 'rgba(192,57,43,0.12)', padding: '2px 6px', borderRadius: 4, marginTop: 4 }}>
+                                <span style={{ fontSize: 10, color: 'var(--danger)', background: 'var(--bg-danger-soft)', padding: '2px 6px', borderRadius: 4, marginTop: 4 }}>
                                   Oculto
                                 </span>
                               )}
                               <div style={{
                                 fontSize: 12,
-                                color: '#e8eef6',
+                                color: 'var(--text)',
                                 lineHeight: 1.25,
                                 overflow: 'hidden',
                                 display: '-webkit-box',
@@ -644,15 +656,15 @@ export function AlmacenPage() {
                               }}>
                                 {r.nombre}
                               </div>
-                              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto' }}>
+                              <div style={{ fontSize: 10, color: 'var(--text-faint-2)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto' }}>
                                 {col}/{row}
                               </div>
                             </div>
                           </>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 6 }}>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: 'rgba(255,255,255,0.55)' }}>Vacío</span>
-                            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{col}/{row}</span>
+                            <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-faint-2)' }}>Vacío</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-faint-2)' }}>{col}/{row}</span>
                           </div>
                         )}
                       </div>
@@ -668,16 +680,16 @@ export function AlmacenPage() {
       <Modal open={!!confirmSwap} onClose={() => setConfirmSwap(null)} title="Confirmar intercambio">
         {confirmSwap && (
           <div>
-            <p style={{ fontSize: 14, color: '#c8ddf0', marginBottom: '1rem' }}>
+            <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: '1rem' }}>
               Intercambiar posiciones:
             </p>
-            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem' }}>
-              <div style={{ fontWeight: 700, color: '#4db8ff' }}>{confirmSwap.r1.referenciaCMH}</div>
-              <div style={{ fontSize: 12, color: '#7aade0' }}>P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row} → P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row}</div>
+            <div style={{ background: 'var(--bg-card-soft)', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem' }}>
+              <div style={{ fontWeight: 700, color: 'var(--accent)' }}>{confirmSwap.r1.referenciaCMH}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row} → P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row}</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 8, padding: '0.75rem', marginBottom: '1.5rem' }}>
-              <div style={{ fontWeight: 700, color: '#4db8ff' }}>{confirmSwap.r2.referenciaCMH}</div>
-              <div style={{ fontSize: 12, color: '#7aade0' }}>P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row} → P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row}</div>
+            <div style={{ background: 'var(--bg-card-soft)', borderRadius: 8, padding: '0.75rem', marginBottom: '1.5rem' }}>
+              <div style={{ fontWeight: 700, color: 'var(--accent)' }}>{confirmSwap.r2.referenciaCMH}</div>
+              <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row} → P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row}</div>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
               <button style={btnStyle('ghost')} onClick={() => setConfirmSwap(null)}>Cancelar</button>
@@ -720,7 +732,7 @@ export function AlmacenPage() {
                 ← Volver
               </button>
             )}
-            <span style={{ fontSize: 16, fontWeight: 700, color: '#edf2fb' }}>
+            <span style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-bright)' }}>
               {pickPanelName ? `Elige posición en ${pickPanelName}` : 'Selecciona panel destino'}
             </span>
           </div>
@@ -752,8 +764,8 @@ export function AlmacenPage() {
                       padding: '10px',
                       fontSize: 13,
                       fontWeight: 600,
-                      background: 'rgba(255,255,255,0.03)',
-                      border: '1px solid rgba(77,184,255,0.15)',
+                      background: 'var(--bg-card-soft)',
+                      border: '1px solid var(--border)',
                       borderRadius: 8,
                       cursor: 'pointer',
                     }}
@@ -769,7 +781,7 @@ export function AlmacenPage() {
           ) : (
             /* Grid view of target panel */
             loadingPickPanel ? (
-              <div style={{ textAlign: 'center', padding: '2rem', color: '#4a7aaa' }}>Cargando panel...</div>
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-dim)' }}>Cargando panel...</div>
             ) : (
               (() => {
                 const dims = getPanelDimensions(pickPanelName);
@@ -827,15 +839,15 @@ export function AlmacenPage() {
                               title={ocupante ? `${ocupante.referenciaCMH} (ocupado)` : isSelf ? 'Posición actual' : `C${col}F${row} — vacío`}
                               style={{
                                 background: isSelf
-                                  ? 'rgba(232,168,77,0.25)'
+                                  ? 'var(--bg-warning-soft)'
                                   : ocupante
-                                    ? 'rgba(77,184,255,0.15)'
-                                    : 'rgba(46,204,64,0.08)',
+                                    ? 'var(--bg-accent-soft)'
+                                    : 'var(--bg-success-soft)',
                                 border: isSelf
-                                  ? '2px solid #e8a84d'
+                                  ? '2px solid var(--warning-alt)'
                                   : ocupante
-                                    ? '1px solid rgba(77,184,255,0.3)'
-                                    : '1px solid rgba(46,204,64,0.2)',
+                                    ? '1px solid var(--border-input-strong)'
+                                    : '1px solid var(--border-success)',
                                 borderRadius: 6,
                                 padding: '6px 4px',
                                 textAlign: 'center',
@@ -859,15 +871,15 @@ export function AlmacenPage() {
                                 (e.currentTarget as HTMLDivElement).style.transform = 'scale(1)';
                               }}
                             >
-                              <span style={{ fontWeight: 600, fontSize: 11, color: isSelf ? '#e8a84d' : ocupante ? '#7aade0' : '#2ecc40' }}>
+                              <span style={{ fontWeight: 600, fontSize: 11, color: isSelf ? 'var(--warning-alt)' : ocupante ? 'var(--text-muted)' : 'var(--success-soft-text)' }}>
                                 {col}/{row}
                               </span>
                               {ocupante ? (
-                                <span style={{ fontSize: 9, color: '#4a7aaa', lineHeight: 1.2, wordBreak: 'break-word' }}>
+                                <span style={{ fontSize: 9, color: 'var(--text-dim)', lineHeight: 1.2, wordBreak: 'break-word' }}>
                                   {ocupante.referenciaCMH}
                                 </span>
                               ) : isSelf ? (
-                                <span style={{ fontSize: 9, color: '#e8a84d' }}>actual</span>
+                                <span style={{ fontSize: 9, color: 'var(--warning-alt)' }}>actual</span>
                               ) : null}
                             </div>
                           );

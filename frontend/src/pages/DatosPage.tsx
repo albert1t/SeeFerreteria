@@ -1,4 +1,5 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
@@ -18,6 +19,7 @@ const FIELDS: { key: keyof Recambio; label: string; width?: number }[] = [
   { key: 'marca', label: 'Marca', width: 100 },
   { key: 'metrica', label: 'Métrica', width: 80 },
   { key: 'unidadEmbalaje', label: 'Ud. Embalaje', width: 100 },
+  { key: 'pvpOrientativo', label: 'Precio', width: 90 },
   { key: 'familiaNombre', label: 'Familia', width: 120 },
   { key: 'nReposicion', label: 'Nº Repos.', width: 80 },
   { key: 'panel', label: 'Panel', width: 60 },
@@ -28,19 +30,19 @@ const FIELDS: { key: keyof Recambio; label: string; width?: number }[] = [
 
 const CELL_STYLES: React.CSSProperties = {
   padding: '4px 8px', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-  borderBottom: '1px solid rgba(77,184,255,0.08)', borderRight: '1px solid rgba(77,184,255,0.05)',
+  borderBottom: '1px solid var(--border)', borderRight: '1px solid var(--border-soft-2)',
 };
 
 const INPUT_CELL: React.CSSProperties = {
-  width: '100%', padding: '2px 4px', fontSize: 12, background: 'rgba(0,0,0,0.25)',
-  border: '1px solid rgba(77,184,255,0.25)', borderRadius: 3, color: '#e8eef6',
+  width: '100%', padding: '2px 4px', fontSize: 12, background: 'var(--bg-input-dark)',
+  border: '1px solid var(--border-input)', borderRadius: 3, color: 'var(--text)',
   boxSizing: 'border-box', outline: 'none', minHeight: 22,
 };
 
 const FILTER_DROPDOWN: React.CSSProperties = {
   position: 'absolute', top: '100%', left: 0, zIndex: 100,
-  background: '#0f1d30', border: '1px solid rgba(77,184,255,0.3)',
-  borderRadius: 6, padding: 8, minWidth: 200, boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
+  background: 'var(--bg-elevated-2)', border: '1px solid var(--border-input-strong)',
+  borderRadius: 6, padding: 8, minWidth: 200, boxShadow: 'var(--shadow-strong)',
 };
 
 function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, onSort }: {
@@ -63,7 +65,7 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
     <button type="button" onClick={() => { onSort(dir); onClose(); }}
       style={{
         ...btnBase, fontSize: 12, padding: '4px 8px',
-        background: sortDir === dir ? 'rgba(77,184,255,0.15)' : 'transparent',
+        background: sortDir === dir ? 'var(--bg-hover-strong)' : 'transparent',
         fontWeight: sortDir === dir ? 600 : 400,
       }}>
       {dir === 'asc' ? '▲' : '▼'} {label}
@@ -76,20 +78,20 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
       {sortBtn('desc', 'Ordenar Z→A')}
       {sortDir && (
         <button type="button" onClick={() => { onSort(null); onClose(); }}
-          style={{ ...btnBase, fontSize: 11, padding: '3px 8px', color: '#ff6b6b' }}>
+          style={{ ...btnBase, fontSize: 11, padding: '3px 8px', color: 'var(--danger-text)' }}>
           Quitar orden
         </button>
       )}
-      <div style={{ borderTop: '1px solid rgba(77,184,255,0.15)', margin: '6px 0', paddingTop: 6 }}>
+      <div style={{ borderTop: '1px solid var(--border)', margin: '6px 0', paddingTop: 6 }}>
         {field === 'panel' ? (
           <select value={value} onChange={(e) => onChange(e.target.value)}
-            style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'rgba(0,0,0,0.3)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.3)', borderRadius: 3, outline: 'none' }} autoFocus>
+            style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'var(--bg-input-dark-2)', color: 'var(--text)', border: '1px solid var(--border-input-strong)', borderRadius: 3, outline: 'none' }} autoFocus>
             <option value="">Todos los paneles</option>
             {Array.from({ length: 25 }, (_, i) => `A${i + 1}`).map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
         ) : field === 'familiaNombre' ? (
           <select value={value} onChange={(e) => onChange(e.target.value)}
-            style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'rgba(0,0,0,0.3)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.3)', borderRadius: 3, outline: 'none' }} autoFocus>
+            style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'var(--bg-input-dark-2)', color: 'var(--text)', border: '1px solid var(--border-input-strong)', borderRadius: 3, outline: 'none' }} autoFocus>
             <option value="">Todas las familias</option>
             {familias.map((f) => <option key={f.id} value={f.nombre}>{f.nombre}</option>)}
           </select>
@@ -97,7 +99,7 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
           ['', 'false', 'true'].map((val) => (
             <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', fontSize: 12, color: colors.text, cursor: 'pointer' }}>
               <input type="radio" name="oculto-filtro" checked={value === val} onChange={() => onChange(val)}
-                style={{ accentColor: '#4db8ff' }} />
+                style={{ accentColor: 'var(--accent)' }} />
               {val === '' ? 'Todos' : val === 'false' ? 'No' : 'Sí'}
             </label>
           ))
@@ -105,7 +107,7 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
           <>
             <input placeholder="Filtrar..." value={value} onChange={(e) => onChange(e.target.value)}
               onKeyDown={(e) => { if (e.key === 'Enter') onClose(); if (e.key === 'Escape') onClose(); }}
-              style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'rgba(0,0,0,0.3)', color: '#e8eef6', border: '1px solid rgba(77,184,255,0.3)', borderRadius: 3, outline: 'none', boxSizing: 'border-box' }} autoFocus />
+              style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'var(--bg-input-dark-2)', color: 'var(--text)', border: '1px solid var(--border-input-strong)', borderRadius: 3, outline: 'none', boxSizing: 'border-box' }} autoFocus />
             <div style={{ fontSize: 10, color: colors.textMuted, marginTop: 4 }}>Enter ↵ cerrar</div>
           </>
         )}
@@ -127,6 +129,7 @@ export function DatosPage() {
   const { can } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [busqueda, setBusqueda] = useState('');
   const [columnFilters, setColumnFilters] = useState<Record<string, string>>({});
   const [filterOpen, setFilterOpen] = useState<string | null>(null);
@@ -253,6 +256,10 @@ export function DatosPage() {
         parsed = newVal === '' ? null : parseInt(newVal, 10);
         if (parsed === null) continue;
       }
+      if (field === 'pvpOrientativo') {
+        parsed = newVal === '' ? null : parseFloat(newVal);
+        if (parsed === null) continue;
+      }
       if (field === 'familiaNombre' || field === 'familiaId') {
         const fam = familias.find((f) => f.nombre === newVal);
         if (fam) parsed = fam.id;
@@ -313,6 +320,8 @@ export function DatosPage() {
     let parsed: unknown = nuevoValor;
     if (field === 'col' || field === 'row' || field === 'nReposicion') {
       parsed = nuevoValor === '' ? null : parseInt(nuevoValor, 10);
+    } else if (field === 'pvpOrientativo') {
+      parsed = nuevoValor === '' ? null : parseFloat(nuevoValor);
     } else if (field === 'id') return;
 
     updateMut.mutate({ id, data: { [field]: parsed } });
@@ -365,6 +374,13 @@ export function DatosPage() {
     if (field === 'nReposicion' || field === 'col' || field === 'row') {
       return (
         <input type="number" min={1} value={value} style={INPUT_CELL}
+          onChange={(e) => setEditValues((prev) => ({ ...prev, [editKey]: e.target.value }))} />
+      );
+    }
+
+    if (field === 'pvpOrientativo') {
+      return (
+        <input type="number" step="0.01" min={0} value={value} style={INPUT_CELL}
           onChange={(e) => setEditValues((prev) => ({ ...prev, [editKey]: e.target.value }))} />
       );
     }
@@ -424,6 +440,19 @@ export function DatosPage() {
         style={{ cursor: puedeEditar ? 'pointer' : 'default' }}>{v ?? '—'}</span>;
     }
 
+    if (field === 'pvpOrientativo') {
+      const v = r.pvpOrientativo;
+      if (isEditing && puedeEditar) {
+        return (
+          <input type="number" step="0.01" min={0} value={editando[key] ?? v ?? ''} autoFocus style={INPUT_CELL}
+            onChange={(e) => setEditando((p) => ({ ...p, [key]: e.target.value }))}
+            onBlur={() => guardarCelda(r.id, field)} onKeyDown={(e) => handleKeyDown(e, r.id, field)} />
+        );
+      }
+      return <span onClick={() => puedeEditar && iniciarEdicion(r.id, field, String(v ?? ''))}
+        style={{ cursor: puedeEditar ? 'pointer' : 'default' }}>{v != null ? `${v.toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}` : '—'}</span>;
+    }
+
     if (field === 'col' || field === 'row') {
       const v = r[field];
       if (isEditing && puedeEditar) {
@@ -451,29 +480,29 @@ export function DatosPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', color: colors.text, height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ padding: '1.5rem', color: colors.text, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem', flexShrink: 0, gap: 8 }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}>
           <h2 style={{ margin: 0, fontSize: 20 }}>Base de Datos</h2>
           {editMode ? (
             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: 12, color: '#4db8ff', fontWeight: 600 }}>🔵 Modo edición — todos los campos editables</span>
+              <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>🔵 Modo edición — todos los campos editables</span>
               <button type="button" onClick={saveEditMode}
                 style={{ ...btnStyle('primary'), fontSize: 12, padding: '4px 12px' }}>
                 Guardar cambios
               </button>
               <button type="button" onClick={cancelEditMode}
-                style={{ ...btnStyle('ghost'), fontSize: 12, padding: '4px 12px', color: '#ff6b6b' }}>
+                style={{ ...btnStyle('ghost'), fontSize: 12, padding: '4px 12px', color: 'var(--danger-text)' }}>
                 Cancelar
               </button>
             </div>
           ) : (
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
               <input placeholder="Buscar en todos los campos..." value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
-                style={{ padding: '5px 8px', borderRadius: 4, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12, width: 220 }} />
+                style={{ padding: '5px 8px', borderRadius: 4, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, fontSize: 12, width: 220 }} />
               {hasAnyFilter && (
                 <button type="button" onClick={clearAllFilters}
-                  style={{ ...btnStyle('ghost'), fontSize: 11, padding: '3px 8px', color: '#ff6b6b' }}>
+                  style={{ ...btnStyle('ghost'), fontSize: 11, padding: '3px 8px', color: 'var(--danger-text)' }}>
                   Limpiar filtros
                 </button>
               )}
@@ -486,10 +515,19 @@ export function DatosPage() {
             </div>
           )}
         </div>
-        {!editMode && puedeCrear && (
-          <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px', whiteSpace: 'nowrap' }} onClick={() => setShowCrear(true)}>
-            + Añadir
-          </button>
+        {!editMode && (
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            {can('tarifas', 'edit') && (
+              <button type="button" style={{ ...btnStyle('ghost'), fontSize: 13, padding: '6px 12px', whiteSpace: 'nowrap' }} onClick={() => navigate('/admin/importar-tarifas-festo')}>
+                Tarifa Festo
+              </button>
+            )}
+            {puedeCrear && (
+              <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px', whiteSpace: 'nowrap' }} onClick={() => setShowCrear(true)}>
+                + Añadir
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -499,21 +537,21 @@ export function DatosPage() {
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
             <thead>
-              <tr style={{ position: 'sticky', top: 0, background: '#0a1628', zIndex: 1 }}>
+              <tr style={{ position: 'sticky', top: 0, background: 'var(--bg-elevated-2)', zIndex: 1 }}>
                 {FIELDS.map((f) => {
                   const hasFilter = Boolean(columnFilters[String(f.key)]);
                   const isSorted = sort?.field === String(f.key);
                   return (
                     <th key={String(f.key)}
                       style={{
-                        padding: '8px', fontSize: 11, color: '#7aade0', fontWeight: 600,
+                        padding: '8px', fontSize: 11, color: 'var(--text-muted)', fontWeight: 600,
                         textAlign: 'left', whiteSpace: 'nowrap', borderBottom: `1px solid ${colors.border}`,
                         minWidth: f.width, cursor: 'pointer', position: 'relative', userSelect: 'none',
                       }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, justifyContent: 'space-between' }}
                         onClick={() => handleHeaderClick(String(f.key))}>
                         <span>{f.label}</span>
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 9, color: hasFilter || isSorted ? '#4db8ff' : 'rgba(122,173,224,0.3)' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 2, fontSize: 9, color: hasFilter || isSorted ? 'var(--accent)' : 'var(--text-faint-2)' }}>
                           {isSorted && <span>{sort!.dir === 'asc' ? '▲' : '▼'}</span>}
                           <span>▽</span>
                         </span>
@@ -533,17 +571,17 @@ export function DatosPage() {
                   );
                 })}
                 {puedeEditar && !editMode && (
-                  <th style={{ padding: '8px', fontSize: 11, color: '#7aade0', fontWeight: 600, borderBottom: `1px solid ${colors.border}`, minWidth: 60 }}>Acción</th>
+                  <th style={{ padding: '8px', fontSize: 11, color: 'var(--text-muted)', fontWeight: 600, borderBottom: `1px solid ${colors.border}`, minWidth: 60 }}>Acción</th>
                 )}
               </tr>
             </thead>
             <tbody>
               {filtradosYOrdenados.map((r) => (
-                <tr key={r.id} style={{ background: r.oculto ? 'rgba(255,100,100,0.04)' : undefined }}>
+                <tr key={r.id} style={{ background: r.oculto ? 'var(--bg-danger-soft)' : undefined }}>
                   {FIELDS.map((f) => (
                     <td key={String(f.key)} style={{
                       ...CELL_STYLES,
-                      background: editMode && f.key !== 'id' ? 'rgba(77,184,255,0.03)' : undefined,
+                      background: editMode && f.key !== 'id' ? 'var(--bg-accent-faint)' : undefined,
                     }}>{renderCell(r, f.key)}</td>
                   ))}
                   {puedeEditar && !editMode && (

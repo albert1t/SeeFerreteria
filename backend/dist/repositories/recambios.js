@@ -20,7 +20,7 @@ function mapRecambio(row) {
         panel: row.panel,
         col: row.col,
         row: row.row,
-        oculto: row.oculto,
+        oculto: Boolean(row.oculto),
         createdAt: row.createdAt ? row.createdAt.toISOString() : undefined,
         updatedAt: row.updatedAt ? row.updatedAt.toISOString() : undefined,
     };

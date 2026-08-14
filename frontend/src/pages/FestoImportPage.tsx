@@ -112,11 +112,11 @@ export function FestoImportPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', color: colors.text, height: 'calc(100vh - 64px)', overflowY: 'auto' }}>
+    <div style={{ padding: '1.5rem', color: colors.text, height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: 12 }}>
         <h2 style={{ margin: 0, fontSize: 22 }}>Importar tarifa Festo</h2>
         {dias !== null && (
-          <div style={{ fontSize: 13, color: obsoleto ? '#ff6b6b' : colors.textMuted }}>
+          <div style={{ fontSize: 13, color: obsoleto ? 'var(--danger-text)' : colors.textMuted }}>
             Última importación: {dias === 0 ? 'hoy' : `hace ${dias} días`}
             {status?.ultimaImportacion && (
               <span style={{ marginLeft: 8, opacity: 0.7 }}>({new Date(status.ultimaImportacion).toLocaleDateString('es-ES')})</span>
@@ -133,10 +133,10 @@ export function FestoImportPage() {
           gap: 12,
           marginBottom: '1.25rem',
           padding: '0.75rem 1rem',
-          background: 'rgba(192,57,43,0.1)',
-          border: '1px solid rgba(192,57,43,0.4)',
+          background: 'var(--bg-danger-soft)',
+          border: '1px solid var(--border-danger-strong)',
           borderRadius: 8,
-          color: '#ff6b6b',
+          color: 'var(--danger-text)',
           fontSize: 13,
         }}>
           <span>La tarifa de precios de Festo tiene más de 6 meses de antigüedad. Por favor, importa un nuevo CSV para mantener los PVP orientativos al día.</span>
@@ -144,7 +144,7 @@ export function FestoImportPage() {
             type="button"
             onClick={() => setObsoletoDescartado(true)}
             style={{
-              background: 'none', border: 'none', color: '#ff6b6b', cursor: 'pointer',
+              background: 'none', border: 'none', color: 'var(--danger-text)', cursor: 'pointer',
               fontSize: 16, lineHeight: 1, padding: 2, flexShrink: 0,
             }}
             title="Descartar"
@@ -166,7 +166,7 @@ export function FestoImportPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16 }}>
           {PASOS.map((paso) => (
             <div key={paso.num} style={{
-              background: 'rgba(0,0,0,0.2)',
+              background: 'var(--bg-table-head)',
               borderRadius: 10,
               padding: 12,
               border: `1px solid ${colors.border}`,
@@ -174,7 +174,7 @@ export function FestoImportPage() {
               <img
                 src={`/assets/placeholder-festo-${paso.num}.jpg`}
                 alt={`Paso ${paso.num}`}
-                style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 6, marginBottom: 10, background: '#1a2a3c' }}
+                style={{ width: '100%', height: 140, objectFit: 'cover', borderRadius: 6, marginBottom: 10, background: 'var(--bg-elevated-2)' }}
               />
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <span style={{
@@ -211,7 +211,7 @@ export function FestoImportPage() {
             padding: '2rem',
             textAlign: 'center',
             cursor: 'pointer',
-            background: dragOver ? 'rgba(77,184,255,0.06)' : 'rgba(0,0,0,0.15)',
+            background: dragOver ? 'var(--bg-accent-soft)' : 'var(--bg-input-dark)',
             transition: 'all 0.2s',
             marginBottom: '1rem',
           }}
@@ -267,9 +267,9 @@ export function FestoImportPage() {
             padding: '0.75rem 1rem',
             borderRadius: 8,
             fontSize: 13,
-            background: result.ok ? 'rgba(26,138,74,0.12)' : 'rgba(192,57,43,0.12)',
-            border: `1px solid ${result.ok ? 'rgba(26,138,74,0.4)' : 'rgba(192,57,43,0.4)'}`,
-            color: result.ok ? '#4dff9b' : '#ff6b6b',
+            background: result.ok ? 'var(--bg-success-soft)' : 'var(--bg-danger-soft)',
+            border: `1px solid ${result.ok ? 'var(--success)' : 'var(--border-danger-strong)'}`,
+            color: result.ok ? 'var(--success-text)' : 'var(--danger-text)',
           }}>
             {result.ok ? '✓ ' : '✗ '}{result.message}
           </div>

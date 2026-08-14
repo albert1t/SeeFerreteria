@@ -229,7 +229,7 @@ export function UsersPage() {
         <div style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, marginBottom: '2rem' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
+              <tr style={{ background: 'var(--bg-table-head)' }}>
                 <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Nombre</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Usuario / Email</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol</th>
@@ -291,35 +291,35 @@ export function UsersPage() {
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Crear usuario">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 320 }}>
-          <div style={{ fontSize: 13, color: '#ffb86b', background: 'rgba(192,57,43,0.12)', border: '1px solid rgba(192,57,43,0.4)', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
+          <div style={{ fontSize: 13, color: 'var(--warning-text-soft)', background: 'var(--bg-danger-soft)', border: '1px solid var(--border-danger)', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
             El usuario se creará <strong>desactivado</strong> y sin acceso. Para que pueda entrar, un administrador debe <strong>activarlo</strong> y asignarle los <strong>permisos</strong> en "Editar permisos".
           </div>
           <div>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Usuario</label>
             <input value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
           </div>
           <div>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Nombre</label>
             <input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
           </div>
           <div>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Contraseña (mín. 6 caracteres)</label>
             <input type="password" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
           </div>
           <div>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Rol</label>
             <select value={createForm.role} onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as UserRole })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}` }}>
+              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}>
               <option value="admin">Administrador</option>
               <option value="operario">Operario</option>
               <option value="user">Usuario</option>
               <option value="viewer">Solo lectura</option>
             </select>
           </div>
-          {createError && <div style={{ color: '#ff6b6b', fontSize: 13, textAlign: 'center' }}>{createError}</div>}
+          {createError && <div style={{ color: 'var(--danger-text)', fontSize: 13, textAlign: 'center' }}>{createError}</div>}
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
             <button style={btnStyle('ghost')} onClick={() => setShowCreate(false)}>Cancelar</button>
             <button style={btnStyle('primary')} disabled={!createForm.username || !createForm.password || !createForm.name || createForm.password.length < 6 || createMutation.isPending}
@@ -332,7 +332,7 @@ export function UsersPage() {
 
       <Modal open={!!deletingUser} onClose={() => setDeletingUser(null)} title="Confirmar eliminación">
         <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
-          <p style={{ fontSize: 14, color: '#c8ddf0', marginBottom: '1.25rem' }}>
+          <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: '1.25rem' }}>
             ¿Eliminar el usuario <strong>{deletingUser?.name}</strong> ({deletingUser?.username})? Esta acción no se puede deshacer.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
@@ -361,7 +361,7 @@ export function UsersPage() {
                 setEditingUser({ ...editingUser, role });
                 setEditingPermissions(newPerms);
               }}
-              style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}` }}
+              style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
             >
               <option value="admin">Administrador</option>
               <option value="operario">Operario</option>
@@ -404,12 +404,12 @@ export function UsersPage() {
           placeholder="correo@empresa.com"
           value={newEmail}
           onChange={(e) => setNewEmail(e.target.value)}
-          style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}`, minWidth: 250 }}
+          style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, minWidth: 250 }}
         />
         <select
           value={newEmailRole}
           onChange={(e) => setNewEmailRole(e.target.value as UserRole)}
-          style={{ padding: '8px 12px', borderRadius: 6, background: 'rgba(0,0,0,0.25)', color: colors.text, border: `1px solid ${colors.border}` }}
+          style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
         >
           <option value="admin">Administrador</option>
           <option value="operario">Operario</option>
@@ -432,7 +432,7 @@ export function UsersPage() {
         <div style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}` }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: 'rgba(0,0,0,0.2)' }}>
+              <tr style={{ background: 'var(--bg-table-head)' }}>
                 <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Email</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol asignado</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Estado</th>

@@ -22,7 +22,7 @@ function mapRecambio(row: Record<string, unknown>): Recambio {
     panel: row.panel as string,
     col: row.col as number,
     row: row.row as number,
-    oculto: row.oculto as boolean,
+    oculto: Boolean(row.oculto),
     createdAt: row.createdAt ? (row.createdAt as Date).toISOString() : undefined,
     updatedAt: row.updatedAt ? (row.updatedAt as Date).toISOString() : undefined,
   };

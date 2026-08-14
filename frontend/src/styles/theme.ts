@@ -1,19 +1,27 @@
 import type { CSSProperties } from 'react';
 
 export const colors = {
-  bg: '#0d1b2e',
-  bgCard: 'rgba(255,255,255,0.04)',
-  header: 'linear-gradient(135deg, #0f2744 0%, #1a3a5c 100%)',
-  border: 'rgba(77,184,255,0.15)',
-  borderActive: '#4db8ff',
-  accent: '#4db8ff',
-  accentDark: '#1a6fc4',
-  text: '#e8eef6',
-  textMuted: '#7aade0',
-  textDim: '#4a7aaa',
-  danger: '#c0392b',
-  success: '#1a8a4a',
-  warning: '#b8860b',
+  bg: 'var(--bg)',
+  bgCard: 'var(--bg-card)',
+  bgCardSolid: 'var(--bg-card-solid)',
+  header: 'var(--header-bg)',
+  border: 'var(--border)',
+  borderStrong: 'var(--border-strong)',
+  borderActive: 'var(--accent)',
+  accent: 'var(--accent)',
+  accentDark: 'var(--accent-dark)',
+  text: 'var(--text)',
+  textMuted: 'var(--text-muted)',
+  textDim: 'var(--text-dim)',
+  textNav: 'var(--text-nav)',
+  textLight: 'var(--text-light)',
+  textBright: 'var(--text-bright)',
+  danger: 'var(--danger)',
+  dangerText: 'var(--danger-text)',
+  success: 'var(--success)',
+  successText: 'var(--success-text)',
+  warning: 'var(--warning)',
+  warningText: 'var(--warning-text)',
 };
 
 export function badgeStyle(type: string): CSSProperties {
@@ -25,15 +33,15 @@ export function badgeStyle(type: string): CSSProperties {
     fontWeight: 700,
   };
   const map: Record<string, CSSProperties> = {
-    'Solicitud Express': { background: 'rgba(192,57,43,0.25)', color: '#ff6b6b', border: '1px solid rgba(192,57,43,0.5)' },
-    'Reposición': { background: 'rgba(26,110,196,0.25)', color: '#4db8ff', border: '1px solid rgba(26,110,196,0.4)' },
-    'Solicitud': { background: 'rgba(26,138,74,0.25)', color: '#4dff9b', border: '1px solid rgba(26,138,74,0.4)' },
-    'Solicitado': { background: 'rgba(184,134,11,0.2)', color: '#f0c040', border: '1px solid rgba(184,134,11,0.4)' },
-    'Pedido realizado': { background: 'rgba(26,110,196,0.2)', color: '#4db8ff', border: '1px solid rgba(26,110,196,0.4)' },
-    'Pedido recibido': { background: 'rgba(26,138,74,0.2)', color: '#4dff9b', border: '1px solid rgba(26,138,74,0.4)' },
-    'Finalizado': { background: 'rgba(100,100,100,0.2)', color: '#888', border: '1px solid rgba(100,100,100,0.3)' },
-    info: { background: 'rgba(77,184,255,0.1)', color: '#4db8ff', border: '1px solid rgba(77,184,255,0.2)' },
-    ghost: { background: 'rgba(77,184,255,0.08)', color: '#a8cce8', border: '1px solid rgba(77,184,255,0.2)' },
+    'Solicitud Express': { background: 'rgba(192,57,43,0.25)', color: 'var(--danger-text)', border: '1px solid rgba(192,57,43,0.5)' },
+    'Reposición': { background: 'rgba(26,110,196,0.25)', color: 'var(--accent)', border: '1px solid rgba(26,110,196,0.4)' },
+    'Solicitud': { background: 'rgba(26,138,74,0.25)', color: 'var(--success-text)', border: '1px solid rgba(26,138,74,0.4)' },
+    'Solicitado': { background: 'rgba(184,134,11,0.2)', color: 'var(--warning-text)', border: '1px solid rgba(184,134,11,0.4)' },
+    'Pedido realizado': { background: 'rgba(26,110,196,0.2)', color: 'var(--accent)', border: '1px solid rgba(26,110,196,0.4)' },
+    'Pedido recibido': { background: 'rgba(26,138,74,0.2)', color: 'var(--success-text)', border: '1px solid rgba(26,138,74,0.4)' },
+    'Finalizado': { background: 'rgba(100,100,100,0.2)', color: 'var(--text-muted-2)', border: '1px solid rgba(100,100,100,0.3)' },
+    info: { background: 'rgba(77,184,255,0.1)', color: 'var(--accent)', border: '1px solid rgba(77,184,255,0.2)' },
+    ghost: { background: 'var(--bg-accent-faint)', color: 'var(--text-nav)', border: '1px solid var(--border-input-soft)' },
   };
   return { ...base, ...(map[type] || map.info) };
 }
@@ -52,11 +60,11 @@ export function btnStyle(variant: 'primary' | 'danger' | 'success' | 'ghost' | '
     transition: 'all 0.15s',
   };
   const variants: Record<string, CSSProperties> = {
-    primary: { background: colors.accentDark, color: '#fff' },
-    danger: { background: colors.danger, color: '#fff' },
-    success: { background: colors.success, color: '#fff' },
-    express: { background: colors.danger, color: '#fff' },
-    ghost: { background: 'transparent', border: '1px solid rgba(77,184,255,0.3)', color: '#a8cce8' },
+    primary: { background: 'var(--accent-dark)', color: '#fff' },
+    danger: { background: 'var(--danger)', color: '#fff' },
+    success: { background: 'var(--success)', color: '#fff' },
+    express: { background: 'var(--danger)', color: '#fff' },
+    ghost: { background: 'transparent', border: '1px solid var(--border-input-strong)', color: 'var(--text-nav)' },
   };
   return { ...base, ...variants[variant] };
 }

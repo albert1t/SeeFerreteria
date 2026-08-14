@@ -32,7 +32,7 @@ function mapUser(record: Record<string, unknown>): User {
     username: record.username as string,
     name: record.name as string,
     role,
-    isActive: record.isActive as boolean,
+    isActive: Boolean(record.isActive),
     permissions: parsePermissions(record.permissions as string | undefined, role),
   };
 }
@@ -169,7 +169,7 @@ export async function findAllowedEmails(): Promise<AllowedEmail[]> {
     id: row.id as number,
     email: row.email as string,
     role: row.role as UserRole,
-    isActive: row.isActive as boolean,
+    isActive: Boolean(row.isActive),
     permissions: parsePermissions(row.permissions as string | undefined, row.role as UserRole),
   }));
 }
@@ -186,7 +186,7 @@ export async function findAllowedEmailByEmail(email: string): Promise<AllowedEma
     id: row.id as number,
     email: row.email as string,
     role: row.role as UserRole,
-    isActive: row.isActive as boolean,
+    isActive: Boolean(row.isActive),
     permissions: parsePermissions(row.permissions as string | undefined, row.role as UserRole),
   };
 }

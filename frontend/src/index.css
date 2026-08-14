@@ -11,9 +11,10 @@ html, body, #root {
 
 body {
   font-family: 'Exo 2', 'Segoe UI', sans-serif;
-  background: #0d1b2e;
-  color: #e8eef6;
+  background: var(--bg);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 input, select, textarea, button {
@@ -22,12 +23,16 @@ input, select, textarea, button {
 
 select,
 option {
-  color: #0d1b2e;
-  background-color: #ffffff;
+  color: var(--text);
+  background-color: var(--bg-input);
+}
+
+option {
+  background-color: var(--bg-elevated);
 }
 
 input:focus, select:focus, textarea:focus {
-  border-color: #4db8ff !important;
+  border-color: var(--accent) !important;
   outline: none;
 }
 
@@ -36,10 +41,10 @@ input:focus, select:focus, textarea:focus {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.03);
+  background: var(--bg-card-soft);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(77,184,255,0.3);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
   border-radius: 3px;
 }
 
@@ -49,5 +54,14 @@ input:focus, select:focus, textarea:focus {
 
 .scrollbar-horizontal::-webkit-scrollbar-thumb {
   border-radius: 6px;
-  background: rgba(77,184,255,0.55);
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+@keyframes stepNextPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 4px var(--bg-hover-strong), 0 0 8px var(--step-glow, var(--accent));
+  }
+  50% {
+    box-shadow: 0 0 0 4px var(--bg-hover-strong), 0 0 18px var(--step-glow, var(--accent));
+  }
 }

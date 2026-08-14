@@ -31,7 +31,7 @@ function mapUser(record) {
         username: record.username,
         name: record.name,
         role,
-        isActive: record.isActive,
+        isActive: Boolean(record.isActive),
         permissions: parsePermissions(record.permissions, role),
     };
 }
@@ -120,7 +120,7 @@ export async function findAllowedEmails() {
         id: row.id,
         email: row.email,
         role: row.role,
-        isActive: row.isActive,
+        isActive: Boolean(row.isActive),
         permissions: parsePermissions(row.permissions, row.role),
     }));
 }
@@ -134,7 +134,7 @@ export async function findAllowedEmailByEmail(email) {
         id: row.id,
         email: row.email,
         role: row.role,
-        isActive: row.isActive,
+        isActive: Boolean(row.isActive),
         permissions: parsePermissions(row.permissions, row.role),
     };
 }

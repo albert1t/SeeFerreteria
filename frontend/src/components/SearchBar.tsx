@@ -37,38 +37,38 @@ export function SearchBar({ onSelect, placeholder = 'Buscar por nombre o referen
         placeholder={placeholder}
         style={{
           width: '100%', padding: '8px 40px 8px 16px',
-          background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(77,184,255,0.3)',
-          borderRadius: 24, color: '#e8eef6', fontSize: 14, outline: 'none', boxSizing: 'border-box',
+          background: 'var(--bg-input)', border: '1px solid var(--border-input-strong)',
+          borderRadius: 24, color: 'var(--text)', fontSize: 14, outline: 'none', boxSizing: 'border-box',
         }}
 
       />
       {debounced.length >= 2 && results.length > 0 && (
         <div style={{
-          position: 'absolute', top: '100%', left: 0, right: 0, background: '#0f2744',
-          border: '1px solid #2a5080', borderRadius: 10, marginTop: 4, zIndex: 200,
-          maxHeight: 340, overflowY: 'auto', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          position: 'absolute', top: '100%', left: 0, right: 0, background: 'var(--bg-elevated)',
+          border: '1px solid var(--border-strong)', borderRadius: 10, marginTop: 4, zIndex: 200,
+          maxHeight: 340, overflowY: 'auto', boxShadow: '0 10px 30px var(--shadow-strong)',
         }}>
           {results.slice(0, 12).map((r) => (
             <div
               key={r.id}
               onClick={() => { onSelect(r); setQ(''); setDebounced(''); }}
               style={{
-                padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid rgba(42,80,128,0.3)',
+                padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border-soft-2)',
                 display: 'flex', gap: 10, alignItems: 'center',
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(77,184,255,0.08)'; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
               {r.imagen ? (
                 <img src={r.imagen} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
               ) : (
-                <div style={{ width: 36, height: 36, borderRadius: 6, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#4a7aaa', flexShrink: 0 }}>
+                <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--bg-card-soft)', border: '1px solid var(--border-white-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--text-dim)', flexShrink: 0 }}>
                   📦
                 </div>
               )}
               <div>
                 <div style={{ fontSize: 13, fontWeight: 600 }}>{r.nombre}</div>
-                <div style={{ fontSize: 11, color: '#7aade0' }}>{r.referenciaCMH} · {r.panel}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.referenciaCMH} · {r.panel}</div>
               </div>
             </div>
           ))}

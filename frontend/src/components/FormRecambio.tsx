@@ -13,12 +13,12 @@ interface FormRecambioProps {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)',
-  border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14, boxSizing: 'border-box',
+  width: '100%', padding: '9px 12px', background: 'var(--bg-input)',
+  border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 14, boxSizing: 'border-box',
 };
 
 const labelStyle: React.CSSProperties = {
-  fontSize: 12, color: '#7aade0', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4, display: 'block',
+  fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4, display: 'block',
 };
 
 export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) {
@@ -206,8 +206,8 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
             marginTop: 10,
             borderRadius: 8,
             overflow: 'hidden',
-            border: '1px solid rgba(77,184,255,0.2)',
-            background: 'rgba(0,0,0,0.2)',
+            border: '1px solid var(--border-input-soft)',
+            background: 'var(--bg-input-dark)',
             maxWidth: 280,
           }}>
             <img
@@ -223,7 +223,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
           </div>
         )}
       </div>
-      <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid rgba(42,80,128,0.3)' }}>
+      <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-soft)' }}>
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}

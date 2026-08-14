@@ -75,21 +75,21 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
 
   return (
     <Modal open={open} onClose={onClose} title="Búsqueda por QR / Referencia">
-      <p style={{ color: '#7aade0', fontSize: 13, marginTop: 0 }}>
+      <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 0 }}>
         Escanea el QR con la cámara o introduce la referencia manualmente:
       </p>
 
       <div style={{ marginBottom: '1rem', borderRadius: 8, overflow: 'hidden', background: '#000', minHeight: 200 }}>
         <video ref={videoRef} style={{ width: '100%', maxHeight: 240, display: scanning ? 'block' : 'none' }} />
         {!scanning && (
-          <div style={{ padding: '3rem', textAlign: 'center', color: '#4a7aaa', fontSize: 13 }}>
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-dim)', fontSize: 13 }}>
             Cámara no disponible — usa la entrada manual
           </div>
         )}
       </div>
 
       <div style={{ marginBottom: '1rem' }}>
-        <label style={{ fontSize: 12, color: '#7aade0', fontWeight: 600, textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
+        <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>
           Referencia CMH o Cliente
         </label>
         <input
@@ -98,8 +98,8 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           onKeyDown={(e) => e.key === 'Enter' && handleRef(manualRef)}
           placeholder="CMH00001 o CLI-000001"
           style={{
-            width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(77,184,255,0.25)', borderRadius: 8, color: '#e8eef6', fontSize: 14,
+            width: '100%', padding: '9px 12px', background: 'var(--bg-input)',
+            border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 14,
           }}
         />
       </div>
