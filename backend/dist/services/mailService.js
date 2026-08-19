@@ -26,13 +26,26 @@ const transporter = createTransporter();
 export function esEmailValido(value) {
     return emailSchema.safeParse(value).success;
 }
+export function getMailConfigStatus() {
+    return {
+        enabled: env.MAIL_ENABLED,
+        configured: smtpConfigured(),
+        host: env.SMTP_HOST ?? null,
+        port: env.SMTP_PORT,
+        secure: env.SMTP_SECURE,
+        user: env.SMTP_USER ?? null,
+        from: env.MAIL_FROM,
+        replyTo: env.MAIL_REPLY_TO,
+        notifyTo: env.NOTIFY_EMAIL,
+    };
+}
 async function enviarCorreo({ to, subject, html, }) {
     if (!env.MAIL_ENABLED) {
-        console.log('[mail] Envío deshabilitado por MAIL_ENABLED=false');
+        console.error('[mail] Envío deshabilitado por MAIL_ENABLED=false');
         return;
     }
     if (!smtpConfigured() || !transporter) {
-        console.warn('[mail] SMTP no configurado. Correo no enviado:', subject, '->', to);
+        console.error('[mail] SMTP no configurado. Correo no enviado:', subject, '->', to);
         return;
     }
     try {
@@ -43,11 +56,43 @@ async function enviarCorreo({ to, subject, html, }) {
             subject,
             html,
         });
-        console.log('[mail] Enviado:', subject, '->', to);
+        console.error('[mail] Enviado:', subject, '->', to);
     }
     catch (err) {
         console.error('[mail] Error enviando correo:', err);
     }
+}
+export async function enviarCorreoDePrueba(to) {
+    const status = getMailConfigStatus();
+    if (!status.enabled) {
+        throw new Error('MAIL_ENABLED=false');
+    }
+    if (!status.configured || !transporter) {
+        throw new Error(`SMTP no configurado. Host=${status.host}, User=${status.user}`);
+    }
+    const html = envolverHtml('Correo de prueba - SeeFerreteria', `
+      <p>Este es un correo de prueba.</p>
+      <p>Configuración detectada:</p>
+      <ul>
+        <li>Host SMTP: ${status.host}</li>
+        <li>Puerto: ${status.port}</li>
+        <li>Usuario: ${status.user}</li>
+        <li>From: ${status.from}</li>
+        <li>Reply-To: ${status.replyTo}</li>
+      </ul>
+    `);
+    const info = await transporter.sendMail({
+        from: env.MAIL_FROM,
+        replyTo: env.MAIL_REPLY_TO,
+        to,
+        subject: 'Correo de prueba - SeeFerreteria',
+        html,
+    });
+    console.error('[mail] Correo de prueba enviado:', info.messageId, '->', to);
+    return {
+        messageId: info.messageId,
+        accepted: info.accepted.map((a) => (typeof a === 'string' ? a : a.address)),
+    };
 }
 function datosPedido(pedido) {
     return `

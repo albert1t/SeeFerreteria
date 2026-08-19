@@ -1,10 +1,25 @@
 import { Router } from 'express';
 import * as pedidosService from '../services/pedidosService.js';
+import { enviarCorreoDePrueba, esEmailValido, getMailConfigStatus } from '../services/mailService.js';
+import { env } from '../config/env.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
 import { pedidoCreateSchema, pedidoEstadoSchema, pedidoUpdateSchema, pedidosQuerySchema } from '../schemas/index.js';
 const router = Router();
 router.use(authMiddleware);
+// Endpoint de prueba para verificar configuración SMTP y enviar un correo de prueba
+router.post('/test-email', async (req, res, next) => {
+    try {
+        const to = req.user?.username && esEmailValido(req.user.username)
+            ? req.user.username
+            : env.NOTIFY_EMAIL;
+        const info = await enviarCorreoDePrueba(to);
+        res.json({ ok: true, to, info, config: getMailConfigStatus() });
+    }
+    catch (err) {
+        res.status(500).json({ ok: false, error: err.message, config: getMailConfigStatus() });
+    }
+});
 router.get('/urgentes/count', async (_req, res, next) => {
     try {
         const count = await pedidosService.countUrgentes();
