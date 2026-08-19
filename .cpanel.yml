@@ -4,5 +4,4 @@ deployment:
     - export DEPLOYPATH=/home/cmhautomacion/repositories/SeeFerreteria/
     - /bin/cp -R backend $DEPLOYPATH/
     - /bin/cp -R frontend/dist $DEPLOYPATH/frontend/dist/
-    - cd $DEPLOYPATH/backend && npm install --omit=dev
-    - /bin/touch $DEPLOYPATH/backend/tmp/restart.txt
+    - cd $DEPLOYPATH/backend && /opt/alt/alt-nodejs24/root/usr/bin/node /opt/alt/alt-nodejs24/root/usr/lib/node_modules/npm/bin/npm-cli.js install --omit=dev
