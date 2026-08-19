@@ -1,6 +1,13 @@
 import * as pedidosRepo from '../repositories/pedidos.js';
 import * as recambiosRepo from '../repositories/recambios.js';
+import * as usersRepo from '../repositories/users.js';
 import { AppError } from '../middleware/errorHandler.js';
+import {
+  enviarAcuseSolicitante,
+  enviarSeguimientoEstado,
+  esEmailValido,
+  notificarNuevoPedido,
+} from './mailService.js';
 import type { Pedido, PedidoEstado, PedidoHistorial, PedidoTipo } from '../types/index.js';
 
 const ESTADO_ORDEN: PedidoEstado[] = ['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado'];
@@ -69,7 +76,7 @@ export async function createPedido(
       throw new AppError(400, 'Tipo de pedido inválido');
   }
 
-  return pedidosRepo.create({
+  const pedido = await pedidosRepo.create({
     recambioId: data.recambioId,
     solicitanteId,
     tipo: data.tipo,
@@ -78,6 +85,21 @@ export async function createPedido(
     prioritario,
     observaciones: data.observaciones ?? null,
   });
+
+  // Notificaciones asíncronas: nunca deben afectar la respuesta de la API
+  (async () => {
+    try {
+      const solicitante = await usersRepo.findById(solicitanteId);
+      if (solicitante && esEmailValido(solicitante.username)) {
+        await enviarAcuseSolicitante(pedido, solicitante.username);
+      }
+      await notificarNuevoPedido(pedido);
+    } catch (err) {
+      console.error('[pedidosService] Error en notificaciones de createPedido:', err);
+    }
+  })();
+
+  return pedido;
 }
 
 export async function advanceEstado(id: number, nuevoEstado: PedidoEstado, usuarioId: number): Promise<Pedido> {
@@ -93,6 +115,19 @@ export async function advanceEstado(id: number, nuevoEstado: PedidoEstado, usuar
 
   const updated = await pedidosRepo.updateEstado(id, nuevoEstado, usuarioId);
   if (!updated) throw new AppError(404, 'Pedido no encontrado');
+
+  // Notificación de seguimiento al solicitante (sin bloquear la respuesta)
+  (async () => {
+    try {
+      const solicitante = await usersRepo.findById(updated.solicitanteId);
+      if (solicitante && esEmailValido(solicitante.username)) {
+        await enviarSeguimientoEstado(updated, solicitante.username, nuevoEstado);
+      }
+    } catch (err) {
+      console.error('[pedidosService] Error en notificaciones de advanceEstado:', err);
+    }
+  })();
+
   return updated;
 }
 
