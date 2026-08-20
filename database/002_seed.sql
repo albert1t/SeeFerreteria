@@ -1,6 +1,6 @@
 -- SEE Ferreteria - Seed data
 -- Run after 001_schema.sql
--- Usuarios iniciales creados por el backend seed (ver backend/src/scripts/seed.ts)
+-- Usuarios iniciales creados por el backend seed (ver backend/src/scripts/seed.ts).
 
 -- Familias
 IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Tornillería')

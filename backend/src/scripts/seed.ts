@@ -6,9 +6,19 @@ async function seed() {
   console.log('Seeding users...');
   await getPool();
 
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  const operarioPassword = process.env.SEED_OPERARIO_PASSWORD;
+
+  if (!adminPassword || !operarioPassword) {
+    throw new Error(
+      'Debes definir SEED_ADMIN_PASSWORD y SEED_OPERARIO_PASSWORD antes de ejecutar el seed. ' +
+      'Ejemplo: SEED_ADMIN_PASSWORD=<fuerte> SEED_OPERARIO_PASSWORD=<fuerte> npm run seed'
+    );
+  }
+
   const users = [
-    { username: 'admin', password: process.env.SEED_ADMIN_PASSWORD ?? '__SEED_ADMIN_PASSWORD__', name: 'Administrador', role: 'admin' as const },
-    { username: 'operario1', password: process.env.SEED_OPERARIO_PASSWORD ?? '__SEED_OPERARIO_PASSWORD__', name: 'Carlos Martínez', role: 'user' as const },
+    { username: 'admin', password: adminPassword, name: 'Administrador', role: 'admin' as const },
+    { username: 'operario1', password: operarioPassword, name: 'Carlos Martínez', role: 'user' as const },
   ];
 
   for (const u of users) {

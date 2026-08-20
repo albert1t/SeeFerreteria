@@ -14,8 +14,17 @@ backend/uploads
 
 # Environment files (private credentials)
 .env
+.env.*.local
 backend/.env
+backend/.env.*.local
 frontend/.env
+frontend/.env.*.local
+frontend/.env.production.local
+
+# Runtime files that may contain secrets or sensitive paths
+backend/tmp
+backend/stderr.log
+*.log
 
 # Editor directories and files
 .vscode/*
