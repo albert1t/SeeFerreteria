@@ -69,10 +69,10 @@ router.delete('/:id', validateParams(userIdSchema), async (req, res, next) => {
         next(err);
     }
 });
-// Emails permitidos para MSAL
+// Allowed emails para MSAL
 router.get('/allowed-emails', async (_req, res, next) => {
     try {
-        const emails = await usersRepo.findEmailsPermitidos();
+        const emails = await usersRepo.findAllowedEmails();
         res.json({ emails });
     }
     catch (err) {
@@ -81,7 +81,7 @@ router.get('/allowed-emails', async (_req, res, next) => {
 });
 router.post('/allowed-emails', validateBody(allowedEmailSchema), async (req, res, next) => {
     try {
-        const created = await usersRepo.createEmailPermitido(req.body.email, req.body.role);
+        const created = await usersRepo.createAllowedEmail(req.body.email, req.body.role);
         if (!created) {
             throw new AppError(409, 'El correo ya existe en la lista');
         }
@@ -94,7 +94,7 @@ router.post('/allowed-emails', validateBody(allowedEmailSchema), async (req, res
 router.patch('/allowed-emails/:id', validateParams(userIdSchema), validateBody(allowedEmailUpdateSchema), async (req, res, next) => {
     try {
         const { id } = req.params;
-        const updated = await usersRepo.updateEmailPermitido(id, req.body.role, req.body.isActive);
+        const updated = await usersRepo.updateAllowedEmail(id, req.body.role, req.body.isActive);
         if (!updated) {
             throw new AppError(404, 'Correo no encontrado');
         }
@@ -107,7 +107,7 @@ router.patch('/allowed-emails/:id', validateParams(userIdSchema), validateBody(a
 router.delete('/allowed-emails/:id', validateParams(userIdSchema), async (req, res, next) => {
     try {
         const { id } = req.params;
-        const deleted = await usersRepo.deleteEmailPermitido(id);
+        const deleted = await usersRepo.deleteAllowedEmail(id);
         if (!deleted) {
             throw new AppError(404, 'Correo no encontrado');
         }

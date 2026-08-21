@@ -5,7 +5,7 @@ import { getPool, sql, closePool } from '../config/db.js';
 
 interface ExcelRow {
   ref: string;
-  metrica: string | null;
+  metric: string | null;
   sheet: string;
 }
 
@@ -35,25 +35,25 @@ async function main() {
       const ref = getVal(row, ['Referencia CMH', 'Ref CMH', 'Referencia', 'Ref', 'referenciacmh']);
       if (!ref) continue;
 
-      const metrica = getVal(row, ['Metrica', 'Métrica', 'Dimensiones', 'Medida']);
-      allRefs.push({ ref, metrica, sheet: sheetName });
+      const metric = getVal(row, ['Metrica', 'Métrica', 'Dimensiones', 'Medida']);
+      allRefs.push({ ref, metric, sheet: sheetName });
     }
   }
 
   console.log(`Total referencias en Excel: ${allRefs.length}`);
-  console.log(`Con métrica: ${allRefs.filter(r => r.metrica).length}`);
-  console.log(`Sin métrica: ${allRefs.filter(r => !r.metrica).length}`);
+  console.log(`Con métrica: ${allRefs.filter(r => r.metric).length}`);
+  console.log(`Sin métrica: ${allRefs.filter(r => !r.metric).length}`);
 
-  // Get all recambios from DB
+  // Get all products from DB
   const dbResult = await pool.request().query(`
-    SELECT id, referenciaCMH, metrica FROM Recambios
+    SELECT id, cmhReference, metric FROM Products
   `);
-  const dbMap = new Map<string, { id: number; metrica: string | null }>();
+  const dbMap = new Map<string, { id: number; metric: string | null }>();
   for (const row of dbResult.recordset) {
-    dbMap.set(row.referenciaCMH as string, { id: row.id, metrica: row.metrica });
+    dbMap.set(row.cmhReference as string, { id: row.id, metric: row.metric });
   }
 
-  console.log(`\nTotal recambios en BD: ${dbMap.size}`);
+  console.log(`\nTotal products en BD: ${dbMap.size}`);
 
   // Compare and update
   let updated = 0;
@@ -70,24 +70,24 @@ async function main() {
       continue;
     }
 
-    if (dbRecambio.metrica && dbRecambio.metrica.trim() !== '') {
+    if (dbRecambio.metric && dbRecambio.metric.trim() !== '') {
       alreadyHas++;
       continue;
     }
 
-    if (!excelRow.metrica) {
+    if (!excelRow.metric) {
       noMetrica++;
       continue;
     }
 
-    // Update the metrica
+    // Update the metric
     await pool.request()
       .input('id', sql.Int, dbRecambio.id)
-      .input('metrica', sql.NVarChar(100), excelRow.metrica)
-      .query('UPDATE Recambios SET metrica = @metrica, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+      .input('metric', sql.NVarChar(100), excelRow.metric)
+      .query('UPDATE Products SET metric = @metric, updatedAt = SYSUTCDATETIME() WHERE id = @id');
 
     updated++;
-    console.log(`  [${dbRecambio.id}] ${excelRow.ref} → métrica: "${excelRow.metrica}" (hoja ${excelRow.sheet})`);
+    console.log(`  [${dbRecambio.id}] ${excelRow.ref} → métrica: "${excelRow.metric}" (hoja ${excelRow.sheet})`);
   }
 
   console.log(`\n--- Resumen ---`);

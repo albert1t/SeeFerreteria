@@ -3,13 +3,13 @@ import { getPool } from '../config/db.js';
 async function main() {
   const pool = await getPool();
 
-  const total = await pool.request().query('SELECT COUNT(*) AS cnt FROM Recambios');
-  const withAzure = await pool.request().query("SELECT COUNT(*) AS cnt FROM Recambios WHERE imagen LIKE '%ferreteriastorageacc%'");
-  const withPlaceholder = await pool.request().query("SELECT COUNT(*) AS cnt FROM Recambios WHERE imagen LIKE '%placehold.co%'");
-  const noImage = await pool.request().query("SELECT COUNT(*) AS cnt FROM Recambios WHERE imagen IS NULL OR imagen = ''");
+  const total = await pool.request().query('SELECT COUNT(*) AS cnt FROM Products');
+  const withAzure = await pool.request().query("SELECT COUNT(*) AS cnt FROM Products WHERE image LIKE '%ferreteriastorageacc%'");
+  const withPlaceholder = await pool.request().query("SELECT COUNT(*) AS cnt FROM Products WHERE image LIKE '%placehold.co%'");
+  const noImage = await pool.request().query("SELECT COUNT(*) AS cnt FROM Products WHERE image IS NULL OR image = ''");
 
   console.log('========== FINAL STATUS ==========');
-  console.log(`Total recambios:     ${total.recordset[0].cnt}`);
+  console.log(`Total products:     ${total.recordset[0].cnt}`);
   console.log(`With Azure image:    ${withAzure.recordset[0].cnt}`);
   console.log(`With placeholder:    ${withPlaceholder.recordset[0].cnt}`);
   console.log(`No image:            ${noImage.recordset[0].cnt}`);
@@ -18,13 +18,13 @@ async function main() {
   if (withPlaceholder.recordset[0].cnt > 0 || noImage.recordset[0].cnt > 0) {
     console.log('\nRecambios still without Azure images:');
     const missing = await pool.request().query(`
-      SELECT id, referenciaCMH, LEFT(imagen, 60) AS img
-      FROM Recambios
-      WHERE imagen IS NULL OR imagen = '' OR imagen NOT LIKE '%ferreteriastorageacc%'
+      SELECT id, cmhReference, LEFT(image, 60) AS img
+      FROM Products
+      WHERE image IS NULL OR image = '' OR image NOT LIKE '%ferreteriastorageacc%'
       ORDER BY id
     `);
     for (const r of missing.recordset) {
-      console.log(`  ${r.id} | ${r.referenciaCMH} | ${r.img || 'NULL'}`);
+      console.log(`  ${r.id} | ${r.cmhReference} | ${r.img || 'NULL'}`);
     }
   }
 

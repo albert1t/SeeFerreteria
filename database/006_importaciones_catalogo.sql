@@ -3,24 +3,24 @@
 -- Run this after the existing schema is in place.
 
 -- Table to track every bulk catalog import (Festo, etc.)
-CREATE TABLE IF NOT EXISTS ImportacionesCatalogo (
+CREATE TABLE IF NOT EXISTS CatalogImports (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    marca VARCHAR(50) NOT NULL,
-    totalRegistros INT NOT NULL DEFAULT 0,
-    actualizados INT NOT NULL DEFAULT 0,
-    errores INT NOT NULL DEFAULT 0,
-    erroresDetalle TEXT,
-    estado ENUM('procesando', 'completado', 'fallido') NOT NULL DEFAULT 'procesando',
-    archivoNombre VARCHAR(255),
-    usuarioId INT NOT NULL,
-    fechaInicio DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-    fechaFin DATETIME(3),
-    CONSTRAINT FK_Import_Usuario FOREIGN KEY (usuarioId) REFERENCES Users(id) ON DELETE RESTRICT
+    brand VARCHAR(50) NOT NULL,
+    totalRecords INT NOT NULL DEFAULT 0,
+    updated INT NOT NULL DEFAULT 0,
+    errors INT NOT NULL DEFAULT 0,
+    errorDetails TEXT,
+    status ENUM('procesando', 'completado', 'fallido') NOT NULL DEFAULT 'procesando',
+    fileName VARCHAR(255),
+    userId INT NOT NULL,
+    startedAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    finishedAt DATETIME(3),
+    CONSTRAINT FK_Import_User FOREIGN KEY (userId) REFERENCES Users(id) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-CREATE INDEX IX_Importaciones_Marca_Fecha ON ImportacionesCatalogo(marca, fechaFin DESC);
+CREATE INDEX IX_Importaciones_Marca_Fecha ON CatalogImports(brand, finishedAt DESC);
 
 -- Add PVP orientativo fields to the master product table
-ALTER TABLE Recambios
-    ADD COLUMN IF NOT EXISTS pvpOrientativo DECIMAL(12,2) NULL AFTER unidadEmbalaje,
+ALTER TABLE Products
+    ADD COLUMN IF NOT EXISTS pvpOrientativo DECIMAL(12,2) NULL AFTER packagingUnit,
     ADD COLUMN IF NOT EXISTS pvpOrientativoMoneda VARCHAR(3) NULL DEFAULT 'EUR' AFTER pvpOrientativo;

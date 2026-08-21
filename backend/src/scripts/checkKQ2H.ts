@@ -30,9 +30,9 @@ async function main() {
   // Find KQ2H in DB
   const pool = await getPool();
   const db = await pool.request()
-    .query(`SELECT id, referenciaCMH, nombre FROM Recambios WHERE referenciaCMH LIKE '%KQ2H%'`);
+    .query(`SELECT id, cmhReference, name FROM Products WHERE cmhReference LIKE '%KQ2H%'`);
   for (const d of db.recordset) {
-    console.log('DB ref:', JSON.stringify(d.referenciaCMH), 'nombre:', JSON.stringify(d.nombre));
+    console.log('DB ref:', JSON.stringify(d.cmhReference), 'name:', JSON.stringify(d.name));
   }
 
   // Show all refs in A9

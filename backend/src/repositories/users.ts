@@ -1,5 +1,5 @@
 import { getPool, sql } from '../config/db.js';
-import type { User, UserWithHash, EmailPermitido, UserRole } from '../types/index.js';
+import type { User, UserWithHash, AllowedEmail, UserRole } from '../types/index.js';
 
 function mapUser(record: Record<string, unknown>): User {
   return {
@@ -116,8 +116,8 @@ export async function deleteUser(id: number, reassignToId: number): Promise<bool
   const connection = await pool.getConnection();
   await connection.beginTransaction();
   try {
-    await connection.query('UPDATE Pedidos SET solicitanteId = ? WHERE solicitanteId = ?', [reassignToId, id]);
-    await connection.query('DELETE FROM PedidosEstadoHistorial WHERE usuarioId = ?', [id]);
+    await connection.query('UPDATE Orders SET requesterId = ? WHERE requesterId = ?', [reassignToId, id]);
+    await connection.query('DELETE FROM OrderStatusHistory WHERE userId = ?', [id]);
     const [result] = await connection.query('DELETE FROM Users WHERE id = ?', [id]);
     await connection.commit();
     return (result as any).affectedRows > 0;
@@ -129,10 +129,10 @@ export async function deleteUser(id: number, reassignToId: number): Promise<bool
   }
 }
 
-// Emails permitidos para MSAL
-export async function findEmailsPermitidos(): Promise<EmailPermitido[]> {
+// Allowed emails para MSAL
+export async function findAllowedEmails(): Promise<AllowedEmail[]> {
   const pool = await getPool();
-  const [rows] = await pool.query('SELECT id, email, role, isActive FROM EmailsPermitidos ORDER BY email');
+  const [rows] = await pool.query('SELECT id, email, role, isActive FROM AllowedEmails ORDER BY email');
   return (rows as any[]).map((row: any) => ({
     id: row.id as number,
     email: row.email as string,
@@ -141,10 +141,10 @@ export async function findEmailsPermitidos(): Promise<EmailPermitido[]> {
   }));
 }
 
-export async function findEmailPermitidoByEmail(email: string): Promise<EmailPermitido | null> {
+export async function findAllowedEmailByEmail(email: string): Promise<AllowedEmail | null> {
   const pool = await getPool();
   const [rows] = await pool.query(
-    'SELECT id, email, role, isActive FROM EmailsPermitidos WHERE email = ?',
+    'SELECT id, email, role, isActive FROM AllowedEmails WHERE email = ?',
     [email]
   );
   const row = (rows as any[])[0];
@@ -157,36 +157,36 @@ export async function findEmailPermitidoByEmail(email: string): Promise<EmailPer
   };
 }
 
-export async function createEmailPermitido(
+export async function createAllowedEmail(
   email: string,
   role: UserRole = 'user',
 ): Promise<boolean> {
   const pool = await getPool();
-  const [rows] = await pool.query('SELECT 1 AS existsEmail FROM EmailsPermitidos WHERE email = ? LIMIT 1', [email]);
+  const [rows] = await pool.query('SELECT 1 AS existsEmail FROM AllowedEmails WHERE email = ? LIMIT 1', [email]);
   if ((rows as any[]).length > 0) return false;
 
   await pool.query(
-    'INSERT INTO EmailsPermitidos (email, role) VALUES (?, ?)',
+    'INSERT INTO AllowedEmails (email, role) VALUES (?, ?)',
     [email, role]
   );
   return true;
 }
 
-export async function updateEmailPermitido(
+export async function updateAllowedEmail(
   id: number,
   role: UserRole,
   isActive: boolean,
 ): Promise<boolean> {
   const pool = await getPool();
   const [result] = await pool.query(
-    'UPDATE EmailsPermitidos SET role = ?, isActive = ? WHERE id = ?',
+    'UPDATE AllowedEmails SET role = ?, isActive = ? WHERE id = ?',
     [role, isActive ? 1 : 0, id]
   );
   return (result as any).affectedRows > 0;
 }
 
-export async function deleteEmailPermitido(id: number): Promise<boolean> {
+export async function deleteAllowedEmail(id: number): Promise<boolean> {
   const pool = await getPool();
-  const [result] = await pool.query('DELETE FROM EmailsPermitidos WHERE id = ?', [id]);
+  const [result] = await pool.query('DELETE FROM AllowedEmails WHERE id = ?', [id]);
   return (result as any).affectedRows > 0;
 }

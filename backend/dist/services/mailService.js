@@ -94,16 +94,16 @@ export async function enviarCorreoDePrueba(to) {
         accepted: info.accepted.map((a) => (typeof a === 'string' ? a : a.address)),
     };
 }
-function datosPedido(pedido) {
+function datosPedido(order) {
     return `
-    <li><strong>Referencia:</strong> ${pedido.recambioRef ?? 'N/A'}</li>
-    <li><strong>Recambio:</strong> ${pedido.recambioNombre ?? 'N/A'}</li>
-    <li><strong>Cantidad:</strong> ${pedido.cantidad} paquete(s)</li>
-    <li><strong>Tipo:</strong> ${pedido.tipo}</li>
-    <li><strong>Plazo deseado:</strong> ${pedido.plazoDeseado ?? 'No indicado'}</li>
-    <li><strong>Observaciones:</strong> ${pedido.observaciones ?? 'Ninguna'}</li>
-    <li><strong>Solicitante:</strong> ${pedido.solicitanteNombre ?? 'N/A'}</li>
-    <li><strong>Fecha:</strong> ${new Date(pedido.fechaSolicitud).toLocaleString('es-ES')}</li>
+    <li><strong>Referencia:</strong> ${order.productRef ?? 'N/A'}</li>
+    <li><strong>Producto:</strong> ${order.productName ?? 'N/A'}</li>
+    <li><strong>Cantidad:</strong> ${order.quantity} paquete(s)</li>
+    <li><strong>Tipo:</strong> ${order.type}</li>
+    <li><strong>Plazo deseado:</strong> ${order.desiredDeadline ?? 'No indicado'}</li>
+    <li><strong>Observaciones:</strong> ${order.notes ?? 'Ninguna'}</li>
+    <li><strong>Solicitante:</strong> ${order.requesterName ?? 'N/A'}</li>
+    <li><strong>Fecha:</strong> ${new Date(order.requestedAt).toLocaleString('es-ES')}</li>
   `;
 }
 function envolverHtml(titulo, contenido) {
@@ -128,38 +128,55 @@ function envolverHtml(titulo, contenido) {
 </html>
   `.trim();
 }
-export async function notificarNuevoPedido(pedido) {
-    const subject = `Nuevo pedido #${pedido.id} - ${pedido.recambioNombre ?? pedido.recambioRef ?? 'recambio'}`;
-    const html = envolverHtml(`Nuevo pedido #${pedido.id}`, `
+export async function notificarNuevoPedido(order) {
+    const subject = `Nuevo pedido #${order.id} - ${order.productName ?? order.productRef ?? 'producto'}`;
+    const html = envolverHtml(`Nuevo pedido #${order.id}`, `
       <p>Se ha creado un nuevo pedido en SeeFerreteria.</p>
       <ul>
-        ${datosPedido(pedido)}
+        ${datosPedido(order)}
       </ul>
     `);
     await enviarCorreo({ to: env.NOTIFY_EMAIL, subject, html });
 }
-export async function enviarAcuseSolicitante(pedido, emailSolicitante) {
-    const subject = `Confirmación de tu pedido #${pedido.id}`;
-    const html = envolverHtml(`Hemos recibido tu pedido #${pedido.id}`, `
+export async function enviarAcuseSolicitante(order, emailSolicitante) {
+    const subject = `Confirmación de tu pedido #${order.id}`;
+    const html = envolverHtml(`Hemos recibido tu pedido #${order.id}`, `
       <p>Hola,</p>
       <p>Hemos registrado tu pedido correctamente. Estos son los detalles:</p>
       <ul>
-        ${datosPedido(pedido)}
+        ${datosPedido(order)}
       </ul>
       <p>Te informaremos por correo cuando el pedido avance de estado.</p>
     `);
     await enviarCorreo({ to: emailSolicitante, subject, html });
 }
-export async function enviarSeguimientoEstado(pedido, emailSolicitante, nuevoEstado) {
-    const subject = `Actualización de tu pedido #${pedido.id} - ${nuevoEstado}`;
-    const html = envolverHtml(`Tu pedido #${pedido.id} ha pasado a: ${nuevoEstado}`, `
+export async function enviarSeguimientoEstado(order, emailSolicitante, newStatus) {
+    const subject = `Actualización de tu pedido #${order.id} - ${newStatus}`;
+    const html = envolverHtml(`Tu pedido #${order.id} ha pasado a: ${newStatus}`, `
       <p>Hola,</p>
       <p>Tu pedido ha cambiado de estado.</p>
       <ul>
-        <li><strong>Estado actual:</strong> ${nuevoEstado}</li>
-        ${datosPedido(pedido)}
+        <li><strong>Estado actual:</strong> ${newStatus}</li>
+        ${datosPedido(order)}
       </ul>
       <p>Si tienes alguna duda, contacta con el departamento comercial.</p>
     `);
     await enviarCorreo({ to: emailSolicitante, subject, html });
+}
+export async function notificarNuevoRegistro(user) {
+    if (!env.NOTIFY_ADMIN_ON_REGISTER) {
+        return;
+    }
+    const subject = `Nuevo usuario registrado - ${user.username}`;
+    const html = envolverHtml('Nuevo registro de usuario en SeeFerreteria', `
+      <p>Se ha registrado un nuevo usuario.</p>
+      <ul>
+        <li><strong>Usuario:</strong> ${user.username}</li>
+        <li><strong>Nombre:</strong> ${user.name}</li>
+        <li><strong>Rol:</strong> ${user.role}</li>
+        <li><strong>ID:</strong> ${user.id}</li>
+      </ul>
+      <p>Recuerda revisar y activar la cuenta si es necesario.</p>
+    `);
+    await enviarCorreo({ to: env.NOTIFY_EMAIL, subject, html });
 }

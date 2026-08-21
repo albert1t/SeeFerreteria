@@ -3,8 +3,8 @@ import multer from 'multer';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { validateParams } from '../middleware/validate.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { importarMarcaSchema } from '../schemas/index.js';
-import * as importacionesService from '../services/importacionesService.js';
+import { importBrandSchema } from '../schemas/index.js';
+import * as importsService from '../services/importsService.js';
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -22,20 +22,20 @@ const router = Router();
 
 router.use(authMiddleware);
 
-// GET /api/catalogos/importar/:marca/estado
+// GET /api/catalogs/importar/:brand/status
 // Returns the last successful import date for a given brand/catalog.
 router.get(
-  '/importar/:marca/estado',
-  validateParams(importarMarcaSchema),
+  '/importar/:brand/status',
+  validateParams(importBrandSchema),
   async (req, res, next) => {
     try {
-      const { marca } = req.params as { marca: string };
-      const ultima = await importacionesService.getUltimaImportacion(marca);
+      const { brand } = req.params as { brand: string };
+      const ultima = await importsService.getUltimaImportacion(brand);
       res.json({
-        marca,
-        ultimaImportacion: ultima?.fechaFin ?? null,
-        diasDesdeUltima: ultima?.fechaFin
-          ? Math.floor((Date.now() - new Date(ultima.fechaFin).getTime()) / (1000 * 60 * 60 * 24))
+        brand,
+        ultimaImportacion: ultima?.finishedAt ?? null,
+        diasDesdeUltima: ultima?.finishedAt
+          ? Math.floor((Date.now() - new Date(ultima.finishedAt).getTime()) / (1000 * 60 * 60 * 24))
           : null,
       });
     } catch (err) {
@@ -44,13 +44,13 @@ router.get(
   },
 );
 
-// POST /api/catalogos/importar/:marca
+// POST /api/catalogs/importar/:brand
 // Protected by tariff edit permission. Receives a CSV, parses it in a stream,
 // normalizes prices, and bulk-updates the product master in chunks of 1000.
 router.post(
-  '/importar/:marca',
+  '/importar/:brand',
   requirePermission('tarifas', 'edit'),
-  validateParams(importarMarcaSchema),
+  validateParams(importBrandSchema),
   (req, res, next) => {
     upload.single('file')(req, res, (err: unknown) => {
       if (err) {
@@ -62,12 +62,12 @@ router.post(
   },
   async (req, res, next) => {
     try {
-      const { marca } = req.params as { marca: string };
+      const { brand } = req.params as { brand: string };
       if (!req.file) {
         throw new AppError(400, 'No se ha enviado ningún archivo');
       }
-      const resultado = await importacionesService.importarCsv(
-        marca,
+      const resultado = await importsService.importCsv(
+        brand,
         req.file.buffer,
         req.file.originalname,
         req.user!.userId,

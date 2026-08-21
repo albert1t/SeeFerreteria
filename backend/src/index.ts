@@ -7,11 +7,11 @@ import { getPool } from './config/db.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import usersRoutes from './routes/users.js';
-import recambiosRoutes from './routes/recambios.js';
-import panelesRoutes from './routes/paneles.js';
-import pedidosRoutes from './routes/pedidos.js';
-import catalogosRoutes from './routes/catalogos.js';
-import importacionesRoutes from './routes/importaciones.js';
+import productsRoutes from './routes/products.js';
+import panelsRoutes from './routes/panels.js';
+import ordersRoutes from './routes/orders.js';
+import catalogsRoutes from './routes/catalogs.js';
+import importsRoutes from './routes/imports.js';
 
 // Las imágenes se almacenan en Azure Blob Storage; no se sirven estáticos locales.
 
@@ -42,11 +42,11 @@ app.get('/api/health', (_req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', usersRoutes);
-app.use('/api/recambios', recambiosRoutes);
-app.use('/api/paneles', panelesRoutes);
-app.use('/api/pedidos', pedidosRoutes);
-app.use('/api/catalogos', catalogosRoutes);
-app.use('/api/catalogos', importacionesRoutes);
+app.use('/api/products', productsRoutes);
+app.use('/api/panels', panelsRoutes);
+app.use('/api/orders', ordersRoutes);
+app.use('/api/catalogs', catalogsRoutes);
+app.use('/api/catalogs', importsRoutes);
 
 app.use(errorHandler);
 

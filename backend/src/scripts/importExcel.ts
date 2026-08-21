@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 import { getPool, closePool } from '../config/db.js';
-import { importarDesdeExcel } from '../services/recambiosService.js';
+import { importFromExcel } from '../services/productsService.js';
 
 async function importExcel() {
   console.log('Iniciando importación desde Excel...');
@@ -17,15 +17,15 @@ async function importExcel() {
     
     const buffer = readFileSync(excelPath);
     
-    const result = await importarDesdeExcel(buffer);
+    const result = await importFromExcel(buffer);
     
     console.log('--- Resumen de Importación ---');
     console.log(`Filas procesadas: ${result.total}`);
-    console.log(`Recambios insertados: ${result.insertados}`);
+    console.log(`Products insertados: ${result.insertados}`);
     
-    if (result.errores.length > 0) {
-      console.log(`Errores: ${result.errores.length}`);
-      console.log('Primeros 5 errores:', result.errores.slice(0, 5));
+    if (result.errors.length > 0) {
+      console.log(`Errores: ${result.errors.length}`);
+      console.log('Primeros 5 errors:', result.errors.slice(0, 5));
     }
   } catch (error) {
     console.error('Error durante la importación:', error);

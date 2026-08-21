@@ -68,8 +68,8 @@ export async function deleteUser(id, reassignToId) {
     const connection = await pool.getConnection();
     await connection.beginTransaction();
     try {
-        await connection.query('UPDATE Pedidos SET solicitanteId = ? WHERE solicitanteId = ?', [reassignToId, id]);
-        await connection.query('DELETE FROM PedidosEstadoHistorial WHERE usuarioId = ?', [id]);
+        await connection.query('UPDATE Orders SET requesterId = ? WHERE requesterId = ?', [reassignToId, id]);
+        await connection.query('DELETE FROM OrderStatusHistory WHERE userId = ?', [id]);
         const [result] = await connection.query('DELETE FROM Users WHERE id = ?', [id]);
         await connection.commit();
         return result.affectedRows > 0;
@@ -82,10 +82,10 @@ export async function deleteUser(id, reassignToId) {
         connection.release();
     }
 }
-// Emails permitidos para MSAL
-export async function findEmailsPermitidos() {
+// Allowed emails para MSAL
+export async function findAllowedEmails() {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, email, role, isActive FROM EmailsPermitidos ORDER BY email');
+    const [rows] = await pool.query('SELECT id, email, role, isActive FROM AllowedEmails ORDER BY email');
     return rows.map((row) => ({
         id: row.id,
         email: row.email,
@@ -93,9 +93,9 @@ export async function findEmailsPermitidos() {
         isActive: Boolean(row.isActive),
     }));
 }
-export async function findEmailPermitidoByEmail(email) {
+export async function findAllowedEmailByEmail(email) {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, email, role, isActive FROM EmailsPermitidos WHERE email = ?', [email]);
+    const [rows] = await pool.query('SELECT id, email, role, isActive FROM AllowedEmails WHERE email = ?', [email]);
     const row = rows[0];
     if (!row)
         return null;
@@ -106,21 +106,21 @@ export async function findEmailPermitidoByEmail(email) {
         isActive: Boolean(row.isActive),
     };
 }
-export async function createEmailPermitido(email, role = 'user') {
+export async function createAllowedEmail(email, role = 'user') {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT 1 AS existsEmail FROM EmailsPermitidos WHERE email = ? LIMIT 1', [email]);
+    const [rows] = await pool.query('SELECT 1 AS existsEmail FROM AllowedEmails WHERE email = ? LIMIT 1', [email]);
     if (rows.length > 0)
         return false;
-    await pool.query('INSERT INTO EmailsPermitidos (email, role) VALUES (?, ?)', [email, role]);
+    await pool.query('INSERT INTO AllowedEmails (email, role) VALUES (?, ?)', [email, role]);
     return true;
 }
-export async function updateEmailPermitido(id, role, isActive) {
+export async function updateAllowedEmail(id, role, isActive) {
     const pool = await getPool();
-    const [result] = await pool.query('UPDATE EmailsPermitidos SET role = ?, isActive = ? WHERE id = ?', [role, isActive ? 1 : 0, id]);
+    const [result] = await pool.query('UPDATE AllowedEmails SET role = ?, isActive = ? WHERE id = ?', [role, isActive ? 1 : 0, id]);
     return result.affectedRows > 0;
 }
-export async function deleteEmailPermitido(id) {
+export async function deleteAllowedEmail(id) {
     const pool = await getPool();
-    const [result] = await pool.query('DELETE FROM EmailsPermitidos WHERE id = ?', [id]);
+    const [result] = await pool.query('DELETE FROM AllowedEmails WHERE id = ?', [id]);
     return result.affectedRows > 0;
 }

@@ -17,100 +17,100 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Familias')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Families')
 BEGIN
-    CREATE TABLE Familias (
+    CREATE TABLE Families (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        nombre NVARCHAR(100) NOT NULL UNIQUE,
-        descripcion NVARCHAR(500)
+        name NVARCHAR(100) NOT NULL UNIQUE,
+        description NVARCHAR(500)
     );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Subcategorias')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Subcategories')
 BEGIN
-    CREATE TABLE Subcategorias (
+    CREATE TABLE Subcategories (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        familiaId INT NOT NULL,
-        nombre NVARCHAR(100) NOT NULL,
-        CONSTRAINT FK_Sub_Familia FOREIGN KEY (familiaId)
-            REFERENCES Familias(id) ON DELETE NO ACTION
+        familyId INT NOT NULL,
+        name NVARCHAR(100) NOT NULL,
+        CONSTRAINT FK_Subcategory_Family FOREIGN KEY (familyId)
+            REFERENCES Families(id) ON DELETE NO ACTION
     );
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Recambios')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Products')
 BEGIN
-    CREATE TABLE Recambios (
+    CREATE TABLE Products (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        referenciaCMH NVARCHAR(50) NOT NULL UNIQUE,
-        referenciaCliente NVARCHAR(50),
-        nombre NVARCHAR(200) NOT NULL,
-        marca NVARCHAR(100),
+        cmhReference NVARCHAR(50) NOT NULL UNIQUE,
+        customerReference NVARCHAR(50),
+        name NVARCHAR(200) NOT NULL,
+        brand NVARCHAR(100),
         descripcionCorta NVARCHAR(500),
         descripcionLarga NVARCHAR(MAX),
-        metrica NVARCHAR(100),
-        unidadEmbalaje NVARCHAR(100),
-        imagen NVARCHAR(500),
-        plazoEntrega NVARCHAR(50),
-        familiaId INT NOT NULL,
-        subcategoriaId INT,
-        nReposicion INT NOT NULL DEFAULT 1,
+        metric NVARCHAR(100),
+        packagingUnit NVARCHAR(100),
+        image NVARCHAR(500),
+        deliveryTime NVARCHAR(50),
+        familyId INT NOT NULL,
+        subcategoryId INT,
+        reorderPoint INT NOT NULL DEFAULT 1,
         panel NVARCHAR(10) NOT NULL,
         col TINYINT NOT NULL CHECK (col BETWEEN 1 AND 6),
         row TINYINT NOT NULL CHECK (row BETWEEN 1 AND 15),
-        oculto BIT NOT NULL DEFAULT 0,
+        hidden BIT NOT NULL DEFAULT 0,
         createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
         updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        CONSTRAINT FK_Rec_Familia FOREIGN KEY (familiaId) REFERENCES Familias(id),
-        CONSTRAINT FK_Rec_Subcategoria FOREIGN KEY (subcategoriaId) REFERENCES Subcategorias(id),
+        CONSTRAINT FK_Product_Family FOREIGN KEY (familyId) REFERENCES Families(id),
+        CONSTRAINT FK_Product_Subcategory FOREIGN KEY (subcategoryId) REFERENCES Subcategories(id),
         CONSTRAINT UQ_Recambio_Ubicacion UNIQUE (panel, col, row)
     );
 
-    CREATE INDEX IX_Recambios_RefCMH ON Recambios(referenciaCMH);
-    CREATE INDEX IX_Recambios_Nombre ON Recambios(nombre);
-    CREATE INDEX IX_Recambios_Panel ON Recambios(panel);
+    CREATE INDEX IX_Products_cmhReference ON Products(cmhReference);
+    CREATE INDEX IX_Products_name ON Products(name);
+    CREATE INDEX IX_Products_panel ON Products(panel);
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Pedidos')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
 BEGIN
-    CREATE TABLE Pedidos (
+    CREATE TABLE Orders (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        recambioId INT NOT NULL,
-        solicitanteId INT NOT NULL,
-        tipo NVARCHAR(30) NOT NULL
-            CHECK (tipo IN (N'Reposición', N'Solicitud', N'Solicitud Express')),
-        cantidad INT NOT NULL CHECK (cantidad > 0),
-        plazoDeseado NVARCHAR(50),
-        estado NVARCHAR(30) NOT NULL DEFAULT 'Solicitado'
-            CHECK (estado IN ('Solicitado','Pedido realizado','Pedido recibido','Finalizado')),
-        prioritario BIT NOT NULL DEFAULT 0,
-        observaciones NVARCHAR(MAX),
-        fechaSolicitud DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        fechaActualizacion DATETIME2 NOT NULL DEFAULssssssT SYSUTCDATETIME(),
-        CONSTRAINT FK_Ped_Recambio FOREIGN KEY (recambioId) REFERENCES Recambios(id),
-        CONSTRAINT FK_Ped_Solicitante FOREIGN KEY (solicitanteId) REFERENCES Users(id)
+        productId INT NOT NULL,
+        requesterId INT NOT NULL,
+        type NVARCHAR(30) NOT NULL
+            CHECK (type IN (N'Reposición', N'Solicitud', N'Solicitud Express')),
+        quantity INT NOT NULL CHECK (quantity > 0),
+        desiredDeadline NVARCHAR(50),
+        status NVARCHAR(30) NOT NULL DEFAULT 'Solicitado'
+            CHECK (status IN ('Solicitado','Pedido realizado','Pedido recibido','Finalizado')),
+        priority BIT NOT NULL DEFAULT 0,
+        notes NVARCHAR(MAX),
+        requestedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        updatedAt DATETIME2 NOT NULL DEFAULssssssT SYSUTCDATETIME(),
+        CONSTRAINT FK_Order_Product FOREIGN KEY (productId) REFERENCES Products(id),
+        CONSTRAINT FK_Order_Requester FOREIGN KEY (requesterId) REFERENCES Users(id)
     );
 
-    CREATE INDEX IX_Pedidos_Estado ON Pedidos(estado);
-    CREATE INDEX IX_Pedidos_Tipo ON Pedidos(tipo);
-    CREATE INDEX IX_Pedidos_Prioritario ON Pedidos(prioritario, fechaSolicitud DESC);
-    CREATE INDEX IX_Pedidos_Recambio ON Pedidos(recambioId);
+    CREATE INDEX IX_Orders_status ON Orders(status);
+    CREATE INDEX IX_Orders_type ON Orders(type);
+    CREATE INDEX IX_Orders_priority_requestedAt ON Orders(priority, requestedAt DESC);
+    CREATE INDEX IX_Orders_productId ON Orders(productId);
 END
 GO
 
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PedidosEstadoHistorial')
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderStatusHistory')
 BEGIN
-    CREATE TABLE PedidosEstadoHistorial (
+    CREATE TABLE OrderStatusHistory (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        pedidoId INT NOT NULL,
-        usuarioId INT NOT NULL,
-        estadoAnterior NVARCHAR(30),
-        estadoNuevo NVARCHAR(30) NOT NULL,
+        orderId INT NOT NULL,
+        userId INT NOT NULL,
+        previousStatus NVARCHAR(30),
+        newStatus NVARCHAR(30) NOT NULL,
         fecha DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        CONSTRAINT FK_Hist_Pedido FOREIGN KEY (pedidoId) REFERENCES Pedidos(id) ON DELETE CASCADE,
-        CONSTRAINT FK_Hist_Usuario FOREIGN KEY (usuarioId) REFERENCES Users(id)
+        CONSTRAINT FK_History_Order FOREIGN KEY (orderId) REFERENCES Orders(id) ON DELETE CASCADE,
+        CONSTRAINT FK_History_User FOREIGN KEY (userId) REFERENCES Users(id)
     );
 END
 GO

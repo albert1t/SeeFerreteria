@@ -6,26 +6,26 @@ import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
 import { FormRecambio } from '../components/FormRecambio';
 import { btnStyle, colors } from '../styles/theme';
-import * as recambiosApi from '../api/recambios';
-import * as catalogosApi from '../api/catalogos';
-import type { Recambio } from '../types';
+import * as recambiosApi from '../api/products';
+import * as catalogosApi from '../api/catalogs';
+import type { Product } from '../types';
 
-const FIELDS: { key: keyof Recambio; label: string; width?: number }[] = [
+const FIELDS: { key: keyof Product; label: string; width?: number }[] = [
   { key: 'id', label: 'ID', width: 50 },
-  { key: 'referenciaCMH', label: 'Ref. CMH', width: 110 },
-  { key: 'referenciaCliente', label: 'Ref. Cliente', width: 110 },
-  { key: 'codigo', label: 'Código', width: 80 },
-  { key: 'nombre', label: 'Nombre', width: 200 },
-  { key: 'marca', label: 'Marca', width: 100 },
-  { key: 'metrica', label: 'Métrica', width: 80 },
-  { key: 'unidadEmbalaje', label: 'Ud. Embalaje', width: 100 },
+  { key: 'cmhReference', label: 'Ref. CMH', width: 110 },
+  { key: 'customerReference', label: 'Ref. Cliente', width: 110 },
+  { key: 'code', label: 'Código', width: 80 },
+  { key: 'name', label: 'Nombre', width: 200 },
+  { key: 'brand', label: 'Marca', width: 100 },
+  { key: 'metric', label: 'Métrica', width: 80 },
+  { key: 'packagingUnit', label: 'Ud. Embalaje', width: 100 },
   { key: 'pvpOrientativo', label: 'Precio', width: 90 },
-  { key: 'familiaNombre', label: 'Familia', width: 120 },
-  { key: 'nReposicion', label: 'Nº Repos.', width: 80 },
+  { key: 'familyName', label: 'Family', width: 120 },
+  { key: 'reorderPoint', label: 'Nº Repos.', width: 80 },
   { key: 'panel', label: 'Panel', width: 60 },
   { key: 'col', label: 'Col', width: 40 },
   { key: 'row', label: 'Row', width: 40 },
-  { key: 'oculto', label: 'Oculto', width: 60 },
+  { key: 'hidden', label: 'Oculto', width: 60 },
 ];
 
 const CELL_STYLES: React.CSSProperties = {
@@ -45,9 +45,9 @@ const FILTER_DROPDOWN: React.CSSProperties = {
   borderRadius: 6, padding: 8, minWidth: 200, boxShadow: 'var(--shadow-strong)',
 };
 
-function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, onSort }: {
+function FilterDropdown({ value, onChange, onClose, field, families, sortDir, onSort }: {
   value: string; onChange: (v: string) => void; onClose: () => void;
-  field: string; familias: { id: number; nombre: string }[];
+  field: string; families: { id: number; name: string }[];
   sortDir: 'asc' | 'desc' | null; onSort: (dir: 'asc' | 'desc' | null) => void;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -86,19 +86,19 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
         {field === 'panel' ? (
           <select value={value} onChange={(e) => onChange(e.target.value)}
             style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'var(--bg-input-dark-2)', color: 'var(--text)', border: '1px solid var(--border-input-strong)', borderRadius: 3, outline: 'none' }} autoFocus>
-            <option value="">Todos los paneles</option>
+            <option value="">Todos los panels</option>
             {Array.from({ length: 25 }, (_, i) => `A${i + 1}`).map((p) => <option key={p} value={p}>{p}</option>)}
           </select>
-        ) : field === 'familiaNombre' ? (
+        ) : field === 'familyName' ? (
           <select value={value} onChange={(e) => onChange(e.target.value)}
             style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'var(--bg-input-dark-2)', color: 'var(--text)', border: '1px solid var(--border-input-strong)', borderRadius: 3, outline: 'none' }} autoFocus>
-            <option value="">Todas las familias</option>
-            {familias.map((f) => <option key={f.id} value={f.nombre}>{f.nombre}</option>)}
+            <option value="">Todas las families</option>
+            {families.map((f) => <option key={f.id} value={f.name}>{f.name}</option>)}
           </select>
-        ) : field === 'oculto' ? (
+        ) : field === 'hidden' ? (
           ['', 'false', 'true'].map((val) => (
             <label key={val} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0', fontSize: 12, color: colors.text, cursor: 'pointer' }}>
-              <input type="radio" name="oculto-filtro" checked={value === val} onChange={() => onChange(val)}
+              <input type="radio" name="hidden-filtro" checked={value === val} onChange={() => onChange(val)}
                 style={{ accentColor: 'var(--accent)' }} />
               {val === '' ? 'Todos' : val === 'false' ? 'No' : 'Sí'}
             </label>
@@ -116,7 +116,7 @@ function FilterDropdown({ value, onChange, onClose, field, familias, sortDir, on
   );
 }
 
-function cellValue(r: Recambio, key: keyof Recambio): string {
+function cellValue(r: Product, key: keyof Product): string {
   const v = r[key];
   if (v === null || v === undefined) return '';
   if (typeof v === 'boolean') return v ? 'Sí' : 'No';
@@ -137,56 +137,56 @@ export function DatosPage() {
   const [editMode, setEditMode] = useState(false);
   const [editValues, setEditValues] = useState<Record<string, string>>({});
   const [showCrear, setShowCrear] = useState(false);
-  const [editandoRecambio, setEditandoRecambio] = useState<Recambio | null>(null);
+  const [editandoRecambio, setEditandoRecambio] = useState<Product | null>(null);
   const [editando, setEditando] = useState<Record<string, string>>({});
-  const [celdaActiva, setCeldaActiva] = useState<{ id: number; field: keyof Recambio } | null>(null);
+  const [celdaActiva, setCeldaActiva] = useState<{ id: number; field: keyof Product } | null>(null);
 
-  const puedeEditar = can('recambios', 'edit');
-  const puedeCrear = can('recambios', 'create');
+  const puedeEditar = can('products', 'edit');
+  const puedeCrear = can('products', 'create');
 
-  const { data: recambios = [], isLoading } = useQuery({
-    queryKey: ['recambios', 'all'],
-    queryFn: recambiosApi.getAllRecambios,
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ['products', 'all'],
+    queryFn: recambiosApi.getAllProducts,
   });
 
-  const { data: familias = [] } = useQuery({
-    queryKey: ['catalogos', 'familias'],
-    queryFn: catalogosApi.getFamilias,
+  const { data: families = [] } = useQuery({
+    queryKey: ['catalogs', 'families'],
+    queryFn: catalogosApi.getFamilies,
   });
 
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) =>
-      recambiosApi.updateRecambio(id, data as any),
+      recambiosApi.updateProduct(id, data as any),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recambios', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['products', 'all'] });
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const deleteMut = useMutation({
-    mutationFn: (id: number) => recambiosApi.deleteRecambio(id),
+    mutationFn: (id: number) => recambiosApi.deleteProduct(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['recambios', 'all'] });
-      showToast('Recambio eliminado', 'success');
+      queryClient.invalidateQueries({ queryKey: ['products', 'all'] });
+      showToast('Product eliminado', 'success');
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const filtradosYOrdenados = useMemo(() => {
-    let result = recambios.filter((r) => {
+    let result = products.filter((r) => {
       if (busqueda) {
         const q = busqueda.toLowerCase();
-        const match = [r.referenciaCMH, r.referenciaCliente, r.codigo, r.nombre, r.marca, r.descripcion, r.metrica, r.unidadEmbalaje, r.panel, String(r.col), String(r.row), r.familiaNombre, r.plazoEntrega]
+        const match = [r.cmhReference, r.customerReference, r.code, r.name, r.brand, r.description, r.metric, r.packagingUnit, r.panel, String(r.col), String(r.row), r.familyName, r.deliveryTime]
           .some((v) => v && v.toLowerCase().includes(q));
         if (!match) return false;
       }
       for (const [field, filterVal] of Object.entries(columnFilters)) {
         if (!filterVal) continue;
-        if (field === 'oculto') {
-          if (r.oculto !== (filterVal === 'true')) return false;
+        if (field === 'hidden') {
+          if (r.hidden !== (filterVal === 'true')) return false;
           continue;
         }
-        const cellText = cellValue(r, field as keyof Recambio).toLowerCase();
+        const cellText = cellValue(r, field as keyof Product).toLowerCase();
         if (!cellText.includes(filterVal.toLowerCase())) return false;
       }
       return true;
@@ -194,8 +194,8 @@ export function DatosPage() {
 
     if (sort) {
       result = [...result].sort((a, b) => {
-        const va = cellValue(a, sort.field as keyof Recambio).toLowerCase();
-        const vb = cellValue(b, sort.field as keyof Recambio).toLowerCase();
+        const va = cellValue(a, sort.field as keyof Product).toLowerCase();
+        const vb = cellValue(b, sort.field as keyof Product).toLowerCase();
         if (va < vb) return sort.dir === 'asc' ? -1 : 1;
         if (va > vb) return sort.dir === 'asc' ? 1 : -1;
         return 0;
@@ -203,7 +203,7 @@ export function DatosPage() {
     }
 
     return result;
-  }, [recambios, busqueda, columnFilters, sort]);
+  }, [products, busqueda, columnFilters, sort]);
 
   const hasAnyFilter = busqueda || Object.values(columnFilters).some(Boolean);
 
@@ -225,7 +225,7 @@ export function DatosPage() {
 
   function enterEditMode() {
     const vals: Record<string, string> = {};
-    recambios.forEach((r) => {
+    products.forEach((r) => {
       FIELDS.forEach((f) => {
         vals[`${r.id}_${String(f.key)}`] = cellValue(r, f.key);
       });
@@ -243,16 +243,16 @@ export function DatosPage() {
     const changesByRecambio: Record<number, Record<string, unknown>> = {};
     for (const [key, newVal] of Object.entries(editValues)) {
       const [idStr, ...fieldParts] = key.split('_');
-      const field = fieldParts.join('_') as keyof Recambio;
+      const field = fieldParts.join('_') as keyof Product;
       const id = parseInt(idStr, 10);
-      const original = recambios.find((r) => r.id === id);
+      const original = products.find((r) => r.id === id);
       if (!original) continue;
       const origVal = cellValue(original, field);
       if (newVal === origVal) continue;
       if (field === 'id') continue;
 
       let parsed: unknown = newVal;
-      if (field === 'col' || field === 'row' || field === 'nReposicion') {
+      if (field === 'col' || field === 'row' || field === 'reorderPoint') {
         parsed = newVal === '' ? null : parseInt(newVal, 10);
         if (parsed === null) continue;
       }
@@ -260,15 +260,15 @@ export function DatosPage() {
         parsed = newVal === '' ? null : parseFloat(newVal);
         if (parsed === null) continue;
       }
-      if (field === 'familiaNombre' || field === 'familiaId') {
-        const fam = familias.find((f) => f.nombre === newVal);
+      if (field === 'familyName' || field === 'familyId') {
+        const fam = families.find((f) => f.name === newVal);
         if (fam) parsed = fam.id;
         else continue;
         if (!changesByRecambio[id]) changesByRecambio[id] = {};
-        changesByRecambio[id]['familiaId'] = parsed;
+        changesByRecambio[id]['familyId'] = parsed;
         continue;
       }
-      if (field === 'oculto') {
+      if (field === 'hidden') {
         parsed = newVal === 'Sí';
       }
 
@@ -289,7 +289,7 @@ export function DatosPage() {
     );
     try {
       await Promise.all(saves);
-      showToast(`${saves.length} recambio(s) actualizados`, 'success');
+      showToast(`${saves.length} product(s) updated`, 'success');
       setEditMode(false);
       setEditValues({});
     } catch {
@@ -297,17 +297,17 @@ export function DatosPage() {
     }
   }
 
-  function iniciarEdicion(id: number, field: keyof Recambio, currentValue: string) {
+  function iniciarEdicion(id: number, field: keyof Product, currentValue: string) {
     setEditando((prev) => ({ ...prev, [`${id}_${String(field)}`]: currentValue }));
     setCeldaActiva({ id, field });
   }
 
-  const guardarCelda = useCallback((id: number, field: keyof Recambio) => {
+  const guardarCelda = useCallback((id: number, field: keyof Product) => {
     const key = `${id}_${String(field)}`;
     const nuevoValor = editando[key];
     if (nuevoValor === undefined) return;
 
-    const original = recambios.find((r) => r.id === id);
+    const original = products.find((r) => r.id === id);
     if (!original) return;
 
     const valorOriginal = cellValue(original, field);
@@ -318,7 +318,7 @@ export function DatosPage() {
     }
 
     let parsed: unknown = nuevoValor;
-    if (field === 'col' || field === 'row' || field === 'nReposicion') {
+    if (field === 'col' || field === 'row' || field === 'reorderPoint') {
       parsed = nuevoValor === '' ? null : parseInt(nuevoValor, 10);
     } else if (field === 'pvpOrientativo') {
       parsed = nuevoValor === '' ? null : parseFloat(nuevoValor);
@@ -327,9 +327,9 @@ export function DatosPage() {
     updateMut.mutate({ id, data: { [field]: parsed } });
     setEditando((prev) => { const n = { ...prev }; delete n[key]; return n; });
     setCeldaActiva(null);
-  }, [editando, recambios, updateMut]);
+  }, [editando, products, updateMut]);
 
-  function handleKeyDown(e: React.KeyboardEvent, id: number, field: keyof Recambio) {
+  function handleKeyDown(e: React.KeyboardEvent, id: number, field: keyof Product) {
     if (e.key === 'Enter') {
       guardarCelda(id, field);
     } else if (e.key === 'Escape') {
@@ -338,7 +338,7 @@ export function DatosPage() {
     }
   }
 
-  function renderCellValue(r: Recambio, field: keyof Recambio) {
+  function renderCellValue(r: Product, field: keyof Product) {
     const editKey = `${r.id}_${String(field)}`;
     const value = editValues[editKey] ?? cellValue(r, field);
 
@@ -346,18 +346,18 @@ export function DatosPage() {
       return <span style={{ color: colors.textMuted }}>{r.id}</span>;
     }
 
-    if (field === 'oculto') {
+    if (field === 'hidden') {
       return (
         <input type="checkbox" checked={value === 'Sí'}
           onChange={(e) => setEditValues((prev) => ({ ...prev, [editKey]: e.target.checked ? 'Sí' : 'No' }))} />
       );
     }
 
-    if (field === 'familiaNombre') {
+    if (field === 'familyName') {
       return (
         <select value={value} onChange={(e) => setEditValues((prev) => ({ ...prev, [editKey]: e.target.value }))}
           style={INPUT_CELL}>
-          {familias.map((f) => <option key={f.id} value={f.nombre}>{f.nombre}</option>)}
+          {families.map((f) => <option key={f.id} value={f.name}>{f.name}</option>)}
         </select>
       );
     }
@@ -371,7 +371,7 @@ export function DatosPage() {
       );
     }
 
-    if (field === 'nReposicion' || field === 'col' || field === 'row') {
+    if (field === 'reorderPoint' || field === 'col' || field === 'row') {
       return (
         <input type="number" min={1} value={value} style={INPUT_CELL}
           onChange={(e) => setEditValues((prev) => ({ ...prev, [editKey]: e.target.value }))} />
@@ -391,7 +391,7 @@ export function DatosPage() {
     );
   }
 
-  function renderCell(r: Recambio, field: keyof Recambio) {
+  function renderCell(r: Product, field: keyof Product) {
     if (editMode && puedeEditar && field !== 'id') {
       return renderCellValue(r, field);
     }
@@ -399,26 +399,26 @@ export function DatosPage() {
     const isEditing = celdaActiva?.id === r.id && celdaActiva?.field === field;
     const key = `${r.id}_${String(field)}`;
 
-    if (field === 'oculto') {
+    if (field === 'hidden') {
       return (
-        <input type="checkbox" checked={r.oculto} disabled={!puedeEditar}
-          onChange={() => updateMut.mutate({ id: r.id, data: { oculto: !r.oculto } })} />
+        <input type="checkbox" checked={r.hidden} disabled={!puedeEditar}
+          onChange={() => updateMut.mutate({ id: r.id, data: { hidden: !r.hidden } })} />
       );
     }
 
-    if (field === 'familiaNombre') {
+    if (field === 'familyName') {
       if (isEditing && puedeEditar) {
         return (
-          <select value={editando[key] ?? String(r.familiaId)} onChange={(e) => setEditando((p) => ({ ...p, [key]: e.target.value }))}
-            onBlur={() => guardarCelda(r.id, 'familiaId')} onKeyDown={(e) => handleKeyDown(e, r.id, 'familiaId')} autoFocus style={INPUT_CELL}>
-            {familias.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+          <select value={editando[key] ?? String(r.familyId)} onChange={(e) => setEditando((p) => ({ ...p, [key]: e.target.value }))}
+            onBlur={() => guardarCelda(r.id, 'familyId')} onKeyDown={(e) => handleKeyDown(e, r.id, 'familyId')} autoFocus style={INPUT_CELL}>
+            {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
           </select>
         );
       }
       return (
-        <span onClick={() => puedeEditar && iniciarEdicion(r.id, 'familiaId', String(r.familiaId))}
+        <span onClick={() => puedeEditar && iniciarEdicion(r.id, 'familyId', String(r.familyId))}
           style={{ cursor: puedeEditar ? 'pointer' : 'default' }}>
-          {r.familiaNombre || '—'}
+          {r.familyName || '—'}
         </span>
       );
     }
@@ -427,8 +427,8 @@ export function DatosPage() {
       return <span style={{ color: colors.textMuted }}>{r.id}</span>;
     }
 
-    if (field === 'nReposicion') {
-      const v = r.nReposicion;
+    if (field === 'reorderPoint') {
+      const v = r.reorderPoint;
       if (isEditing && puedeEditar) {
         return (
           <input type="number" min={1} value={editando[key] ?? v ?? ''} autoFocus style={INPUT_CELL}
@@ -562,7 +562,7 @@ export function DatosPage() {
                           onChange={(v) => setColumnFilters((prev) => ({ ...prev, [String(f.key)]: v }))}
                           onClose={() => setFilterOpen(null)}
                           field={String(f.key)}
-                          familias={familias}
+                          families={families}
                           sortDir={sort?.field === String(f.key) ? sort.dir : null}
                           onSort={(dir) => handleSort(String(f.key), dir)}
                         />
@@ -577,7 +577,7 @@ export function DatosPage() {
             </thead>
             <tbody>
               {filtradosYOrdenados.map((r) => (
-                <tr key={r.id} style={{ background: r.oculto ? 'var(--bg-danger-soft)' : undefined }}>
+                <tr key={r.id} style={{ background: r.hidden ? 'var(--bg-danger-soft)' : undefined }}>
                   {FIELDS.map((f) => (
                     <td key={String(f.key)} style={{
                       ...CELL_STYLES,
@@ -591,7 +591,7 @@ export function DatosPage() {
                         Editar
                       </button>
                       <button type="button" style={{ ...btnStyle('danger'), fontSize: 11, padding: '2px 6px' }}
-                        disabled={deleteMut.isPending} onClick={() => { if (window.confirm(`¿Eliminar ${r.referenciaCMH}?`)) deleteMut.mutate(r.id); }}>
+                        disabled={deleteMut.isPending} onClick={() => { if (window.confirm(`¿Eliminar ${r.cmhReference}?`)) deleteMut.mutate(r.id); }}>
                         Eliminar
                       </button>
                     </td>
@@ -607,22 +607,22 @@ export function DatosPage() {
       </div>
 
       {showCrear && (
-        <Modal open onClose={() => setShowCrear(false)} title="Nuevo recambio" wide>
+        <Modal open onClose={() => setShowCrear(false)} title="Nuevo product" wide>
           <FormRecambio
             onCancel={() => setShowCrear(false)}
-            onSave={() => { setShowCrear(false); queryClient.invalidateQueries({ queryKey: ['recambios', 'all'] }); }}
+            onSave={() => { setShowCrear(false); queryClient.invalidateQueries({ queryKey: ['products', 'all'] }); }}
           />
         </Modal>
       )}
 
       {editandoRecambio && (
-        <Modal open onClose={() => setEditandoRecambio(null)} title={`Editar ${editandoRecambio.referenciaCMH}`} wide>
+        <Modal open onClose={() => setEditandoRecambio(null)} title={`Editar ${editandoRecambio.cmhReference}`} wide>
           <FormRecambio
-            recambio={editandoRecambio}
+            product={editandoRecambio}
             onCancel={() => setEditandoRecambio(null)}
             onSave={() => {
               setEditandoRecambio(null);
-              queryClient.invalidateQueries({ queryKey: ['recambios', 'all'] });
+              queryClient.invalidateQueries({ queryKey: ['products', 'all'] });
             }}
           />
         </Modal>

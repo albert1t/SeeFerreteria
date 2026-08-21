@@ -1,10 +1,10 @@
 import { Readable } from 'stream';
 import csvParser from 'csv-parser';
 import { getPool } from '../config/db.js';
-import * as importacionesRepo from '../repositories/importaciones.js';
+import * as importsRepo from '../repositories/imports.js';
 import { AppError } from '../middleware/errorHandler.js';
 const COLUMNAS_CODIGO = [
-    'codigo', 'code', 'partnumber', 'ordernumber', 'ordercode',
+    'code', 'code', 'partnumber', 'ordernumber', 'ordercode',
     'part no', 'partno', 'reference', 'referencia', 'sku', 'material', 'producto', 'item',
 ];
 const COLUMNAS_PRECIO = [
@@ -54,32 +54,32 @@ function parseFila(row, colCodigo, colPrecio) {
     if (rawCodigo === undefined || rawCodigo === null || String(rawCodigo).trim() === '') {
         return null;
     }
-    const codigo = String(rawCodigo).trim();
+    const code = String(rawCodigo).trim();
     const precio = normalizarPrecio(row[colPrecio]);
     if (precio === null) {
         return null;
     }
-    return { codigo, pvpOrientativo: precio };
+    return { code, pvpOrientativo: precio };
 }
 const CHUNK_SIZE = 1000;
-export async function importarCsv(marca, buffer, archivoNombre, usuarioId) {
+export async function importCsv(brand, buffer, fileName, userId) {
     const pool = await getPool();
     const connection = await pool.getConnection();
     try {
         await connection.beginTransaction();
         let colCodigo = null;
         let colPrecio = null;
-        let totalRegistros = 0;
-        let actualizados = 0;
-        let errores = 0;
-        const erroresDetalle = [];
+        let totalRecords = 0;
+        let updated = 0;
+        let errors = 0;
+        const errorDetails = [];
         const chunk = [];
         let filaIndex = 0;
         const processChunk = async () => {
             if (chunk.length === 0)
                 return;
-            const affected = await importacionesRepo.bulkUpdatePreciosChunk(connection, chunk);
-            actualizados += affected;
+            const affected = await importsRepo.bulkUpdatePreciosChunk(connection, chunk);
+            updated += affected;
             chunk.length = 0;
         };
         await new Promise((resolve, reject) => {
@@ -96,13 +96,13 @@ export async function importarCsv(marca, buffer, archivoNombre, usuarioId) {
             })
                 .on('data', async (row) => {
                 filaIndex++;
-                totalRegistros++;
+                totalRecords++;
                 try {
                     const fila = parseFila(row, colCodigo, colPrecio);
                     if (!fila) {
-                        errores++;
-                        if (erroresDetalle.length < 20) {
-                            erroresDetalle.push(`Fila ${filaIndex}: código o precio inválido`);
+                        errors++;
+                        if (errorDetails.length < 20) {
+                            errorDetails.push(`Fila ${filaIndex}: código o precio inválido`);
                         }
                         return;
                     }
@@ -114,9 +114,9 @@ export async function importarCsv(marca, buffer, archivoNombre, usuarioId) {
                     }
                 }
                 catch (err) {
-                    errores++;
-                    if (erroresDetalle.length < 20) {
-                        erroresDetalle.push(`Fila ${filaIndex}: ${err.message || 'error desconocido'}`);
+                    errors++;
+                    if (errorDetails.length < 20) {
+                        errorDetails.push(`Fila ${filaIndex}: ${err.message || 'error desconocido'}`);
                     }
                 }
             })
@@ -133,16 +133,16 @@ export async function importarCsv(marca, buffer, archivoNombre, usuarioId) {
                 reject(err);
             });
         });
-        const estado = actualizados > 0 ? 'completado' : 'fallido';
+        const status = updated > 0 ? 'completado' : 'fallido';
         // Only a successful import (at least one product actually updated) renews the
-        // "last import" date. Failed/empty imports are recorded without fechaFin so the
+        // "last import" date. Failed/empty imports are recorded without finishedAt so the
         // obsolete-pricing alert is not suppressed.
-        const [result] = await connection.query(`INSERT INTO ImportacionesCatalogo
-       (marca, totalRegistros, actualizados, errores, erroresDetalle, estado, archivoNombre, usuarioId, fechaInicio, fechaFin)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(3), ${estado === 'completado' ? 'UTC_TIMESTAMP(3)' : 'NULL'})`, [marca, totalRegistros, actualizados, errores, erroresDetalle.length > 0 ? erroresDetalle.join('\n') : null, estado, archivoNombre, usuarioId]);
+        const [result] = await connection.query(`INSERT INTO CatalogImports
+       (brand, totalRecords, updated, errors, errorDetails, status, fileName, userId, startedAt, finishedAt)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(3), ${status === 'completado' ? 'UTC_TIMESTAMP(3)' : 'NULL'})`, [brand, totalRecords, updated, errors, errorDetails.length > 0 ? errorDetails.join('\n') : null, status, fileName, userId]);
         await connection.commit();
         const insertId = result.insertId;
-        const last = await importacionesRepo.findById(insertId);
+        const last = await importsRepo.findById(insertId);
         if (!last) {
             throw new AppError(500, 'No se pudo recuperar el registro de importación');
         }
@@ -156,6 +156,6 @@ export async function importarCsv(marca, buffer, archivoNombre, usuarioId) {
         connection.release();
     }
 }
-export async function getUltimaImportacion(marca) {
-    return importacionesRepo.findLastCompleted(marca);
+export async function getUltimaImportacion(brand) {
+    return importsRepo.findLastCompleted(brand);
 }

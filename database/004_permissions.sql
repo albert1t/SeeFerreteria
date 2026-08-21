@@ -21,11 +21,11 @@ GO
 
 -- Default permissions for existing users:
 -- admin: all permissions
--- user: can create/view/edit pedidos, view recambios
+-- user: can create/view/edit orders, view products
 UPDATE Users
 SET permissions = CASE
-    WHEN role = 'admin' THEN '{"admin":true,"pedidos":{"create":true,"view":true,"edit":true,"delete":true},"recambios":{"create":true,"view":true,"edit":true,"delete":true}}'
-    ELSE '{"admin":false,"pedidos":{"create":true,"view":true,"edit":true,"delete":false},"recambios":{"create":false,"view":true,"edit":false,"delete":false}}'
+    WHEN role = 'admin' THEN '{"admin":true,"orders":{"create":true,"view":true,"edit":true,"delete":true},"products":{"create":true,"view":true,"edit":true,"delete":true}}'
+    ELSE '{"admin":false,"orders":{"create":true,"view":true,"edit":true,"delete":false},"products":{"create":false,"view":true,"edit":false,"delete":false}}'
 END
 WHERE permissions IS NULL;
 GO

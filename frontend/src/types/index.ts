@@ -15,121 +15,121 @@ export interface AllowedEmail {
   isActive: boolean;
 }
 
-export type PedidoTipo = 'Reposición' | 'Solicitud' | 'Solicitud Express';
-export type PedidoEstado = 'Solicitado' | 'Pedido realizado' | 'Pedido recibido' | 'Finalizado';
+export type OrderType = 'Reposición' | 'Solicitud' | 'Solicitud Express';
+export type OrderStatus = 'Solicitado' | 'Pedido realizado' | 'Pedido recibido' | 'Finalizado';
 
-export interface Recambio {
+export interface Product {
   id: number;
-  referenciaCMH: string;
-  referenciaCliente: string | null;
-  codigo: string | null;
-  nombre: string;
-  marca: string | null;
-  descripcion: string | null;
-  metrica: string | null;
-  unidadEmbalaje: string | null;
+  cmhReference: string;
+  customerReference: string | null;
+  code: string | null;
+  name: string;
+  brand: string | null;
+  description: string | null;
+  metric: string | null;
+  packagingUnit: string | null;
   pvpOrientativo: number | null;
   pvpOrientativoMoneda: string | null;
-  imagen: string | null;
-  plazoEntrega: string | null;
-  familiaId: number;
-  familiaNombre?: string;
-  nReposicion: number | null;
+  image: string | null;
+  deliveryTime: string | null;
+  familyId: number;
+  familyName?: string;
+  reorderPoint: number | null;
   panel: string;
   col: number;
   row: number;
-  oculto: boolean;
+  hidden: boolean;
 }
 
-export interface Pedido {
+export interface Order {
   id: number;
-  recambioId: number;
-  solicitanteId: number;
-  tipo: PedidoTipo;
-  cantidad: number;
-  plazoDeseado: string | null;
-  estado: PedidoEstado;
-  prioritario: boolean;
-  observaciones: string | null;
-  oculto: boolean;
-  fechaSolicitud: string;
-  fechaActualizacion: string;
-  recambioRef?: string;
-  recambioNombre?: string;
-  recambioImagen?: string;
-  recambioPrecio?: number | null;
-  recambioEmbalaje?: string | null;
-  solicitanteNombre?: string;
+  productId: number;
+  requesterId: number;
+  type: OrderType;
+  quantity: number;
+  desiredDeadline: string | null;
+  status: OrderStatus;
+  priority: boolean;
+  notes: string | null;
+  hidden: boolean;
+  requestedAt: string;
+  updatedAt: string;
+  productRef?: string;
+  productName?: string;
+  productImage?: string;
+  productPrice?: number | null;
+  productPackaging?: string | null;
+  requesterName?: string;
 }
 
-export interface PedidoHistorial {
+export interface OrderHistory {
   id: number;
-  pedidoId: number;
-  usuarioId: number;
-  estadoAnterior: string | null;
-  estadoNuevo: string;
+  orderId: number;
+  userId: number;
+  previousStatus: string | null;
+  newStatus: string;
   fecha: string;
-  usuarioNombre?: string;
+  userName?: string;
 }
 
-export interface RecambioPreview {
+export interface ProductPreview {
   id: number;
   panel: string;
   col: number;
   row: number;
-  imagen: string | null;
-  referenciaCMH: string;
-  familiaNombre: string | undefined;
+  image: string | null;
+  cmhReference: string;
+  familyName: string | undefined;
 }
 
-export interface PanelResumen {
+export interface PanelSummary {
   panel: string;
-  totalRecambios: number;
+  totalProducts: number;
 }
 
-export interface FamiliaConSubs {
+export interface FamilyWithSubs {
   id: number;
-  nombre: string;
-  descripcion: string | null;
+  name: string;
+  description: string | null;
 }
 
-export type ImportacionEstado = 'procesando' | 'completado' | 'fallido';
+export type ImportStatus = 'procesando' | 'completado' | 'fallido';
 
-export interface ImportacionCatalogo {
+export interface CatalogImport {
   id: number;
-  marca: string;
-  totalRegistros: number;
-  actualizados: number;
-  errores: number;
-  erroresDetalle: string | null;
-  estado: ImportacionEstado;
-  archivoNombre: string | null;
-  usuarioId: number;
-  fechaInicio: string;
-  fechaFin: string | null;
+  brand: string;
+  totalRecords: number;
+  updated: number;
+  errors: number;
+  errorDetails: string | null;
+  status: ImportStatus;
+  fileName: string | null;
+  userId: number;
+  startedAt: string;
+  finishedAt: string | null;
 }
 
-export interface ImportacionStatusResponse {
-  marca: string;
+export interface ImportStatusResponse {
+  brand: string;
   ultimaImportacion: string | null;
   diasDesdeUltima: number | null;
 }
 
-export interface RecambioFormData {
-  referenciaCMH: string;
-  referenciaCliente?: string | null;
-  codigo?: string | null;
-  nombre: string;
-  marca?: string | null;
-  descripcion?: string | null;
-  metrica?: string | null;
-  unidadEmbalaje?: string | null;
+export interface ProductFormData {
+  cmhReference: string;
+  customerReference?: string | null;
+  code?: string | null;
+  name: string;
+  brand?: string | null;
+  description?: string | null;
+  metric?: string | null;
+  packagingUnit?: string | null;
   pvpOrientativo?: number | null;
   pvpOrientativoMoneda?: string | null;
-  imagen?: string | null;
-  plazoEntrega?: string | null;
-  familiaId: number;
-  nReposicion: number | null;
+  image?: string | null;
+  deliveryTime?: string | null;
+  familyId: number;
+  reorderPoint: number | null;
   panel: string;
   col: number | null;
   row: number | null;

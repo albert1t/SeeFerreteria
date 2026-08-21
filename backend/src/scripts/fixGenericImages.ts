@@ -78,10 +78,10 @@ async function processImageBuffer(buffer: Buffer): Promise<Buffer> {
   return composite;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -106,18 +106,18 @@ async function main() {
   for (const [ref, urls] of Object.entries(TARGETED_URLS)) {
     console.log(`\n[${ref}]`);
 
-    // Find the recambio in DB
+    // Find the product in DB
     const result = await pool.request()
       .input('ref', sql.NVarChar(50), ref.trim())
-      .query(`SELECT id, referenciaCMH, imagen FROM Recambios WHERE referenciaCMH = @ref`);
+      .query(`SELECT id, cmhReference, image FROM Products WHERE cmhReference = @ref`);
     
     if (result.recordset.length === 0) {
       console.log(`    Not found in DB`);
       continue;
     }
 
-    const recambio = result.recordset[0];
-    console.log(`    DB ID: ${recambio.id}, Current image: ${(recambio.imagen || '').substring(0, 60)}`);
+    const product = result.recordset[0];
+    console.log(`    DB ID: ${product.id}, Current image: ${(product.image || '').substring(0, 60)}`);
 
     const buffer = await downloadImage(urls);
     if (!buffer) {
@@ -126,11 +126,11 @@ async function main() {
     }
 
     const processed = await processImageBuffer(buffer);
-    const url = await uploadToAzure(processed, recambio.referenciaCMH);
+    const url = await uploadToAzure(processed, product.cmhReference);
     await pool.request()
-      .input('imagen', sql.NVarChar(500), url)
-      .input('id', sql.Int, recambio.id)
-      .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+      .input('image', sql.NVarChar(500), url)
+      .input('id', sql.Int, product.id)
+      .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
     console.log(`    Updated -> ${url}`);
   }
 

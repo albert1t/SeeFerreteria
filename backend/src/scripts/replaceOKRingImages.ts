@@ -30,10 +30,10 @@ async function generateRingImage(): Promise<Buffer> {
   return buf;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -56,7 +56,7 @@ async function main() {
   const pool = await getPool();
 
   const result = await pool.request()
-    .query(`SELECT id, referenciaCMH, imagen FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
+    .query(`SELECT id, cmhReference, image FROM Products WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
   const rings = result.recordset;
   console.log(`Encontrados ${rings.length} anillos OK\n`);
 
@@ -64,12 +64,12 @@ async function main() {
   console.log(`Imagen generada: ${ringBuffer.length} bytes`);
 
   for (const r of rings) {
-    console.log(`[${r.referenciaCMH}] ID=${r.id}`);
-    const url = await uploadToAzure(ringBuffer, r.referenciaCMH);
+    console.log(`[${r.cmhReference}] ID=${r.id}`);
+    const url = await uploadToAzure(ringBuffer, r.cmhReference);
     await pool.request()
-      .input('imagen', sql.NVarChar(500), url)
+      .input('image', sql.NVarChar(500), url)
       .input('id', sql.Int, r.id)
-      .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+      .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
     console.log(`  -> ${url}`);
   }
 

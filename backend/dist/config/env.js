@@ -34,6 +34,7 @@ const envSchema = z.object({
     MAIL_REPLY_TO: z.string().email().default('comercial@cmhautomacion.com'),
     NOTIFY_EMAIL: z.string().email().default('comercial@cmhautomacion.com'),
     MAIL_ENABLED: booleanFromString(true),
+    NOTIFY_ADMIN_ON_REGISTER: booleanFromString(false),
 });
 const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {

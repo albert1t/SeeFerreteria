@@ -13,9 +13,9 @@ import { ThemeToggle } from './ThemeToggle';
 import { btnStyle } from '../styles/theme';
 import logoBlue from '../assets/logoCMH_blue_300.png';
 import logoWhite from '../assets/logoCMH_white_300.png';
-import * as pedidosApi from '../api/pedidos';
-import * as importacionesApi from '../api/importaciones';
-import type { Recambio } from '../types';
+import * as pedidosApi from '../api/orders';
+import * as importacionesApi from '../api/imports';
+import type { Product } from '../types';
 
 const TARIFA_OBSOLESCENCIA_DIAS = 180;
 
@@ -29,7 +29,7 @@ export function Layout() {
   const { user, logout, isAdmin, can } = useAuth();
   const { resolved } = useTheme();
   const [qrOpen, setQrOpen] = useState(false);
-  const [fichaRecambio, setFichaRecambio] = useState<Recambio | null>(null);
+  const [fichaRecambio, setFichaRecambio] = useState<Product | null>(null);
   const [crearRecambio, setCrearRecambio] = useState(false);
   const [panelSeleccionado, setPanelSeleccionado] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -39,7 +39,7 @@ export function Layout() {
   const puedeTarifas = can('tarifas', 'edit');
 
   const { data: tarifaStatus } = useQuery({
-    queryKey: ['importaciones', 'festo', 'status'],
+    queryKey: ['imports', 'festo', 'status'],
     queryFn: () => importacionesApi.getImportacionStatus('festo'),
     enabled: puedeTarifas,
     refetchInterval: 30_000,
@@ -56,7 +56,7 @@ export function Layout() {
   const outletContext = { panelSeleccionado, setPanelSeleccionado, setCrearRecambio };
 
   const { data: urgentes } = useQuery({
-    queryKey: ['pedidos', 'urgentes'],
+    queryKey: ['orders', 'urgentes'],
     queryFn: () => pedidosApi.getUrgentesCount(),
     refetchInterval: 30000,
   });
@@ -119,8 +119,8 @@ export function Layout() {
           <NavLink to="/" end onClick={() => setPanelSeleccionado(null)} style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
             Almacén
           </NavLink>
-          <NavLink to="/pedidos" style={({ isActive }) => ({ ...navBtn, position: 'relative', ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
-            Pedidos
+          <NavLink to="/orders" style={({ isActive }) => ({ ...navBtn, position: 'relative', ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
+            Orders
             {(urgentes?.count ?? 0) > 0 && (
               <span style={{
                 position: 'absolute', top: -4, right: -4, background: 'var(--danger)', color: '#fff',
@@ -136,7 +136,7 @@ export function Layout() {
               Usuarios
             </NavLink>
           )}
-          {can('recambios', 'viewDataPage') && (
+          {can('products', 'viewDataPage') && (
             <NavLink to="/datos" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
               Datos
             </NavLink>
@@ -202,11 +202,11 @@ export function Layout() {
         })}>
           Almacén
         </NavLink>
-        <NavLink to="/pedidos" onClick={closeMenu} style={({ isActive }) => ({
+        <NavLink to="/orders" onClick={closeMenu} style={({ isActive }) => ({
           ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14, position: 'relative',
           ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
         })}>
-          Pedidos {(urgentes?.count ?? 0) > 0 ? `(${urgentes!.count})` : ''}
+          Orders {(urgentes?.count ?? 0) > 0 ? `(${urgentes!.count})` : ''}
         </NavLink>
         {isAdmin && (
           <NavLink to="/usuarios" onClick={closeMenu} style={({ isActive }) => ({
@@ -216,7 +216,7 @@ export function Layout() {
             Usuarios
           </NavLink>
         )}
-        {can('recambios', 'viewDataPage') && (
+        {can('products', 'viewDataPage') && (
           <NavLink to="/datos" onClick={closeMenu} style={({ isActive }) => ({
             ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
             ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
@@ -244,19 +244,19 @@ export function Layout() {
       <Modal
         open={!!fichaRecambio}
         onClose={() => setFichaRecambio(null)}
-        title={fichaRecambio ? `Ficha Técnica - ${fichaRecambio.referenciaCMH}` : ''}
+        title={fichaRecambio ? `Ficha Técnica - ${fichaRecambio.cmhReference}` : ''}
         wide
       >
         {fichaRecambio && (
           <FichaTecnica
-            recambio={fichaRecambio}
+            product={fichaRecambio}
             onClose={() => setFichaRecambio(null)}
             onUpdated={setFichaRecambio}
           />
         )}
       </Modal>
 
-        <Modal open={crearRecambio} onClose={() => setCrearRecambio(false)} title="Nuevo Recambio" wide>
+        <Modal open={crearRecambio} onClose={() => setCrearRecambio(false)} title="Nuevo Product" wide>
         <FormRecambio
           onSave={() => setCrearRecambio(false)}
           onCancel={() => setCrearRecambio(false)}

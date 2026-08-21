@@ -45,7 +45,7 @@ async function processImageBuffer(buffer: Buffer): Promise<Buffer> {
 
 async function uploadToAzure(buffer: Buffer, prefix: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const blobName = `product-image/recambio-${prefix}-${Date.now()}.jpg`;
+  const blobName = `product-image/product-${prefix}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -90,25 +90,25 @@ async function main() {
   // Update OK rings (A6 C1 F1-F4)
   console.log('=== Actualizando OK rings ===');
   const okResult = await pool.request()
-    .query(`SELECT id, referenciaCMH FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
+    .query(`SELECT id, cmhReference FROM Products WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
   for (const r of okResult.recordset) {
     await pool.request()
-      .input('imagen', sql.NVarChar(500), okUrl)
+      .input('image', sql.NVarChar(500), okUrl)
       .input('id', sql.Int, r.id)
-      .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
-    console.log(`  ${r.referenciaCMH} (ID=${r.id})`);
+      .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+    console.log(`  ${r.cmhReference} (ID=${r.id})`);
   }
 
   // Update OL rings (A6 C1 F5-F10)
   console.log('=== Actualizando OL rings ===');
   const olResult = await pool.request()
-    .query(`SELECT id, referenciaCMH FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 5 AND 10 ORDER BY [row]`);
+    .query(`SELECT id, cmhReference FROM Products WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 5 AND 10 ORDER BY [row]`);
   for (const r of olResult.recordset) {
     await pool.request()
-      .input('imagen', sql.NVarChar(500), olUrl)
+      .input('image', sql.NVarChar(500), olUrl)
       .input('id', sql.Int, r.id)
-      .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
-    console.log(`  ${r.referenciaCMH} (ID=${r.id})`);
+      .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+    console.log(`  ${r.cmhReference} (ID=${r.id})`);
   }
 
   await pool.close();

@@ -59,30 +59,30 @@ export function requirePermission(resource, action) {
 function getDefaultPermissions(role) {
     const full = {
         admin: true,
-        pedidos: { create: true, view: true, edit: true, delete: true },
-        recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-        familias: { create: true, view: true, edit: true, delete: true },
+        orders: { create: true, view: true, edit: true, delete: true },
+        products: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+        families: { create: true, view: true, edit: true, delete: true },
         tarifas: { create: true, view: true, edit: true, delete: true },
     };
     const user = {
         admin: false,
-        pedidos: { create: true, view: true, edit: true, delete: false },
-        recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-        familias: { create: false, view: false, edit: false, delete: false },
+        orders: { create: true, view: true, edit: true, delete: false },
+        products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+        families: { create: false, view: false, edit: false, delete: false },
         tarifas: { create: false, view: false, edit: false, delete: false },
     };
     const viewer = {
         admin: false,
-        pedidos: { create: false, view: true, edit: false, delete: false },
-        recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-        familias: { create: false, view: false, edit: false, delete: false },
+        orders: { create: false, view: true, edit: false, delete: false },
+        products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+        families: { create: false, view: false, edit: false, delete: false },
         tarifas: { create: false, view: false, edit: false, delete: false },
     };
     const operario = {
         admin: false,
-        pedidos: { create: true, view: true, edit: true, delete: false },
-        recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-        familias: { create: false, view: false, edit: false, delete: false },
+        orders: { create: true, view: true, edit: true, delete: false },
+        products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+        families: { create: false, view: false, edit: false, delete: false },
         tarifas: { create: false, view: false, edit: false, delete: false },
     };
     switch (role) {

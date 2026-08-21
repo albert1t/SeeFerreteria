@@ -12,14 +12,14 @@ interface ResourcePerms {
   edit: boolean;
   delete: boolean;
 }
-interface RecambiosPerms extends ResourcePerms {
+interface ProductsPerms extends ResourcePerms {
   viewDataPage: boolean;
 }
 interface Permissions {
   admin: boolean;
-  pedidos: ResourcePerms;
-  recambios: RecambiosPerms;
-  familias: ResourcePerms;
+  orders: ResourcePerms;
+  products: ProductsPerms;
+  families: ResourcePerms;
   tarifas: ResourcePerms;
 }
 
@@ -66,7 +66,7 @@ export function requireRole(...roles: UserRole[]) {
   };
 }
 
-type Resource = 'pedidos' | 'recambios' | 'familias' | 'tarifas';
+type Resource = 'orders' | 'products' | 'families' | 'tarifas';
 type Action = 'create' | 'view' | 'edit' | 'delete';
 
 export function requirePermission(resource: Resource, action: Action) {
@@ -87,30 +87,30 @@ export function requirePermission(resource: Resource, action: Action) {
 function getDefaultPermissions(role: UserRole): Permissions {
   const full: Permissions = {
     admin: true,
-    pedidos: { create: true, view: true, edit: true, delete: true },
-    recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    familias: { create: true, view: true, edit: true, delete: true },
+    orders: { create: true, view: true, edit: true, delete: true },
+    products: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+    families: { create: true, view: true, edit: true, delete: true },
     tarifas: { create: true, view: true, edit: true, delete: true },
   };
   const user: Permissions = {
     admin: false,
-    pedidos: { create: true, view: true, edit: true, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false },
+    orders: { create: true, view: true, edit: true, delete: false },
+    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    families: { create: false, view: false, edit: false, delete: false },
     tarifas: { create: false, view: false, edit: false, delete: false },
   };
   const viewer: Permissions = {
     admin: false,
-    pedidos: { create: false, view: true, edit: false, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false },
+    orders: { create: false, view: true, edit: false, delete: false },
+    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    families: { create: false, view: false, edit: false, delete: false },
     tarifas: { create: false, view: false, edit: false, delete: false },
   };
   const operario: Permissions = {
     admin: false,
-    pedidos: { create: true, view: true, edit: true, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false },
+    orders: { create: true, view: true, edit: true, delete: false },
+    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    families: { create: false, view: false, edit: false, delete: false },
     tarifas: { create: false, view: false, edit: false, delete: false },
   };
 

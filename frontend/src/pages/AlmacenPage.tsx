@@ -7,10 +7,10 @@ import { Modal } from '../components/Modal';
 import { FichaTecnica } from '../components/FichaTecnica';
 import { useToast } from '../components/Toast';
 import { btnStyle } from '../styles/theme';
-import * as panelesApi from '../api/paneles';
-import * as recambiosApi from '../api/recambios';
-import * as catalogosApi from '../api/catalogos';
-import type { Recambio, RecambioPreview } from '../types';
+import * as panelesApi from '../api/panels';
+import * as recambiosApi from '../api/products';
+import * as catalogosApi from '../api/catalogs';
+import type { Product, ProductPreview } from '../types';
 
 function LoadingOverlay({ message }: { message: string }) {
   return (
@@ -104,18 +104,18 @@ export function AlmacenPage() {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [mostrarOcultos, setMostrarOcultos] = useState(false);
-  const [fichaAbierta, setFichaAbierta] = useState<Recambio | null>(null);
+  const [fichaAbierta, setFichaAbierta] = useState<Product | null>(null);
   const [swapMode, setSwapMode] = useState(false);
-  const [selectedForSwap, setSelectedForSwap] = useState<Recambio | null>(null);
-  const [confirmSwap, setConfirmSwap] = useState<{ r1: Recambio; r2: Recambio } | null>(null);
+  const [selectedForSwap, setSelectedForSwap] = useState<Product | null>(null);
+  const [confirmSwap, setConfirmSwap] = useState<{ r1: Product; r2: Product } | null>(null);
   const [showPanelPicker, setShowPanelPicker] = useState(false);
   const [pickPanelName, setPickPanelName] = useState<string | null>(null);
   const [targetPanelCubetas, setTargetPanelCubetas] = useState<any[]>([]);
   const [loadingPickPanel, setLoadingPickPanel] = useState(false);
   const [swapLoading, setSwapLoading] = useState<'swap' | 'move' | null>(null);
   const [showFamiliasModal, setShowFamiliasModal] = useState(false);
-  const [editandoFamilia, setEditandoFamilia] = useState<{ id: number; nombre: string; descripcion: string } | null>(null);
-  const [nuevaFamiliaNombre, setNuevaFamiliaNombre] = useState('');
+  const [editandoFamilia, setEditandoFamilia] = useState<{ id: number; name: string; description: string } | null>(null);
+  const [newFamilyName, setNuevaFamiliaNombre] = useState('');
   const [nuevaFamiliaDesc, setNuevaFamiliaDesc] = useState('');
 
   useEffect(() => {
@@ -128,55 +128,55 @@ export function AlmacenPage() {
   }, [swapLoading]);
   const panelListRef = useRef<HTMLDivElement | null>(null);
 
-  const { data: previewRecambios = [], isLoading: loadingPreview } = useQuery({
-    queryKey: ['paneles', 'preview'],
-    queryFn: () => recambiosApi.getPreviewRecambios(),
+  const { data: previewProducts = [], isLoading: loadingPreview } = useQuery({
+    queryKey: ['panels', 'preview'],
+    queryFn: () => recambiosApi.getPreviewProducts(),
   });
 
-  const paneles = useMemo(() => {
+  const panels = useMemo(() => {
     const counts = new Map<string, number>();
-    previewRecambios.forEach((r) => {
+    previewProducts.forEach((r) => {
       const p = r.panel.toUpperCase();
       counts.set(p, (counts.get(p) ?? 0) + 1);
     });
     return Array.from({ length: 25 }, (_, i) => {
       const panel = `A${i + 1}`;
-      return { panel, totalRecambios: counts.get(panel) ?? 0 };
+      return { panel, totalProducts: counts.get(panel) ?? 0 };
     });
-  }, [previewRecambios]);
+  }, [previewProducts]);
 
   const { data: cubetasData, isLoading: loadingCubetas } = useQuery({
-    queryKey: ['paneles', panelSeleccionado, 'cubetas', mostrarOcultos],
+    queryKey: ['panels', panelSeleccionado, 'cubetas', mostrarOcultos],
     queryFn: () => panelesApi.getCubetasPanel(panelSeleccionado!, mostrarOcultos),
     enabled: !!panelSeleccionado,
   });
 
   const cubetas = cubetasData?.cubetas ?? [];
 
-  const { data: familias = [], isLoading: loadingCatalogos } = useQuery({
-    queryKey: ['catalogos', 'familias'],
-    queryFn: catalogosApi.getFamilias,
+  const { data: families = [], isLoading: loadingCatalogos } = useQuery({
+    queryKey: ['catalogs', 'families'],
+    queryFn: catalogosApi.getFamilies,
   });
 
   const createFamiliaMut = useMutation({
-    mutationFn: ({ nombre, descripcion }: { nombre: string; descripcion?: string | null }) => catalogosApi.createFamilia(nombre, descripcion),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogos', 'familias'] }); showToast('Familia creada', 'success'); setNuevaFamiliaNombre(''); setNuevaFamiliaDesc(''); },
+    mutationFn: ({ name, description }: { name: string; description?: string | null }) => catalogosApi.createFamilia(name, description),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Family creada', 'success'); setNuevaFamiliaNombre(''); setNuevaFamiliaDesc(''); },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const updateFamiliaMut = useMutation({
-    mutationFn: ({ id, nombre, descripcion }: { id: number; nombre: string; descripcion?: string | null }) => catalogosApi.updateFamilia(id, nombre, descripcion),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogos', 'familias'] }); showToast('Familia actualizada', 'success'); setEditandoFamilia(null); },
+    mutationFn: ({ id, name, description }: { id: number; name: string; description?: string | null }) => catalogosApi.updateFamilia(id, name, description),
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Family actualizada', 'success'); setEditandoFamilia(null); },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const deleteFamiliaMut = useMutation({
     mutationFn: (id: number) => catalogosApi.deleteFamilia(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogos', 'familias'] }); showToast('Familia eliminada', 'success'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Family eliminada', 'success'); },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
-  type PanelTitleOption = { kind: 'familia'; id: number; label: string };
+  type PanelTitleOption = { kind: 'family'; id: number; label: string };
   const [panelTitles, setPanelTitles] = useState<Record<string, PanelTitleOption | null>>(() => {
     if (typeof window === 'undefined') return {};
     try {
@@ -188,23 +188,23 @@ export function AlmacenPage() {
   const [editingPanel, setEditingPanel] = useState<string | null>(null);
 
   const titleOptions = useMemo<PanelTitleOption[]>(() => {
-    return familias.map<PanelTitleOption>((familia) => ({
-      kind: 'familia',
-      id: familia.id,
-      label: familia.nombre,
+    return families.map<PanelTitleOption>((family) => ({
+      kind: 'family',
+      id: family.id,
+      label: family.name,
     }));
-  }, [familias]);
+  }, [families]);
 
   const panelPreviewMap = useMemo(() => {
-    const map = new Map<string, RecambioPreview[]>();
-    previewRecambios.forEach((recambio) => {
-      const panel = recambio.panel.toUpperCase();
+    const map = new Map<string, ProductPreview[]>();
+    previewProducts.forEach((product) => {
+      const panel = product.panel.toUpperCase();
       const current = map.get(panel) ?? [];
-      current.push(recambio);
+      current.push(product);
       map.set(panel, current);
     });
     return map;
-  }, [previewRecambios]);
+  }, [previewProducts]);
 
   const loadingPanelSummary = loadingPreview || loadingCatalogos;
 
@@ -217,13 +217,13 @@ export function AlmacenPage() {
     if (!items.length) return 'Vacío';
 
     const grouped = items.reduce<Record<string, number>>((acc, item) => {
-      const label = item.familiaNombre || 'Sin familia';
+      const label = item.familyName || 'Sin family';
       acc[label] = (acc[label] || 0) + 1;
       return acc;
     }, {});
 
     const best = Object.entries(grouped).sort((a, b) => b[1] - a[1])[0];
-    return best ? best[0] : items[0].familiaNombre ?? 'Sin datos';
+    return best ? best[0] : items[0].familyName ?? 'Sin datos';
   }
 
   function getPanelTitleLabel(panel: string) {
@@ -240,7 +240,7 @@ export function AlmacenPage() {
     }
   }
 
-  function getRecambioEnCubeta(col: number, row: number): Recambio | undefined {
+  function getRecambioEnCubeta(col: number, row: number): Product | undefined {
     return cubetas.find((r) => r.col === col && r.row === row);
   }
 
@@ -261,7 +261,7 @@ export function AlmacenPage() {
           <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'end' }}>
             <div>
               <label style={{ color: 'var(--text-muted)', fontSize: 12, display: 'block', marginBottom: 4 }}>Nombre</label>
-              <input value={nuevaFamiliaNombre} onChange={(e) => setNuevaFamiliaNombre(e.target.value)}
+              <input value={newFamilyName} onChange={(e) => setNuevaFamiliaNombre(e.target.value)}
                 style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)' }} />
             </div>
             <div>
@@ -269,9 +269,9 @@ export function AlmacenPage() {
               <input value={nuevaFamiliaDesc} onChange={(e) => setNuevaFamiliaDesc(e.target.value)}
                 style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)' }} />
             </div>
-            <button type="button" disabled={!nuevaFamiliaNombre || createFamiliaMut.isPending}
+            <button type="button" disabled={!newFamilyName || createFamiliaMut.isPending}
               style={{ ...btnStyle('primary'), padding: '8px 16px' }}
-              onClick={() => createFamiliaMut.mutate({ nombre: nuevaFamiliaNombre, descripcion: nuevaFamiliaDesc || null })}>
+              onClick={() => createFamiliaMut.mutate({ name: newFamilyName, description: nuevaFamiliaDesc || null })}>
               {createFamiliaMut.isPending ? '...' : 'Añadir'}
             </button>
           </div>
@@ -280,41 +280,41 @@ export function AlmacenPage() {
               <tr style={{ background: 'var(--bg-table-head)' }}>
                 <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Nombre</th>
                 <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Descripción</th>
-                {can('familias', 'delete') && <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Acciones</th>}
+                {can('families', 'delete') && <th style={{ padding: '10px 12px', textAlign: 'left', color: 'var(--text-muted)', fontWeight: 600 }}>Acciones</th>}
               </tr>
             </thead>
             <tbody>
-              {familias.map((f) => (
+              {families.map((f) => (
                 <tr key={f.id} style={{ borderTop: '1px solid var(--border)' }}>
                   <td style={{ padding: '10px 12px' }}>
                     {editandoFamilia?.id === f.id ? (
-                      <input value={editandoFamilia.nombre} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, nombre: e.target.value })}
+                      <input value={editandoFamilia.name} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, name: e.target.value })}
                         style={{ padding: '6px 10px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)', width: '100%' }} />
-                    ) : f.nombre}
+                    ) : f.name}
                   </td>
                   <td style={{ padding: '10px 12px' }}>
                     {editandoFamilia?.id === f.id ? (
-                      <input value={editandoFamilia.descripcion} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, descripcion: e.target.value })}
+                      <input value={editandoFamilia.description} onChange={(e) => setEditandoFamilia({ ...editandoFamilia, description: e.target.value })}
                         style={{ padding: '6px 10px', borderRadius: 6, background: 'var(--bg-input-dark)', color: 'var(--text)', border: '1px solid var(--border-input)', width: '100%' }} />
-                    ) : (f.descripcion || '—')}
+                    ) : (f.description || '—')}
                   </td>
-                  {can('familias', 'delete') && (
+                  {can('families', 'delete') && (
                     <td style={{ padding: '10px 12px' }}>
                       <div style={{ display: 'flex', gap: 6 }}>
                         {editandoFamilia?.id === f.id ? (
                           <>
-                            <button type="button" style={btnStyle('primary')} disabled={updateFamiliaMut.isPending || !editandoFamilia.nombre}
-                              onClick={() => updateFamiliaMut.mutate({ id: f.id, nombre: editandoFamilia.nombre, descripcion: editandoFamilia.descripcion || null })}>
+                            <button type="button" style={btnStyle('primary')} disabled={updateFamiliaMut.isPending || !editandoFamilia.name}
+                              onClick={() => updateFamiliaMut.mutate({ id: f.id, name: editandoFamilia.name, description: editandoFamilia.description || null })}>
                               Guardar
                             </button>
                             <button type="button" style={btnStyle('ghost')} onClick={() => setEditandoFamilia(null)}>Cancelar</button>
                           </>
                         ) : (
                           <>
-                            {can('familias', 'edit') && (
-                              <button type="button" style={btnStyle('ghost')} onClick={() => setEditandoFamilia({ id: f.id, nombre: f.nombre, descripcion: f.descripcion || '' })}>Editar</button>
+                            {can('families', 'edit') && (
+                              <button type="button" style={btnStyle('ghost')} onClick={() => setEditandoFamilia({ id: f.id, name: f.name, description: f.description || '' })}>Editar</button>
                             )}
-                            {can('familias', 'delete') && (
+                            {can('families', 'delete') && (
                               <button type="button" style={btnStyle('danger')} disabled={deleteFamiliaMut.isPending}
                                 onClick={() => deleteFamiliaMut.mutate(f.id)}>Eliminar</button>
                             )}
@@ -330,24 +330,24 @@ export function AlmacenPage() {
         </div>
       </Modal>
 
-      {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo recambio...'} />}
+      {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo product...'} />}
       <div className="almacen-page-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
       <div className="almacen-title-row" style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexShrink: 0, gap: '1rem' }}>
         <div>
           <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '1rem' }}>
             {panelSeleccionado ? `Panel ${panelSeleccionado}` : 'Almacén — Vista General'}
-            {!panelSeleccionado && can('recambios', 'create') && (
+            {!panelSeleccionado && can('products', 'create') && (
               <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px' }} onClick={() => setCrearRecambio(true)}>
-                + Nuevo Recambio
+                + Nuevo Product
               </button>
             )}
-            {!panelSeleccionado && can('familias', 'edit') && (
+            {!panelSeleccionado && can('families', 'edit') && (
               <button type="button" style={{ ...btnStyle('ghost'), fontSize: 13, padding: '6px 12px', marginLeft: 8 }} onClick={() => setShowFamiliasModal(true)}>
-                Gestionar familias
+                Gestionar families
               </button>
             )}
           </h2>
-          {can('recambios', 'edit') && panelSeleccionado && (
+          {can('products', 'edit') && panelSeleccionado && (
             <div style={{ display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap' }}>
               <button
                 type="button"
@@ -379,11 +379,11 @@ export function AlmacenPage() {
               flexWrap: 'wrap',
             }}>
               {!selectedForSwap ? (
-                <span style={{ color: 'var(--warning-alt)' }}>Haz clic en un recambio para moverlo o intercambiarlo</span>
+                <span style={{ color: 'var(--warning-alt)' }}>Haz clic en un product para moverlo o intercambiarlo</span>
               ) : (
                 <>
                   <span style={{ color: 'var(--warning-alt)', fontWeight: 600 }}>
-                    {selectedForSwap.referenciaCMH}
+                    {selectedForSwap.cmhReference}
                     <span style={{ fontWeight: 400, opacity: 0.6, marginLeft: 6 }}>
                       (P: {selectedForSwap.panel} · C: {selectedForSwap.col} · F: {selectedForSwap.row})
                     </span>
@@ -397,7 +397,7 @@ export function AlmacenPage() {
                     Mover a otro panel
                   </button>
                   <span style={{ color: 'var(--text-faint-2)', fontSize: 11 }}>ó</span>
-                  <span style={{ color: 'var(--text-faint-2)' }}>Haz clic en otro recambio del mismo panel para intercambiarlo</span>
+                  <span style={{ color: 'var(--text-faint-2)' }}>Haz clic en otro product del mismo panel para intercambiarlo</span>
                   <button style={{ ...btnStyle('ghost'), fontSize: 10, padding: '2px 8px', marginLeft: 'auto' }} onClick={() => setSelectedForSwap(null)}>
                     Cancelar
                   </button>
@@ -425,12 +425,12 @@ export function AlmacenPage() {
       </div>
 
       {loadingPanelSummary ? (
-        <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '3rem' }}>Cargando paneles...</div>
+        <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '3rem' }}>Cargando panels...</div>
       ) : !panelSeleccionado ? (
         <>
             <div ref={panelListRef} className="scrollbar-horizontal" style={{ flex: 1, minHeight: 0, overflowX: 'auto', overflowY: 'hidden', paddingBottom: '1rem' }} onWheel={handlePanelListWheel}>
             <div style={{ display: 'flex', gap: '0.75rem', minWidth: 'max-content', alignItems: 'stretch', height: '100%', minHeight: 0 }}>
-              {paneles.map((p) => {
+              {panels.map((p) => {
                 const dims = getPanelDimensions(p.panel);
                 const cardWidth = dims.cols === 6 ? 400 : 320;
                 const isA1toA5 = (dims.cols === 4 && dims.rows === 8);
@@ -465,7 +465,7 @@ export function AlmacenPage() {
                               background: 'var(--bg-input)', color: 'var(--text-bright)', fontSize: 12,
                             }}
                           >
-                            <option value="">-- Seleccionar familia --</option>
+                            <option value="">-- Seleccionar family --</option>
                             {titleOptions.map((option) => (
                               <option key={`${option.kind}-${option.id}`} value={JSON.stringify(option)}>
                                 {option.label}
@@ -491,7 +491,7 @@ export function AlmacenPage() {
                         </div>
                       ) : (
                         <div
-                          className="panel-familia-label"
+                          className="panel-family-label"
                           onClick={(e) => { e.stopPropagation(); setEditingPanel(p.panel); }}
                           style={{
                             fontSize: 11,
@@ -519,13 +519,13 @@ export function AlmacenPage() {
                       {Array.from({ length: dims.total }, (_, i) => {
                         const col = (i % dims.cols) + 1;
                         const row = Math.floor(i / dims.cols) + 1;
-                        const recambio = panelPreviewMap.get(p.panel)?.find((item) => item.col === col && item.row === row);
+                        const product = panelPreviewMap.get(p.panel)?.find((item) => item.col === col && item.row === row);
                         return (
                           <CubetaMini
                             key={i}
-                            filled={Boolean(recambio)}
-                            image={recambio?.imagen}
-                            title={recambio ? `${recambio.referenciaCMH} · C${col}F${row}` : `Vacío C${col}F${row}`}
+                            filled={Boolean(product)}
+                            image={product?.image}
+                            title={product ? `${product.cmhReference} · C${col}F${row}` : `Vacío C${col}F${row}`}
                           />
                         );
                       })}
@@ -571,11 +571,11 @@ export function AlmacenPage() {
                             } else if (selectedForSwap) {
                               setSwapLoading('move');
                               try {
-                                await recambiosApi.updateRecambio(selectedForSwap.id, { panel: panelSeleccionado!, col, row });
+                                await recambiosApi.updateProduct(selectedForSwap.id, { panel: panelSeleccionado!, col, row });
                                 showToast(`Movido a C${col}F${row}`, 'success');
                                 setSelectedForSwap(null);
                                 setSwapMode(false);
-                                queryClient.invalidateQueries({ queryKey: ['paneles'] });
+                                queryClient.invalidateQueries({ queryKey: ['panels'] });
                               } catch (err: any) {
                                 showToast(err.message, 'error');
                               } finally {
@@ -588,9 +588,9 @@ export function AlmacenPage() {
                         }}
                         className="panel-detail-cell"
                         style={{
-                          background: r ? (r.oculto ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)') : 'var(--bg-cubeta-empty-detail)',
-                          border: selectedForSwap && selectedForSwap.id === r?.id ? '2px solid var(--accent)' : r ? (r.oculto ? '1px dashed var(--border-danger)' : '1px solid var(--border-input-soft)') : '1px solid var(--border-cubeta-empty-detail)',
-                          opacity: r?.oculto ? 0.84 : 1,
+                          background: r ? (r.hidden ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)') : 'var(--bg-cubeta-empty-detail)',
+                          border: selectedForSwap && selectedForSwap.id === r?.id ? '2px solid var(--accent)' : r ? (r.hidden ? '1px dashed var(--border-danger)' : '1px solid var(--border-input-soft)') : '1px solid var(--border-cubeta-empty-detail)',
+                          opacity: r?.hidden ? 0.84 : 1,
                           borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : (swapMode && selectedForSwap ? 'pointer' : 'default'),
                           minHeight: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
                           transition: 'all 0.2s',
@@ -599,16 +599,16 @@ export function AlmacenPage() {
                         }}
                         onMouseEnter={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = r.oculto ? 'var(--bg-danger-hover)' : 'var(--bg-cubeta-hover)';
-                            e.currentTarget.style.borderColor = r.oculto ? 'var(--border-danger-strong)' : 'var(--border-input-strong)';
+                            e.currentTarget.style.background = r.hidden ? 'var(--bg-danger-hover)' : 'var(--bg-cubeta-hover)';
+                            e.currentTarget.style.borderColor = r.hidden ? 'var(--border-danger-strong)' : 'var(--border-input-strong)';
                           } else if (swapMode && selectedForSwap) {
                             e.currentTarget.style.background = 'var(--bg-cubeta-empty-detail)'; e.currentTarget.style.borderColor = 'var(--border-cubeta-empty-detail)';
                           }
                         }}
                         onMouseLeave={(e) => {
                           if (r) {
-                            e.currentTarget.style.background = r.oculto ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)';
-                            e.currentTarget.style.borderColor = r.oculto ? 'var(--border-danger)' : 'var(--border-input-soft)';
+                            e.currentTarget.style.background = r.hidden ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)';
+                            e.currentTarget.style.borderColor = r.hidden ? 'var(--border-danger)' : 'var(--border-input-soft)';
                           } else if (swapMode && selectedForSwap) {
                             e.currentTarget.style.background = 'var(--bg-cubeta-empty-detail)'; e.currentTarget.style.borderColor = 'var(--border-cubeta-empty-detail)';
                           }
@@ -616,8 +616,8 @@ export function AlmacenPage() {
                       >
                         {r ? (
                           <>
-                            {r.imagen ? (
-                              <img src={r.imagen} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                            {r.image ? (
+                              <img src={r.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
                             ) : (
                               <img
                                 src="/icons/screw.svg"
@@ -630,13 +630,13 @@ export function AlmacenPage() {
                               />
                             )}
                             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, width: '100%', flex: 1 }}>
-                              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)', textAlign: 'center', wordBreak: 'break-all' }}>{r.referenciaCMH}</div>
-                              {r.referenciaCliente && (
+                              <div style={{ fontSize: 14, fontWeight: 700, color: 'var(--accent)', textAlign: 'center', wordBreak: 'break-all' }}>{r.cmhReference}</div>
+                              {r.customerReference && (
                                 <div style={{ fontSize: 11, color: 'var(--warning-alt)', fontStyle: 'italic', textAlign: 'center', wordBreak: 'break-all' }}>
-                                  {r.referenciaCliente}
+                                  {r.customerReference}
                                 </div>
                               )}
-                              {r.oculto && (
+                              {r.hidden && (
                                 <span style={{ fontSize: 10, color: 'var(--danger)', background: 'var(--bg-danger-soft)', padding: '2px 6px', borderRadius: 4, marginTop: 4 }}>
                                   Oculto
                                 </span>
@@ -654,7 +654,7 @@ export function AlmacenPage() {
                                 wordBreak: 'break-word',
                                 margin: '2px 0'
                               }}>
-                                {r.nombre}
+                                {r.name}
                               </div>
                               <div style={{ fontSize: 10, color: 'var(--text-faint-2)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto' }}>
                                 {col}/{row}
@@ -684,11 +684,11 @@ export function AlmacenPage() {
               Intercambiar posiciones:
             </p>
             <div style={{ background: 'var(--bg-card-soft)', borderRadius: 8, padding: '0.75rem', marginBottom: '1rem' }}>
-              <div style={{ fontWeight: 700, color: 'var(--accent)' }}>{confirmSwap.r1.referenciaCMH}</div>
+              <div style={{ fontWeight: 700, color: 'var(--accent)' }}>{confirmSwap.r1.cmhReference}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row} → P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row}</div>
             </div>
             <div style={{ background: 'var(--bg-card-soft)', borderRadius: 8, padding: '0.75rem', marginBottom: '1.5rem' }}>
-              <div style={{ fontWeight: 700, color: 'var(--accent)' }}>{confirmSwap.r2.referenciaCMH}</div>
+              <div style={{ fontWeight: 700, color: 'var(--accent)' }}>{confirmSwap.r2.cmhReference}</div>
               <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>P: {confirmSwap.r2.panel} C: {confirmSwap.r2.col} F: {confirmSwap.r2.row} → P: {confirmSwap.r1.panel} C: {confirmSwap.r1.col} F: {confirmSwap.r1.row}</div>
             </div>
             <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
@@ -696,12 +696,12 @@ export function AlmacenPage() {
               <button style={btnStyle('primary')} onClick={async () => {
                 setSwapLoading('swap');
                 try {
-                  await recambiosApi.swapRecambios(confirmSwap.r1.id, confirmSwap.r2.id);
+                  await recambiosApi.swapProducts(confirmSwap.r1.id, confirmSwap.r2.id);
                   showToast('Posiciones intercambiadas', 'success');
                   setConfirmSwap(null);
                   setSelectedForSwap(null);
                   setSwapMode(false);
-                  queryClient.invalidateQueries({ queryKey: ['paneles'] });
+                  queryClient.invalidateQueries({ queryKey: ['panels'] });
                 } catch (err: any) {
                   showToast(err.message, 'error');
                 } finally {
@@ -713,10 +713,10 @@ export function AlmacenPage() {
         )}
       </Modal>
 
-      <Modal open={!!fichaAbierta} onClose={() => setFichaAbierta(null)} title={fichaAbierta ? `Ficha: ${fichaAbierta.referenciaCMH}` : ''} wide>
+      <Modal open={!!fichaAbierta} onClose={() => setFichaAbierta(null)} title={fichaAbierta ? `Ficha: ${fichaAbierta.cmhReference}` : ''} wide>
         {fichaAbierta && (
           <FichaTecnica
-            recambio={fichaAbierta}
+            product={fichaAbierta}
             onClose={() => setFichaAbierta(null)}
             onUpdated={setFichaAbierta}
           />
@@ -740,9 +740,9 @@ export function AlmacenPage() {
           {!pickPanelName ? (
             /* Panel list */
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 8 }}>
-              {paneles.map((p) => {
+              {panels.map((p) => {
                 const dims = getPanelDimensions(p.panel);
-                const ocupados = p.totalRecambios ?? 0;
+                const ocupados = p.totalProducts ?? 0;
                 const total = dims.total;
                 return (
                   <button
@@ -816,27 +816,27 @@ export function AlmacenPage() {
                                     setPickPanelName(null);
                                     setTargetPanelCubetas([]);
                                   } else {
-                                    showToast('Esa posición ya está ocupada. Usa el intercambio entre recambios del mismo panel.', 'info');
+                                    showToast('Esa posición ya está ocupada. Usa el intercambio entre products del mismo panel.', 'info');
                                   }
                                   return;
                                 }
                                 setSwapLoading('move');
                                 try {
-                                  await recambiosApi.updateRecambio(selectedForSwap.id, { panel: pickPanelName, col, row });
+                                  await recambiosApi.updateProduct(selectedForSwap.id, { panel: pickPanelName, col, row });
                                   showToast(`Movido a ${pickPanelName} C${col}F${row}`, 'success');
                                   setSelectedForSwap(null);
                                   setSwapMode(false);
                                   setShowPanelPicker(false);
                                   setPickPanelName(null);
                                   setTargetPanelCubetas([]);
-                                  queryClient.invalidateQueries({ queryKey: ['paneles'] });
+                                  queryClient.invalidateQueries({ queryKey: ['panels'] });
                                 } catch (err: any) {
                                   showToast(err.message, 'error');
                                 } finally {
                                   setSwapLoading(null);
                                 }
                               }}
-                              title={ocupante ? `${ocupante.referenciaCMH} (ocupado)` : isSelf ? 'Posición actual' : `C${col}F${row} — vacío`}
+                              title={ocupante ? `${ocupante.cmhReference} (ocupado)` : isSelf ? 'Posición actual' : `C${col}F${row} — vacío`}
                               style={{
                                 background: isSelf
                                   ? 'var(--bg-warning-soft)'
@@ -876,7 +876,7 @@ export function AlmacenPage() {
                               </span>
                               {ocupante ? (
                                 <span style={{ fontSize: 9, color: 'var(--text-dim)', lineHeight: 1.2, wordBreak: 'break-word' }}>
-                                  {ocupante.referenciaCMH}
+                                  {ocupante.cmhReference}
                                 </span>
                               ) : isSelf ? (
                                 <span style={{ fontSize: 9, color: 'var(--warning-alt)' }}>actual</span>

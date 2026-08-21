@@ -13,10 +13,10 @@ interface ExcelRecambio {
   sheetName: string;
   col: number;
   row: number;
-  nombre: string;
-  marca: string | null;
+  name: string;
+  brand: string | null;
   refCli: string | null;
-  codigo: string | null;
+  code: string | null;
 }
 
 function normalizeRef(ref: string): string {
@@ -69,10 +69,10 @@ async function processImageBuffer(buffer: Buffer): Promise<Buffer> {
   return padded;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -90,7 +90,7 @@ async function findEmptySpot(pool: any, panel: string, col: number, row: number)
     .input('panel', sql.NVarChar(10), panel)
     .input('col', sql.Int, col)
     .input('row', sql.Int, row)
-    .query('SELECT id FROM Recambios WHERE panel = @panel AND col = @col AND [row] = @row');
+    .query('SELECT id FROM Products WHERE panel = @panel AND col = @col AND [row] = @row');
   if (check.recordset.length === 0) return { col, row };
 
   // Find next free row in same column
@@ -99,7 +99,7 @@ async function findEmptySpot(pool: any, panel: string, col: number, row: number)
       .input('panel', sql.NVarChar(10), panel)
       .input('col', sql.Int, col)
       .input('row', sql.Int, r)
-      .query('SELECT id FROM Recambios WHERE panel = @panel AND col = @col AND [row] = @row');
+      .query('SELECT id FROM Products WHERE panel = @panel AND col = @col AND [row] = @row');
     if (c.recordset.length === 0) return { col, row: r };
   }
   return null;
@@ -136,34 +136,34 @@ async function main() {
           sheetName,
           col: isNaN(col) ? 1 : col,
           row: isNaN(roww) ? 1 : roww,
-          nombre: String(getVal(['Nombre', 'Descripción', 'Descripcion']) || refStr),
-          marca: getVal(['Marca']) ? String(getVal(['Marca'])) : null,
+          name: String(getVal(['Nombre', 'Descripción', 'Descripcion']) || refStr),
+          brand: getVal(['Marca']) ? String(getVal(['Marca'])) : null,
           refCli: getVal(['Referencia Cliente', 'Ref Cliente', 'referenciacliente']) ? String(getVal(['Referencia Cliente', 'Ref Cliente', 'referenciacliente'])) : null,
-          codigo: getVal(['Codigo', 'Código']) ? String(getVal(['Codigo', 'Código'])) : null,
+          code: getVal(['Codigo', 'Código']) ? String(getVal(['Codigo', 'Código'])) : null,
         });
       }
     }
   }
 
   if (RECAMBIOS_A_IMPORTAR.length === 0) {
-    console.log('No recambios to import.');
+    console.log('No products to import.');
     await pool.close();
     return;
   }
 
   // Show what we found
   for (const r of RECAMBIOS_A_IMPORTAR) {
-    console.log(`Found: ${r.ref} at ${r.sheetName} col=${r.col} row=${r.row} (${r.marca})`);
+    console.log(`Found: ${r.ref} at ${r.sheetName} col=${r.col} row=${r.row} (${r.brand})`);
   }
 
-  // 2. Move conflicting recambios to empty spots
+  // 2. Move conflicting products to empty spots
   console.log('\n--- Moving conflicts ---');
   for (const item of RECAMBIOS_A_IMPORTAR) {
     const conflict = await pool.request()
       .input('panel', sql.NVarChar(10), item.sheetName)
       .input('col', sql.Int, item.col)
       .input('row', sql.Int, item.row)
-      .query('SELECT id, referenciaCMH FROM Recambios WHERE panel = @panel AND col = @col AND [row] = @row');
+      .query('SELECT id, cmhReference FROM Products WHERE panel = @panel AND col = @col AND [row] = @row');
 
     if (conflict.recordset.length > 0) {
       const c = conflict.recordset[0];
@@ -174,7 +174,7 @@ async function main() {
           .input('panel', sql.NVarChar(10), item.sheetName)
           .input('col', sql.Int, item.col)
           .input('row', sql.Int, newRow)
-          .query('SELECT id FROM Recambios WHERE panel = @panel AND col = @col AND [row] = @row');
+          .query('SELECT id FROM Products WHERE panel = @panel AND col = @col AND [row] = @row');
         if (occupied.recordset.length === 0) break;
         newRow++;
       }
@@ -184,21 +184,21 @@ async function main() {
           .input('panel', sql.NVarChar(10), item.sheetName)
           .input('col', sql.Int, item.col)
           .input('row', sql.Int, newRow)
-          .query('UPDATE Recambios SET panel = @panel, col = @col, [row] = @row, updatedAt = SYSUTCDATETIME() WHERE id = @id');
-        console.log(`  Moved ${c.referenciaCMH} (id=${c.id}) from ${item.sheetName},${item.col},${item.row} to row ${newRow}`);
+          .query('UPDATE Products SET panel = @panel, col = @col, [row] = @row, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+        console.log(`  Moved ${c.cmhReference} (id=${c.id}) from ${item.sheetName},${item.col},${item.row} to row ${newRow}`);
       } else {
-        console.log(`  WARN: No empty spot in ${item.sheetName} col=${item.col} for ${c.referenciaCMH}`);
+        console.log(`  WARN: No empty spot in ${item.sheetName} col=${item.col} for ${c.cmhReference}`);
       }
     }
   }
 
-  // 3. Insert the 3 recambios
-  console.log('\n--- Inserting recambios ---');
+  // 3. Insert the 3 products
+  console.log('\n--- Inserting products ---');
   for (const item of RECAMBIOS_A_IMPORTAR) {
     // Check if already exists
     const existing = await pool.request()
       .input('ref', sql.NVarChar(200), item.ref)
-      .query('SELECT id FROM Recambios WHERE referenciaCMH = @ref');
+      .query('SELECT id FROM Products WHERE cmhReference = @ref');
     if (existing.recordset.length > 0) {
       console.log(`  ${item.ref} already exists (id=${existing.recordset[0].id}), skipping`);
       continue;
@@ -206,19 +206,19 @@ async function main() {
 
     try {
       await pool.request()
-        .input('referenciaCMH', sql.NVarChar(200), item.ref)
-        .input('referenciaCliente', sql.NVarChar(200), item.refCli)
-        .input('codigo', sql.NVarChar(100), item.codigo)
-        .input('nombre', sql.NVarChar(500), item.nombre)
-        .input('marca', sql.NVarChar(100), item.marca)
+        .input('cmhReference', sql.NVarChar(200), item.ref)
+        .input('customerReference', sql.NVarChar(200), item.refCli)
+        .input('code', sql.NVarChar(100), item.code)
+        .input('name', sql.NVarChar(500), item.name)
+        .input('brand', sql.NVarChar(100), item.brand)
         .input('panel', sql.NVarChar(10), item.sheetName)
         .input('col', sql.Int, item.col)
         .input('row', sql.Int, item.row)
-        .input('familiaId', sql.Int, 1)
-        .input('nReposicion', sql.Int, 1)
+        .input('familyId', sql.Int, 1)
+        .input('reorderPoint', sql.Int, 1)
         .query(`
-          INSERT INTO Recambios (referenciaCMH, referenciaCliente, codigo, nombre, marca, panel, col, [row], familiaId, nReposicion, oculto, createdAt, updatedAt)
-          VALUES (@referenciaCMH, @referenciaCliente, @codigo, @nombre, @marca, @panel, @col, @row, @familiaId, @nReposicion, 0, SYSUTCDATETIME(), SYSUTCDATETIME())
+          INSERT INTO Products (cmhReference, customerReference, code, name, brand, panel, col, [row], familyId, reorderPoint, hidden, createdAt, updatedAt)
+          VALUES (@cmhReference, @customerReference, @code, @name, @brand, @panel, @col, @row, @familyId, @reorderPoint, 0, SYSUTCDATETIME(), SYSUTCDATETIME())
         `);
       console.log(`  INSERTED ${item.ref} at ${item.sheetName} col=${item.col} row=${item.row}`);
     } catch (err: any) {
@@ -226,20 +226,20 @@ async function main() {
     }
   }
 
-  // 4. Find and upload images for recambios without Azure image
+  // 4. Find and upload images for products without Azure image
   console.log('\n--- Finding missing images ---');
   const missingImg = await pool.request().query(`
-    SELECT id, referenciaCMH, marca FROM Recambios
-    WHERE imagen IS NULL OR imagen = '' OR imagen NOT LIKE '%ferreteriastorageacc%'
+    SELECT id, cmhReference, brand FROM Products
+    WHERE image IS NULL OR image = '' OR image NOT LIKE '%ferreteriastorageacc%'
     ORDER BY id
   `);
-  console.log(`Recambios without Azure image: ${missingImg.recordset.length}`);
+  console.log(`Products without Azure image: ${missingImg.recordset.length}`);
 
   for (const r of missingImg.recordset) {
-    process.stdout.write(`  [${r.id}] ${r.referenciaCMH} ... `);
+    process.stdout.write(`  [${r.id}] ${r.cmhReference} ... `);
 
     // Try specific TSI URL
-    const buf = await downloadImage(r.referenciaCMH);
+    const buf = await downloadImage(r.cmhReference);
     if (!buf) {
       console.log('NO IMAGE FOUND');
       continue;
@@ -247,11 +247,11 @@ async function main() {
 
     try {
       const processed = await processImageBuffer(buf);
-      const url = await uploadToAzure(processed, r.referenciaCMH);
+      const url = await uploadToAzure(processed, r.cmhReference);
       await pool.request()
-        .input('imagen', sql.NVarChar(500), url)
+        .input('image', sql.NVarChar(500), url)
         .input('id', sql.Int, r.id)
-        .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+        .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
       console.log(`OK`);
     } catch (err: any) {
       console.log(`ERROR: ${err.message}`);

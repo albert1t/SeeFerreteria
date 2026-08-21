@@ -33,7 +33,7 @@ async function main() {
   }
 
   // Check conflicts in Excel
-  console.log('=== CONFLICTOS EN EXCEL (misma posición para 2+ recambios) ===');
+  console.log('=== CONFLICTOS EN EXCEL (misma posición para 2+ products) ===');
   let conflictCount = 0;
   for (const [pos, refs] of seenPos) {
     if (refs.length > 1) {
@@ -47,11 +47,11 @@ async function main() {
   // 2. Read DB
   const pool = await getPool();
   const dbResult = await pool.request().query(`
-    SELECT id, referenciaCMH, nombre, panel, col, [row] FROM Recambios ORDER BY panel, col, [row]
+    SELECT id, cmhReference, name, panel, col, [row] FROM Products ORDER BY panel, col, [row]
   `);
   const dbRows = dbResult.recordset;
-  console.log(`\nExcel: ${excelRows.length} recambios`);
-  console.log(`DB: ${dbRows.length} recambios`);
+  console.log(`\nExcel: ${excelRows.length} products`);
+  console.log(`DB: ${dbRows.length} products`);
 
   // 3. Map Excel by ref
   const excelByRef = new Map<string, { panel: string; col: number; row: number }>();
@@ -79,11 +79,11 @@ async function main() {
 
   console.log('\n=== RECAMBIOS EN DB QUE DIFIEREN DE EXCEL ===');
   for (const db of dbRows) {
-    const ref = (db.referenciaCMH as string).trim();
+    const ref = (db.cmhReference as string).trim();
     const dbPos = `${db.panel} C${db.col}F${db.row}`;
     const expected = excelByRef.get(ref);
     if (!expected) {
-      console.log(`  ${ref} (${(db.nombre as string).substring(0, 20)}): DB=${dbPos} → NO ESTÁ EN EXCEL`);
+      console.log(`  ${ref} (${(db.name as string).substring(0, 20)}): DB=${dbPos} → NO ESTÁ EN EXCEL`);
       noEnExcel++;
       continue;
     }
@@ -100,12 +100,12 @@ async function main() {
   for (const e of excelRows) {
     const key = `${e.panel}_C${e.col}F${e.row}`;
     if ((seenPos.get(key)?.length ?? 0) > 1) continue;
-    const db = dbRows.find(d => (d.referenciaCMH as string).trim() === e.ref);
+    const db = dbRows.find(d => (d.cmhReference as string).trim() === e.ref);
     if (!db) {
       // Check if in DB with different name
-      const other = dbRows.find(d => (d.referenciaCMH as string).trim().includes(e.ref) || e.ref.includes((d.referenciaCMH as string).trim()));
+      const other = dbRows.find(d => (d.cmhReference as string).trim().includes(e.ref) || e.ref.includes((d.cmhReference as string).trim()));
       if (other) {
-        console.log(`  ${e.ref} → posición Excel ${e.panel} C${e.col}F${e.row} → parece ser DB ID ${other.id} (${other.referenciaCMH}) en ${other.panel} C${other.col}F${other.row}`);
+        console.log(`  ${e.ref} → posición Excel ${e.panel} C${e.col}F${e.row} → parece ser DB ID ${other.id} (${other.cmhReference}) en ${other.panel} C${other.col}F${other.row}`);
       } else {
         console.log(`  ${e.ref} → posición Excel ${e.panel} C${e.col}F${e.row} → NO EXISTE EN DB`);
       }
@@ -115,7 +115,7 @@ async function main() {
 
   // Count conflictivos in DB
   for (const db of dbRows) {
-    const ref = (db.referenciaCMH as string).trim();
+    const ref = (db.cmhReference as string).trim();
     const key = `${db.panel}_C${db.col}F${db.row}`;
     if ((seenPos.get(key)?.length ?? 0) > 1) {
       conflictivos++;

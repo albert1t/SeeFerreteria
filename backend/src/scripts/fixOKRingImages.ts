@@ -63,10 +63,10 @@ async function processImageBuffer(buffer: Buffer): Promise<Buffer> {
   return composite;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -90,13 +90,13 @@ async function main() {
 
   // Get OK rings from DB
   const result = await pool.request()
-    .query(`SELECT id, referenciaCMH, imagen FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
+    .query(`SELECT id, cmhReference, image FROM Products WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
 
   console.log(`Encontrados ${result.recordset.length} OK rings`);
   const sourceUrl = 'https://cdn.sp-spareparts.com/assets/img/prodcat/festo/processed/festo-d15000100119958-1056x1024.big.jpg';
 
-  for (const recambio of result.recordset) {
-    console.log(`\n[${recambio.referenciaCMH}] ID=${recambio.id}`);
+  for (const product of result.recordset) {
+    console.log(`\n[${product.cmhReference}] ID=${product.id}`);
     
     const buffer = await downloadImage(sourceUrl);
     if (!buffer) {
@@ -105,12 +105,12 @@ async function main() {
     }
 
     const processed = await processImageBuffer(buffer);
-    const url = await uploadToAzure(processed, recambio.referenciaCMH);
+    const url = await uploadToAzure(processed, product.cmhReference);
 
     await pool.request()
-      .input('imagen', sql.NVarChar(500), url)
-      .input('id', sql.Int, recambio.id)
-      .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+      .input('image', sql.NVarChar(500), url)
+      .input('id', sql.Int, product.id)
+      .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
 
     console.log(`    Updated -> ${url}`);
   }

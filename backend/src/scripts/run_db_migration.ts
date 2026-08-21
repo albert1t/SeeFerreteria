@@ -4,7 +4,7 @@ async function migrate() {
   console.log('Iniciando migración de restricciones de base de datos...');
   const pool = await getPool();
 
-  // 1. Buscar nombres de restricciones CHECK en la tabla Recambios para 'col' y 'row'
+  // 1. Buscar nombres de restricciones CHECK en la tabla Products para 'col' y 'row'
   const findConstraintsQuery = `
     SELECT 
         cc.name AS constraint_name,
@@ -14,32 +14,32 @@ async function migrate() {
     INNER JOIN 
         sys.columns col ON cc.parent_object_id = col.object_id AND cc.parent_column_id = col.column_id
     WHERE 
-        cc.parent_object_id = OBJECT_ID('Recambios')
+        cc.parent_object_id = OBJECT_ID('Products')
         AND col.name IN ('col', 'row')
   `;
 
   const result = await pool.request().query(findConstraintsQuery);
   const constraints = result.recordset;
 
-  console.log(`Encontradas ${constraints.length} restricciones CHECK activas en Recambios.`);
+  console.log(`Encontradas ${constraints.length} restricciones CHECK activas en Products.`);
 
   // 2. Eliminar las restricciones encontradas
   for (const c of constraints) {
     const constraintName = c.constraint_name;
     const columnName = c.column_name;
     console.log(`Eliminando restricción: ${constraintName} de la columna: ${columnName}...`);
-    await pool.request().query(`ALTER TABLE Recambios DROP CONSTRAINT [${constraintName}]`);
+    await pool.request().query(`ALTER TABLE Products DROP CONSTRAINT [${constraintName}]`);
     console.log(`  ✓ Restricción ${constraintName} eliminada.`);
   }
 
   // 3. Añadir las nuevas restricciones CHECK relajadas
   console.log('Añadiendo nueva restricción CHECK para columnas (1 a 6)...');
-  await pool.request().query('ALTER TABLE Recambios ADD CONSTRAINT CK_Recambios_col CHECK (col BETWEEN 1 AND 6)');
-  console.log('  ✓ Restricción CK_Recambios_col añadida.');
+  await pool.request().query('ALTER TABLE Products ADD CONSTRAINT CK_Products_col CHECK (col BETWEEN 1 AND 6)');
+  console.log('  ✓ Restricción CK_Products_col añadida.');
 
   console.log('Añadiendo nueva restricción CHECK para filas (1 a 15)...');
-  await pool.request().query('ALTER TABLE Recambios ADD CONSTRAINT CK_Recambios_row CHECK (row BETWEEN 1 AND 15)');
-  console.log('  ✓ Restricción CK_Recambios_row añadida.');
+  await pool.request().query('ALTER TABLE Products ADD CONSTRAINT CK_Products_row CHECK (row BETWEEN 1 AND 15)');
+  console.log('  ✓ Restricción CK_Products_row añadida.');
 
   await closePool();
   console.log('Migración completada con éxito.');

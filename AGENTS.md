@@ -8,7 +8,7 @@
 ## 1. Resumen del proyecto / Project Overview
 
 ### Español
-**SeeFerreteria** es un sistema full-stack para gestión de recambios industriales. Incluye un almacén visual por paneles/cubetas, gestión de pedidos, usuarios con roles/permisos, importación de catálogos y notificaciones por correo.
+**SeeFerreteria** es un sistema full-stack para gestión de products industriales. Incluye un almacén visual por panels/cubetas, gestión de orders, usuarios con roles/permisos, importación de catálogos y notificaciones por correo.
 
 ### English
 **SeeFerreteria** is a full-stack system for managing industrial spare parts. It features a visual warehouse organized by panels/bins, order management, users with roles/permissions, catalog imports, and email notifications.
@@ -69,8 +69,8 @@
 │   ├── 001_schema.sql
 │   ├── 002_seed.sql
 │   ├── 004_permissions.sql
-│   ├── 005_pedidos_oculto.sql
-│   ├── 006_importaciones_catalogo.sql
+│   ├── 005_orders_oculto.sql
+│   ├── 006_imports_catalogo.sql
 │   └── full_schema_ovh.sql  # Esquema completo idempotente
 ├── .cpanel.yml              # Tareas de deploy de cPanel Git
 ├── .htaccess                # Reglas Apache: SPA frontend + /api al backend
@@ -150,8 +150,9 @@ The backend validates variables with `zod` in `backend/src/config/env.ts`.
 | `SMTP_PASS` | No | Contraseña SMTP | *(en cPanel)* |
 | `MAIL_FROM` | No | Remitente | `noreply@cmhautomacion.com` |
 | `MAIL_REPLY_TO` | No | Reply-To | `comercial@cmhautomacion.com` |
-| `NOTIFY_EMAIL` | No | Correo de notificaciones de pedidos | `comercial@cmhautomacion.com` |
+| `NOTIFY_EMAIL` | No | Correo de notificaciones de orders | `comercial@cmhautomacion.com` |
 | `MAIL_ENABLED` | No | Activa/desactiva envíos | `true` |
+| `NOTIFY_ADMIN_ON_REGISTER` | No | Notificar al admin cuando un nuevo usuario se registra | `false` |
 
 ### Variables del frontend / Frontend variables
 
@@ -174,25 +175,25 @@ Viven en `frontend/.env.production` para el build de producción.
 Producción usa **MySQL** en OVH CloudDB. El pool se crea en `backend/src/config/db.ts`.
 
 Tablas principales:
-- `Users` — usuarios locales (`username`, `passwordHash`, `name`, `role`, `isActive`, `permissions`).
+- `Users` — usuarios locales (`username`, `passwordHash`, `name`, `role`, `isActive`).
 - `AllowedEmails` — whitelist para login con Microsoft.
-- `Familias` / `Subcategorias` — clasificación de recambios.
-- `Recambios` — piezas del almacén (referencia, imagen, posición `panel/col/row`, `oculto`, stock, etc.).
-- `Pedidos` — pedidos de reposición/solicitud.
-- `PedidosEstadoHistorial` — histórico de cambios de estado.
-- `ImportacionesCatalogo` — log de importaciones masivas.
+- `Families` / `Subcategories` — clasificación de productos.
+- `Products` — piezas del almacén (referencia, imagen, posición `panel/col/row`, `hidden`, stock, etc.).
+- `Orders` — pedidos de reposición/solicitud.
+- `OrderStatusHistory` — histórico de cambios de estado.
+- `CatalogImports` — log de importaciones masivas.
 
 ### English
 Production uses **MySQL** on OVH CloudDB. The pool is created in `backend/src/config/db.ts`.
 
 Main tables:
-- `Users` — local users (`username`, `passwordHash`, `name`, `role`, `isActive`, `permissions`).
+- `Users` — local users (`username`, `passwordHash`, `name`, `role`, `isActive`).
 - `AllowedEmails` — whitelist for Microsoft login.
-- `Familias` / `Subcategorias` — spare-part classification.
-- `Recambios` — warehouse items (reference, image, position `panel/col/row`, `oculto`, stock, etc.).
-- `Pedidos` — replacement/orders.
-- `PedidosEstadoHistorial` — status change history.
-- `ImportacionesCatalogo` — bulk import log.
+- `Families` / `Subcategories` — spare-part classification.
+- `Products` — warehouse items (reference, image, position `panel/col/row`, `hidden`, stock, etc.).
+- `Orders` — replacement/orders.
+- `OrderStatusHistory` — status change history.
+- `CatalogImports` — bulk import log.
 
 ---
 
@@ -222,15 +223,17 @@ Main tables:
 Implementadas en `backend/src/services/mailService.ts`.
 
 **Disparadores:**
-- `createPedido` en `backend/src/services/pedidosService.ts`:
+- `createOrder` en `backend/src/services/ordersService.ts`:
   - Envía acuse al solicitante **solo si su `username` tiene formato de email válido**.
-  - Notifica siempre a `NOTIFY_EMAIL` (`comercial@cmhautomacion.com`).
-- `advanceEstado`:
+  - Notifica siempre a `NOTIFY_EMAIL`.
+- `advanceStatus`:
   - Envía seguimiento al solicitante si su `username` es un email válido.
+- `register` en `backend/src/services/authService.ts`:
+  - Notifica a `NOTIFY_EMAIL` cuando se registra un nuevo usuario, si `NOTIFY_ADMIN_ON_REGISTER=true`.
 
 **Endpoint de prueba:**
 ```bash
-curl -X POST https://cmhautomacion.com/api/pedidos/test-email \
+curl -X POST https://cmhautomacion.com/api/orders/test-email \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{}'
@@ -241,15 +244,17 @@ Si el `username` del usuario autenticado es un email válido, el correo se enví
 Implemented in `backend/src/services/mailService.ts`.
 
 **Triggers:**
-- `createPedido` in `backend/src/services/pedidosService.ts`:
+- `createOrder` in `backend/src/services/ordersService.ts`:
   - Sends acknowledgment to the requester **only if their `username` is a valid email**.
-  - Always notifies `NOTIFY_EMAIL` (`comercial@cmhautomacion.com`).
-- `advanceEstado`:
+  - Always notifies `NOTIFY_EMAIL`.
+- `advanceStatus`:
   - Sends status update to the requester if their `username` is a valid email.
+- `register` in `backend/src/services/authService.ts`:
+  - Notifies `NOTIFY_EMAIL` when a new user registers, if `NOTIFY_ADMIN_ON_REGISTER=true`.
 
 **Test endpoint:**
 ```bash
-curl -X POST https://cmhautomacion.com/api/pedidos/test-email \
+curl -X POST https://cmhautomacion.com/api/orders/test-email \
   -H 'Authorization: Bearer <token>' \
   -H 'Content-Type: application/json' \
   -d '{}'
@@ -378,16 +383,16 @@ npm run dev:all
 | POST | `/api/auth/register` | Registro público |
 | POST | `/api/auth/login` | Login local |
 | POST | `/api/auth/msal-login` | Login Microsoft |
-| GET | `/api/recambios` | Listar recambios |
-| GET | `/api/recambios/:id` | Ver recambio |
-| GET | `/api/paneles` | Listar paneles/resumen |
-| GET | `/api/pedidos` | Listar pedidos |
-| POST | `/api/pedidos` | Crear pedido (dispara emails) |
-| POST | `/api/pedidos/test-email` | Probar SMTP |
-| PATCH | `/api/pedidos/:id/estado` | Avanzar estado (dispara email) |
+| GET | `/api/products` | Listar products |
+| GET | `/api/products/:id` | Ver recambio |
+| GET | `/api/panels` | Listar panels/resumen |
+| GET | `/api/orders` | Listar orders |
+| POST | `/api/orders` | Crear pedido (dispara emails) |
+| POST | `/api/orders/test-email` | Probar SMTP |
+| PATCH | `/api/orders/:id/estado` | Avanzar estado (dispara email) |
 | GET | `/api/users` | Gestión de usuarios |
-| GET/POST | `/api/catalogos` | Catálogos |
-| GET/POST | `/api/importaciones` | Importaciones masivas |
+| GET/POST | `/api/catalogs` | Catálogos |
+| GET/POST | `/api/imports` | Importaciones masivas |
 
 ---
 
@@ -396,18 +401,18 @@ npm run dev:all
 ### Español
 - **Fix booleano `oculto`:** se asegura que la propiedad se devuelva como `boolean` en lugar de `0`/`1`.
 - **Notificaciones por email:** implementadas con Nodemailer; emails en nuevo pedido, acuse al solicitante y seguimiento de estado.
-- **Endpoint de prueba SMTP:** `POST /api/pedidos/test-email`.
+- **Endpoint de prueba SMTP:** `POST /api/orders/test-email`.
 - **`.cpanel.yml` ajustado:** usa `npm-cli.js` directo de Node 24 y elimina `touch tmp/restart.txt`.
 - **Commit local pendiente de push:** `6f96093 fix(.cpanel.yml): usa npm directo de alt-nodejs24 y elimina touch tmp/restart.txt`.
   El remote está en HTTPS y no hay credenciales de GitHub configuradas en este entorno.
 
 ### English
-- **`oculto` boolean fix:** ensures the property is returned as `boolean` instead of `0`/`1`.
-- **Email notifications:** implemented with Nodemailer; emails on new order, requester acknowledgment, and status updates.
-- **SMTP test endpoint:** `POST /api/pedidos/test-email`.
+- **Full English refactor:** tables, columns, endpoints and types renamed to English (`Products`, `Orders`, `OrderStatusHistory`, `CatalogImports`, etc.).
+- **DB migration:** `database/008_standardize_english_names.sql` renames all production tables/columns.
+- **Email notifications:** order creation, status update and new-user registration (toggleable via `NOTIFY_ADMIN_ON_REGISTER`).
+- **SMTP test endpoint:** `POST /api/orders/test-email`.
 - **`.cpanel.yml` adjusted:** uses the direct Node 24 `npm-cli.js` path and removes `touch tmp/restart.txt`.
-- **Local commit pending push:** `6f96093 fix(.cpanel.yml): usa npm directo de alt-nodejs24 y elimina touch tmp/restart.txt`.
-  The remote is HTTPS and no GitHub credentials are configured in this environment.
+- **Local commit pending push:** see latest commit after refactor.
 
 
 ---
@@ -416,7 +421,7 @@ npm run dev:all
 
 ### Español
 
-**El endpoint `/api/pedidos/test-email` devuelve 404**
+**El endpoint `/api/orders/test-email` devuelve 404**
 - La app Node está corriendo código antiguo. Matar el proceso `lsnode` y reiniciar:
   ```bash
   kill -9 <pid>
@@ -438,11 +443,11 @@ npm run dev:all
 **No llegan emails**
 - Revisar `backend/stderr.log` en busca de líneas `[mail] ...`.
 - Verificar `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`.
-- Probar con `POST /api/pedidos/test-email`.
+- Probar con `POST /api/orders/test-email`.
 
 ### English
 
-**Endpoint `/api/pedidos/test-email` returns 404**
+**Endpoint `/api/orders/test-email` returns 404**
 - The Node app is running old code. Kill the `lsnode` process and restart:
   ```bash
   kill -9 <pid>
@@ -464,7 +469,7 @@ npm run dev:all
 **Emails not arriving**
 - Check `backend/stderr.log` for `[mail] ...` lines.
 - Verify `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`.
-- Test with `POST /api/pedidos/test-email`.
+- Test with `POST /api/orders/test-email`.
 
 ---
 
@@ -480,7 +485,7 @@ npm run dev:all
 | Logs | `backend/stderr.log` |
 | Reinicio | `/usr/sbin/cloudlinux-selector restart --interpreter nodejs --domain cmhautomacion.com --app-root /home/cmhautomacion/repositories/SeeFerreteria/backend` |
 | Health | `curl https://cmhautomacion.com/api/health` |
-| Test email | `curl -X POST https://cmhautomacion.com/api/pedidos/test-email -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{}'` |
+| Test email | `curl -X POST https://cmhautomacion.com/api/orders/test-email -H 'Authorization: Bearer <token>' -H 'Content-Type: application/json' -d '{}'` |
 
 > **Nota de seguridad:** Las contraseñas, tokens y el SAS de Azure solo deben vivir en las variables de entorno de cPanel o en `.env` locales nunca en el repo.
 > **Security note:** Passwords, tokens, and the Azure SAS should only live in cPanel environment variables or local `.env` files, never in the repo.

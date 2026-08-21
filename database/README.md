@@ -10,7 +10,7 @@
 1. Conecta con Azure Data Studio, SSMS o `sqlcmd` a tu base de datos.
 2. Ejecuta en orden:
    - `001_schema.sql` — crea las 6 tablas
-   - `002_seed.sql` — familias, subcategorías y recambios de demo
+   - `002_seed.sql` — families, subcategorías y products de demo
 3. Desde `backend/`, ejecuta el seed de usuarios (contraseñas hasheadas):
    ```bash
    cd backend

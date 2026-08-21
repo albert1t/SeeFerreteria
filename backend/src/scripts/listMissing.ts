@@ -3,15 +3,15 @@ import { getPool } from '../config/db.js';
 async function main() {
   const pool = await getPool();
   const result = await pool.request().query(`
-    SELECT id, referenciaCMH, referenciaCliente, nombre, marca
-    FROM Recambios
-    WHERE imagen IS NULL OR imagen NOT LIKE '%ferreteriastorageacc%'
+    SELECT id, cmhReference, customerReference, name, brand
+    FROM Products
+    WHERE image IS NULL OR image NOT LIKE '%ferreteriastorageacc%'
     ORDER BY id
   `);
   for (const r of result.recordset) {
-    const refs = [r.referenciaCMH];
-    if (r.referenciaCliente) refs.push(r.referenciaCliente);
-    console.log(`${r.id} | ${r.referenciaCMH} | ${r.referenciaCliente || ''} | ${r.nombre} | ${r.marca || ''}`);
+    const refs = [r.cmhReference];
+    if (r.customerReference) refs.push(r.customerReference);
+    console.log(`${r.id} | ${r.cmhReference} | ${r.customerReference || ''} | ${r.name} | ${r.brand || ''}`);
   }
   console.log(`TOTAL: ${result.recordset.length}`);
   await pool.close();

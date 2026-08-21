@@ -5,6 +5,7 @@ import * as usersRepo from '../repositories/users.js';
 import { signToken } from '../middleware/auth.js';
 import { AppError } from '../middleware/errorHandler.js';
 import { env } from '../config/env.js';
+import { notificarNuevoRegistro } from './mailService.js';
 function buildTokenResponse(user) {
     const payload = {
         userId: user.id,
@@ -44,6 +45,15 @@ export async function register(username, name, password) {
     if (!user) {
         throw new AppError(500, 'No se pudo crear el usuario');
     }
+    // Notificar al administrador sin bloquear la respuesta
+    (async () => {
+        try {
+            await notificarNuevoRegistro(user);
+        }
+        catch (err) {
+            console.error('[authService] Error en notificación de nuevo registro:', err);
+        }
+    })();
     const { passwordHash: _, ...safeUser } = user;
     return buildTokenResponse(safeUser);
 }
@@ -72,7 +82,7 @@ export async function loginMicrosoft(idToken) {
     }
     const name = (payload.name || username);
     // Check whitelist — solo emails autorizados pueden acceder
-    const allowed = await usersRepo.findEmailPermitidoByEmail(username);
+    const allowed = await usersRepo.findAllowedEmailByEmail(username);
     if (!allowed || !allowed.isActive) {
         throw new AppError(403, 'No tienes permiso para acceder');
     }

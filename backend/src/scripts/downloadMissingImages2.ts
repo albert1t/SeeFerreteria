@@ -6,10 +6,10 @@ const FRAME_SIZE = 400;
 
 interface RecambioRow {
   id: number;
-  referenciaCMH: string;
-  referenciaCliente: string | null;
-  nombre: string;
-  marca: string | null;
+  cmhReference: string;
+  customerReference: string | null;
+  name: string;
+  brand: string | null;
 }
 
 function normalizeRef(ref: string): string {
@@ -73,10 +73,10 @@ async function processImageBuffer(buffer: Buffer): Promise<Buffer> {
   return composite;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -98,43 +98,43 @@ async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<str
 async function main() {
   const pool = await getPool();
   const result = await pool.request().query<RecambioRow>(`
-    SELECT id, referenciaCMH, referenciaCliente, nombre, marca
-    FROM Recambios
-    WHERE imagen IS NULL OR imagen NOT LIKE '%ferreteriastorageacc%'
+    SELECT id, cmhReference, customerReference, name, brand
+    FROM Products
+    WHERE image IS NULL OR image NOT LIKE '%ferreteriastorageacc%'
     ORDER BY id
   `);
-  const recambios = result.recordset;
-  console.log(`Recambios sin imagen: ${recambios.length}`);
+  const products = result.recordset;
+  console.log(`Products sin image: ${products.length}`);
 
   let uploaded = 0;
   let failed: string[] = [];
 
-  for (const recambio of recambios) {
-    console.log(`\n[${recambio.id}] ${recambio.referenciaCMH} - ${recambio.nombre}`);
+  for (const product of products) {
+    console.log(`\n[${product.id}] ${product.cmhReference} - ${product.name}`);
 
-    let buffer = await downloadImage(recambio.referenciaCMH);
-    if (!buffer && recambio.referenciaCliente) {
-      buffer = await downloadImage(recambio.referenciaCliente);
+    let buffer = await downloadImage(product.cmhReference);
+    if (!buffer && product.customerReference) {
+      buffer = await downloadImage(product.customerReference);
     }
 
     if (!buffer) {
-      console.log(`    No image found for ${recambio.referenciaCMH}`);
-      failed.push(recambio.referenciaCMH);
+      console.log(`    No image found for ${product.cmhReference}`);
+      failed.push(product.cmhReference);
       continue;
     }
 
     try {
       const processed = await processImageBuffer(buffer);
-      const url = await uploadToAzure(processed, recambio.referenciaCMH);
+      const url = await uploadToAzure(processed, product.cmhReference);
       await pool.request()
-        .input('imagen', sql.NVarChar(500), url)
-        .input('id', sql.Int, recambio.id)
-        .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+        .input('image', sql.NVarChar(500), url)
+        .input('id', sql.Int, product.id)
+        .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
       console.log(`    OK - uploaded`);
       uploaded++;
     } catch (err: any) {
       console.error(`    ERROR: ${err.message}`);
-      failed.push(recambio.referenciaCMH);
+      failed.push(product.cmhReference);
     }
   }
 

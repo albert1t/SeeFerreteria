@@ -26,7 +26,7 @@ async function main() {
     // Find the DB record by ref
     const rec = await pool.request()
       .input('ref', m.ref)
-      .query(`SELECT id, panel, col, [row] FROM Recambios WHERE referenciaCMH = @ref`);
+      .query(`SELECT id, panel, col, [row] FROM Products WHERE cmhReference = @ref`);
     if (rec.recordset.length === 0) {
       console.log(`  ❌ No encontrado en DB`);
       errors++;
@@ -40,11 +40,11 @@ async function main() {
       .input('col', sql.TinyInt, m.toCol)
       .input('row', sql.TinyInt, m.toRow)
       .input('excludeId', sql.Int, db.id)
-      .query(`SELECT id, referenciaCMH, panel, col, [row] FROM Recambios WHERE panel = @panel AND col = @col AND [row] = @row AND id != @excludeId`);
+      .query(`SELECT id, cmhReference, panel, col, [row] FROM Products WHERE panel = @panel AND col = @col AND [row] = @row AND id != @excludeId`);
 
     if (ocupado.recordset.length > 0) {
       const occ = ocupado.recordset[0];
-      console.log(`  ⚠ Ocupado por ${occ.referenciaCMH} en ${occ.panel} C${occ.col}F${occ.row} → intercambiando`);
+      console.log(`  ⚠ Ocupado por ${occ.cmhReference} en ${occ.panel} C${occ.col}F${occ.row} → intercambiando`);
       // Swap: db → ZZ, occ → db's old pos, db → target
       const transaction = pool.transaction();
       await transaction.begin();
@@ -53,19 +53,19 @@ async function main() {
         await transaction.request()
           .input('id1', sql.Int, db.id)
           .input('tmpRow', sql.TinyInt, tmpRow)
-          .query(`UPDATE Recambios SET panel = 'ZZ', col = 1, [row] = @tmpRow, updatedAt = SYSUTCDATETIME() WHERE id = @id1`);
+          .query(`UPDATE Products SET panel = 'ZZ', col = 1, [row] = @tmpRow, updatedAt = SYSUTCDATETIME() WHERE id = @id1`);
         await transaction.request()
           .input('id2', sql.Int, occ.id)
           .input('p1', sql.NVarChar(10), m.fromPanel)
           .input('c1', sql.TinyInt, m.fromCol)
           .input('r1', sql.TinyInt, m.fromRow)
-          .query(`UPDATE Recambios SET panel = @p1, col = @c1, [row] = @r1, updatedAt = SYSUTCDATETIME() WHERE id = @id2`);
+          .query(`UPDATE Products SET panel = @p1, col = @c1, [row] = @r1, updatedAt = SYSUTCDATETIME() WHERE id = @id2`);
         await transaction.request()
           .input('id1', sql.Int, db.id)
           .input('p2', sql.NVarChar(10), m.toPanel)
           .input('c2', sql.TinyInt, m.toCol)
           .input('r2', sql.TinyInt, m.toRow)
-          .query(`UPDATE Recambios SET panel = @p2, col = @c2, [row] = @r2, updatedAt = SYSUTCDATETIME() WHERE id = @id1`);
+          .query(`UPDATE Products SET panel = @p2, col = @c2, [row] = @r2, updatedAt = SYSUTCDATETIME() WHERE id = @id1`);
         await transaction.commit();
         console.log(`  ✅ Intercambiados`);
         fixed++;
@@ -82,7 +82,7 @@ async function main() {
           .input('panel', sql.NVarChar(10), m.toPanel)
           .input('col', sql.TinyInt, m.toCol)
           .input('row', sql.TinyInt, m.toRow)
-          .query(`UPDATE Recambios SET panel = @panel, col = @col, [row] = @row, updatedAt = SYSUTCDATETIME() WHERE id = @id`);
+          .query(`UPDATE Products SET panel = @panel, col = @col, [row] = @row, updatedAt = SYSUTCDATETIME() WHERE id = @id`);
         console.log(`  ✅ Movido`);
         fixed++;
       } catch (err: any) {
@@ -93,7 +93,7 @@ async function main() {
     await sleep(300);
   }
 
-  console.log(`\nResumen: ${fixed} movidos, ${errors} errores`);
+  console.log(`\nResumen: ${fixed} movidos, ${errors} errors`);
   await pool.close();
 }
 

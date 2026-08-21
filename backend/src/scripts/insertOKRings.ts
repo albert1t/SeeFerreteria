@@ -3,27 +3,27 @@ import { getPool, sql } from '../config/db.js';
 async function main() {
   const pool = await getPool();
 
-  // Get familias
-  const famResult = await pool.request().query(`SELECT id, nombre FROM Familias ORDER BY nombre`);
+  // Get families
+  const famResult = await pool.request().query(`SELECT id, name FROM Families ORDER BY name`);
   console.log('=== FAMILIAS ===');
   for (const f of famResult.recordset) {
-    console.log(`  ${f.id}: ${f.nombre}`);
+    console.log(`  ${f.id}: ${f.name}`);
   }
 
   // Check if A6 C1 positions are empty
   for (let row = 1; row <= 4; row++) {
     const occ = await pool.request()
       .input('row', sql.TinyInt, row)
-      .query(`SELECT id, referenciaCMH FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] = @row`);
+      .query(`SELECT id, cmhReference FROM Products WHERE panel = 'A6' AND col = 1 AND [row] = @row`);
     if (occ.recordset.length > 0) {
-      console.log(`\nA6 C1F${row} ocupado por ${occ.recordset[0].referenciaCMH} (ID ${occ.recordset[0].id})`);
+      console.log(`\nA6 C1F${row} ocupado por ${occ.recordset[0].cmhReference} (ID ${occ.recordset[0].id})`);
     } else {
       console.log(`\nA6 C1F${row} LIBRE`);
     }
   }
 
   // Get max id for image naming
-  const maxId = await pool.request().query(`SELECT MAX(id) as maxId FROM Recambios`);
+  const maxId = await pool.request().query(`SELECT MAX(id) as maxId FROM Products`);
   const nextId = (maxId.recordset[0].maxId || 0) + 1;
 
   // Festo generic sealing ring image (same physical appearance for all OK rings)
@@ -36,24 +36,24 @@ async function main() {
     { ref: 'OK-3/8', row: 4, metric: 'G3/8', desc: 'Anillo de junta para rosca 3/8"', partNo: '531773' },
   ];
 
-  // Try to get familiaId for "Junta" or "Accesorios" or similar
-  let familiaId: number | null = null;
+  // Try to get familyId for "Junta" or "Accesorios" or similar
+  let familyId: number | null = null;
   for (const f of famResult.recordset) {
-    const name = (f.nombre as string).toLowerCase();
+    const name = (f.name as string).toLowerCase();
     if (name.includes('junta') || name.includes('accesorio') || name.includes('anillo') || name.includes('sell')) {
-      familiaId = f.id;
-      console.log(`\nUsando familia: ${f.nombre} (ID ${familiaId})`);
+      familyId = f.id;
+      console.log(`\nUsando family: ${f.name} (ID ${familyId})`);
       break;
     }
   }
-  // Default to first familia if no match
-  if (!familiaId && famResult.recordset.length > 0) {
-    familiaId = famResult.recordset[0].id;
-    console.log(`\nUsando primera familia disponible: ${famResult.recordset[0].nombre} (ID ${familiaId})`);
+  // Default to first family if no match
+  if (!familyId && famResult.recordset.length > 0) {
+    familyId = famResult.recordset[0].id;
+    console.log(`\nUsando primera family disponible: ${famResult.recordset[0].name} (ID ${familyId})`);
   }
 
-  if (!familiaId) {
-    console.log('\nNo hay familias en la DB. Cancelando inserción.');
+  if (!familyId) {
+    console.log('\nNo hay families en la DB. Cancelando inserción.');
     await pool.close();
     return;
   }
@@ -63,7 +63,7 @@ async function main() {
     // Check if ref already exists
     const existing = await pool.request()
       .input('ref', ring.ref)
-      .query(`SELECT id FROM Recambios WHERE referenciaCMH = @ref`);
+      .query(`SELECT id FROM Products WHERE cmhReference = @ref`);
     if (existing.recordset.length > 0) {
       console.log(`  ${ring.ref} YA EXISTE (ID ${existing.recordset[0].id}) — saltando`);
       continue;
@@ -72,23 +72,23 @@ async function main() {
     try {
       await pool.request()
         .input('ref', sql.NVarChar(50), ring.ref)
-        .input('nombre', sql.NVarChar(100), `Anillo de junta ${ring.ref}`)
-        .input('marca', sql.NVarChar(50), 'Festo')
-        .input('referenciaCliente', sql.NVarChar(50), ring.partNo)
-        .input('descripcion', sql.NVarChar(500), ring.desc)
-        .input('metrica', sql.NVarChar(50), ring.metric)
-        .input('unidadEmbalaje', sql.NVarChar(50), '1')
-        .input('plazoEntrega', sql.NVarChar(50), '3 días')
-        .input('nReposicion', sql.Int, 10)
-        .input('familiaId', sql.Int, familiaId)
+        .input('name', sql.NVarChar(100), `Anillo de junta ${ring.ref}`)
+        .input('brand', sql.NVarChar(50), 'Festo')
+        .input('customerReference', sql.NVarChar(50), ring.partNo)
+        .input('description', sql.NVarChar(500), ring.desc)
+        .input('metric', sql.NVarChar(50), ring.metric)
+        .input('packagingUnit', sql.NVarChar(50), '1')
+        .input('deliveryTime', sql.NVarChar(50), '3 días')
+        .input('reorderPoint', sql.Int, 10)
+        .input('familyId', sql.Int, familyId)
         .input('panel', sql.NVarChar(10), 'A6')
         .input('col', sql.TinyInt, 1)
         .input('row', sql.TinyInt, ring.row)
-        .input('imagen', sql.NVarChar(500), imgUrl)
-        .input('oculto', sql.Bit, false)
+        .input('image', sql.NVarChar(500), imgUrl)
+        .input('hidden', sql.Bit, false)
         .query(`
-          INSERT INTO Recambios (referenciaCMH, nombre, marca, referenciaCliente, descripcion, metrica, unidadEmbalaje, plazoEntrega, nReposicion, familiaId, panel, col, [row], imagen, oculto, createdAt, updatedAt)
-          VALUES (@ref, @nombre, @marca, @referenciaCliente, @descripcion, @metrica, @unidadEmbalaje, @plazoEntrega, @nReposicion, @familiaId, @panel, @col, @row, @imagen, @oculto, SYSUTCDATETIME(), SYSUTCDATETIME())
+          INSERT INTO Products (cmhReference, name, brand, customerReference, description, metric, packagingUnit, deliveryTime, reorderPoint, familyId, panel, col, [row], image, hidden, createdAt, updatedAt)
+          VALUES (@ref, @name, @brand, @customerReference, @description, @metric, @packagingUnit, @deliveryTime, @reorderPoint, @familyId, @panel, @col, @row, @image, @hidden, SYSUTCDATETIME(), SYSUTCDATETIME())
         `);
       console.log(`  ✅ ${ring.ref} insertado en A6 C1F${ring.row}`);
     } catch (err: any) {
@@ -99,9 +99,9 @@ async function main() {
   // Verify
   console.log('\n=== VERIFICACIÓN ===');
   const verify = await pool.request()
-    .query(`SELECT id, referenciaCMH, nombre, panel, col, [row], imagen FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
+    .query(`SELECT id, cmhReference, name, panel, col, [row], image FROM Products WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
   for (const v of verify.recordset) {
-    console.log(`  F${v.row}: id=${v.id} ref="${v.referenciaCMH}" nombre="${v.nombre}"`);
+    console.log(`  F${v.row}: id=${v.id} ref="${v.cmhReference}" name="${v.name}"`);
   }
 
   await pool.close();

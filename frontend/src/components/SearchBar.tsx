@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import * as recambiosApi from '../api/recambios';
-import type { Recambio } from '../types';
+import * as recambiosApi from '../api/products';
+import type { Product } from '../types';
 
 interface SearchBarProps {
-  onSelect: (recambio: Recambio) => void;
+  onSelect: (product: Product) => void;
   placeholder?: string;
 }
 
-export function SearchBar({ onSelect, placeholder = 'Buscar por nombre o referencia...' }: SearchBarProps) {
+export function SearchBar({ onSelect, placeholder = 'Buscar por name o referencia...' }: SearchBarProps) {
   const [q, setQ] = useState('');
   const [debounced, setDebounced] = useState('');
 
@@ -18,8 +18,8 @@ export function SearchBar({ onSelect, placeholder = 'Buscar por nombre o referen
   }, [q]);
 
   const { data: results = [] } = useQuery({
-    queryKey: ['recambios', 'search', debounced],
-    queryFn: () => recambiosApi.searchRecambios(debounced),
+    queryKey: ['products', 'search', debounced],
+    queryFn: () => recambiosApi.searchProducts(debounced),
     enabled: debounced.length >= 1,
   });
 
@@ -59,16 +59,16 @@ export function SearchBar({ onSelect, placeholder = 'Buscar por nombre o referen
               onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-hover)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
             >
-              {r.imagen ? (
-                <img src={r.imagen} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
+              {r.image ? (
+                <img src={r.image} alt="" style={{ width: 36, height: 36, borderRadius: 6, objectFit: 'cover' }} />
               ) : (
                 <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--bg-card-soft)', border: '1px solid var(--border-white-soft)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: 'var(--text-dim)', flexShrink: 0 }}>
                   📦
                 </div>
               )}
               <div>
-                <div style={{ fontSize: 13, fontWeight: 600 }}>{r.nombre}</div>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.referenciaCMH} · {r.panel}</div>
+                <div style={{ fontSize: 13, fontWeight: 600 }}>{r.name}</div>
+                <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>{r.cmhReference} · {r.panel}</div>
               </div>
             </div>
           ))}

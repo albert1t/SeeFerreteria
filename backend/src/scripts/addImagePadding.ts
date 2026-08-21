@@ -33,10 +33,10 @@ async function addPadding(buffer: Buffer): Promise<Buffer> {
   return padded;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
 
@@ -63,38 +63,38 @@ async function main() {
   const pool = await getPool();
   console.log('Connected.');
 
-  const result = await pool.request().query<{ id: number; referenciaCMH: string; imagen: string }>(`
-    SELECT id, referenciaCMH, imagen
-    FROM Recambios
-    WHERE imagen IS NOT NULL AND imagen LIKE '%ferreteriastorageacc%'
+  const result = await pool.request().query<{ id: number; cmhReference: string; image: string }>(`
+    SELECT id, cmhReference, image
+    FROM Products
+    WHERE image IS NOT NULL AND image LIKE '%ferreteriastorageacc%'
     ORDER BY id
   `);
-  const recambios = result.recordset;
-  console.log(`Found ${recambios.length} recambios with Azure images.`);
+  const products = result.recordset;
+  console.log(`Found ${products.length} products with Azure images.`);
 
   let ok = 0;
   let errors: string[] = [];
 
-  for (const r of recambios) {
-    process.stdout.write(`[${ok + errors.length + 1}/${recambios.length}] ${r.referenciaCMH} ... `);
+  for (const r of products) {
+    process.stdout.write(`[${ok + errors.length + 1}/${products.length}] ${r.cmhReference} ... `);
     try {
-      const buf = await fetchImage(r.imagen);
+      const buf = await fetchImage(r.image);
       const padded = await addPadding(buf);
-      const newUrl = await uploadToAzure(padded, r.referenciaCMH);
+      const newUrl = await uploadToAzure(padded, r.cmhReference);
       await pool.request()
-        .input('imagen', sql.NVarChar(500), newUrl)
+        .input('image', sql.NVarChar(500), newUrl)
         .input('id', sql.Int, r.id)
-        .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+        .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
       console.log(`OK`);
       ok++;
     } catch (err: any) {
       console.log(`ERROR: ${err.message}`);
-      errors.push(`${r.referenciaCMH}: ${err.message}`);
+      errors.push(`${r.cmhReference}: ${err.message}`);
     }
   }
 
   console.log('\n========== SUMMARY ==========');
-  console.log(`Total:     ${recambios.length}`);
+  console.log(`Total:     ${products.length}`);
   console.log(`OK:        ${ok}`);
   console.log(`Errors:    ${errors.length}`);
   if (errors.length > 0) {

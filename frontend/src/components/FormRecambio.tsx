@@ -2,13 +2,13 @@ import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { btnStyle } from '../styles/theme';
 import { useToast } from './Toast';
-import * as recambiosApi from '../api/recambios';
-import * as catalogosApi from '../api/catalogos';
-import type { Recambio, RecambioFormData } from '../types';
+import * as recambiosApi from '../api/products';
+import * as catalogosApi from '../api/catalogs';
+import type { Product, ProductFormData } from '../types';
 
 interface FormRecambioProps {
-  recambio?: Recambio;
-  onSave: (r: Recambio) => void;
+  product?: Product;
+  onSave: (r: Product) => void;
   onCancel: () => void;
 }
 
@@ -21,52 +21,52 @@ const labelStyle: React.CSSProperties = {
   fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4, display: 'block',
 };
 
-export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) {
+export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { data: familias = [] } = useQuery({
-    queryKey: ['catalogos', 'familias'],
-    queryFn: catalogosApi.getFamilias,
+  const { data: families = [] } = useQuery({
+    queryKey: ['catalogs', 'families'],
+    queryFn: catalogosApi.getFamilies,
   });
 
-  const [form, setForm] = useState<RecambioFormData>({
-    referenciaCMH: recambio?.referenciaCMH ?? '',
-    referenciaCliente: recambio?.referenciaCliente ?? '',
-    codigo: recambio?.codigo ?? '',
-    nombre: recambio?.nombre ?? '',
-    marca: recambio?.marca ?? '',
-    descripcion: recambio?.descripcion ?? '',
-    metrica: recambio?.metrica ?? '',
-    unidadEmbalaje: recambio?.unidadEmbalaje ?? '',
-    imagen: recambio?.imagen ?? '',
-    plazoEntrega: recambio?.plazoEntrega ?? '',
-    familiaId: recambio?.familiaId ?? 0,
-    nReposicion: recambio?.nReposicion ?? null,
-    panel: recambio?.panel ?? '',
-    col: recambio?.col ?? null,
-    row: recambio?.row ?? null,
+  const [form, setForm] = useState<ProductFormData>({
+    cmhReference: product?.cmhReference ?? '',
+    customerReference: product?.customerReference ?? '',
+    code: product?.code ?? '',
+    name: product?.name ?? '',
+    brand: product?.brand ?? '',
+    description: product?.description ?? '',
+    metric: product?.metric ?? '',
+    packagingUnit: product?.packagingUnit ?? '',
+    image: product?.image ?? '',
+    deliveryTime: product?.deliveryTime ?? '',
+    familyId: product?.familyId ?? 0,
+    reorderPoint: product?.reorderPoint ?? null,
+    panel: product?.panel ?? '',
+    col: product?.col ?? null,
+    row: product?.row ?? null,
   });
 
   const [uploading, setUploading] = useState(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(form.imagen || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(form.image || null);
 
   const saveMut = useMutation({
     mutationFn: () =>
-      recambio
-        ? recambiosApi.updateRecambio(recambio.id, form)
-        : recambiosApi.createRecambio(form),
+      product
+        ? recambiosApi.updateProduct(product.id, form)
+        : recambiosApi.createProduct(form),
     onSuccess: (r) => {
-      showToast(recambio ? 'Recambio actualizado' : 'Recambio creado', 'success');
-      queryClient.invalidateQueries({ queryKey: ['recambios'] });
-      queryClient.invalidateQueries({ queryKey: ['paneles'] });
+      showToast(product ? 'Product actualizado' : 'Product creado', 'success');
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['panels'] });
       onSave(r);
     },
     onError: (err: Error) => showToast(err.message),
   });
 
-  function upd<K extends keyof RecambioFormData>(key: K, value: RecambioFormData[K]) {
+  function upd<K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) {
     setForm((f) => ({ ...f, [key]: value }));
   }
 
@@ -82,12 +82,12 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
     setUploading(true);
     try {
       const { url } = await recambiosApi.uploadImagen(file);
-      upd('imagen', url);
+      upd('image', url);
       setPreviewUrl(url);
       showToast('Imagen subida correctamente', 'success');
     } catch (err) {
-      showToast(err instanceof Error ? err.message : 'Error al subir imagen');
-      setPreviewUrl(form.imagen || null);
+      showToast(err instanceof Error ? err.message : 'Error al subir image');
+      setPreviewUrl(form.image || null);
     } finally {
       setUploading(false);
       // Reset file input so the same file can be re-selected
@@ -96,7 +96,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
   }
 
   function handleRemoveImage() {
-    upd('imagen', '');
+    upd('image', '');
     setPreviewUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
@@ -115,7 +115,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
-      {([['referenciaCMH', 'Ref. CMH *'], ['referenciaCliente', 'Ref. Cliente'], ['codigo', 'Código'], ['nombre', 'Nombre *'], ['marca', 'Marca']] as const).map(([k, lbl]) => (
+      {([['cmhReference', 'Ref. CMH *'], ['customerReference', 'Ref. Cliente'], ['code', 'Código'], ['name', 'Nombre *'], ['brand', 'Marca']] as const).map(([k, lbl]) => (
         <div key={k}>
           <label style={labelStyle}>{lbl}</label>
           <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} />
@@ -123,33 +123,33 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
       ))}
       <div style={{ gridColumn: '1/-1' }}>
         <label style={labelStyle}>Descripción</label>
-        <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={form.descripcion ?? ''} onChange={(e) => upd('descripcion', e.target.value)} />
+        <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={form.description ?? ''} onChange={(e) => upd('description', e.target.value)} />
       </div>
       <div>
         <label style={labelStyle}>Métrica</label>
-        <input style={inputStyle} value={form.metrica ?? ''} onChange={(e) => upd('metrica', e.target.value)} placeholder='Ej: M8x30, 1/2", 35mm²' />
+        <input style={inputStyle} value={form.metric ?? ''} onChange={(e) => upd('metric', e.target.value)} placeholder='Ej: M8x30, 1/2", 35mm²' />
       </div>
-      {([['unidadEmbalaje', 'Unidad de embalaje *'], ['plazoEntrega', 'Plazo de entrega']] as const).map(([k, lbl]) => (
+      {([['packagingUnit', 'Unidad de embalaje *'], ['deliveryTime', 'Plazo de entrega']] as const).map(([k, lbl]) => (
         <div key={k}>
           <label style={labelStyle}>{lbl}</label>
-          <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} placeholder={k === 'unidadEmbalaje' ? 'Ej: Unidad' : undefined} />
+          <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} placeholder={k === 'packagingUnit' ? 'Ej: Unidad' : undefined} />
         </div>
       ))}
 
       <div>
-        <label style={labelStyle}>Familia *</label>
+        <label style={labelStyle}>Family *</label>
         <select
           style={inputStyle}
-          value={form.familiaId}
-          onChange={(e) => upd('familiaId', parseInt(e.target.value, 10))}
+          value={form.familyId}
+          onChange={(e) => upd('familyId', parseInt(e.target.value, 10))}
         >
           <option value={0} disabled>-- Seleccionar --</option>
-          {familias.map((f) => <option key={f.id} value={f.id}>{f.nombre}</option>)}
+          {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
         </select>
       </div>
       <div>
         <label style={labelStyle}>N° Reposición</label>
-        <input style={inputStyle} type="number" min="1" value={form.nReposicion ?? ''} onChange={(e) => { const v = e.target.value; upd('nReposicion', v === '' ? null : parseInt(v, 10)); }} />
+        <input style={inputStyle} type="number" min="1" value={form.reorderPoint ?? ''} onChange={(e) => { const v = e.target.value; upd('reorderPoint', v === '' ? null : parseInt(v, 10)); }} />
       </div>
       <div>
         <label style={labelStyle}>Panel *</label>
@@ -185,7 +185,7 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
               opacity: uploading ? 0.6 : 1,
             }}
           >
-            {uploading ? 'Subiendo...' : 'Seleccionar imagen'}
+            {uploading ? 'Subiendo...' : 'Seleccionar image'}
           </button>
           {previewUrl && (
             <button
@@ -227,10 +227,10 @@ export function FormRecambio({ recambio, onSave, onCancel }: FormRecambioProps) 
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}
-          disabled={saveMut.isPending || uploading || !form.referenciaCMH || !form.nombre || !form.panel.trim() || form.col == null || form.col < 1 || form.row == null || form.row < 1 || !form.familiaId || !(form.unidadEmbalaje ?? '').trim()}
+          disabled={saveMut.isPending || uploading || !form.cmhReference || !form.name || !form.panel.trim() || form.col == null || form.col < 1 || form.row == null || form.row < 1 || !form.familyId || !(form.packagingUnit ?? '').trim()}
           onClick={() => saveMut.mutate()}
         >
-          {saveMut.isPending ? 'Guardando...' : recambio ? 'Guardar cambios' : 'Crear recambio'}
+          {saveMut.isPending ? 'Guardando...' : product ? 'Guardar cambios' : 'Crear product'}
         </button>
       </div>
     </div>

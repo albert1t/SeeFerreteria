@@ -63,10 +63,10 @@ async function processImageBuffer(buffer: Buffer): Promise<Buffer> {
   return composite;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -85,17 +85,17 @@ async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<str
   return `${baseUrl}/${blobName}`;
 }
 
-async function processOne(recambio: any, pool: any): Promise<string> {
-  const url = recambio.imagen;
+async function processOne(product: any, pool: any): Promise<string> {
+  const url = product.image;
   console.log(`  Downloading: ${url}`);
   const buf = await downloadImage(url);
   if (!buf) return `    SKIP (download failed)`;
   const processed = await processImageBuffer(buf);
-  const newUrl = await uploadToAzure(processed, recambio.referenciaCMH);
+  const newUrl = await uploadToAzure(processed, product.cmhReference);
   await pool.request()
-    .input('imagen', sql.NVarChar(500), newUrl)
-    .input('id', sql.Int, recambio.id)
-    .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+    .input('image', sql.NVarChar(500), newUrl)
+    .input('id', sql.Int, product.id)
+    .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
   return `    OK -> ${newUrl}`;
 }
 
@@ -103,27 +103,27 @@ async function main() {
   const pool = await getPool();
 
   const result = await pool.request()
-    .query("SELECT id, referenciaCMH, imagen FROM Recambios WHERE imagen IS NOT NULL ORDER BY id");
-  const recambios = result.recordset;
-  console.log(`Total: ${recambios.length} recambios con imagen\n`);
+    .query("SELECT id, cmhReference, image FROM Products WHERE image IS NOT NULL ORDER BY id");
+  const products = result.recordset;
+  console.log(`Total: ${products.length} products con image\n`);
 
   let done = 0;
   const errors: string[] = [];
 
-  for (let i = 0; i < recambios.length; i += CONCURRENCY) {
-    const batch = recambios.slice(i, i + CONCURRENCY);
+  for (let i = 0; i < products.length; i += CONCURRENCY) {
+    const batch = products.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(
       batch.map(r => processOne(r, pool))
     );
     for (let j = 0; j < batch.length; j++) {
       const r = batch[j];
       if (results[j].status === 'fulfilled') {
-        console.log(`[${++done}/${recambios.length}] ${r.referenciaCMH} (ID=${r.id})`);
+        console.log(`[${++done}/${products.length}] ${r.cmhReference} (ID=${r.id})`);
         console.log(results[j].value);
       } else {
-        console.log(`[${++done}/${recambios.length}] ${r.referenciaCMH} (ID=${r.id}) ERROR`);
+        console.log(`[${++done}/${products.length}] ${r.cmhReference} (ID=${r.id}) ERROR`);
         console.log(`    ${results[j].reason}`);
-        errors.push(`${r.referenciaCMH} (ID=${r.id}): ${results[j].reason}`);
+        errors.push(`${r.cmhReference} (ID=${r.id}): ${results[j].reason}`);
       }
     }
   }

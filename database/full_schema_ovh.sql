@@ -25,118 +25,118 @@ BEGIN
 END
 GO
 
--- Familias
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Familias')
+-- Families
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Families')
 BEGIN
-    CREATE TABLE Familias (
+    CREATE TABLE Families (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        nombre NVARCHAR(100) NOT NULL UNIQUE,
-        descripcion NVARCHAR(500),
+        name NVARCHAR(100) NOT NULL UNIQUE,
+        description NVARCHAR(500),
         createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
     );
 END
 GO
 
--- Subcategorias
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Subcategorias')
+-- Subcategories
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Subcategories')
 BEGIN
-    CREATE TABLE Subcategorias (
+    CREATE TABLE Subcategories (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        familiaId INT NOT NULL,
-        nombre NVARCHAR(100) NOT NULL,
-        CONSTRAINT FK_Sub_Familia FOREIGN KEY (familiaId)
-            REFERENCES Familias(id) ON DELETE NO ACTION
+        familyId INT NOT NULL,
+        name NVARCHAR(100) NOT NULL,
+        CONSTRAINT FK_Subcategory_Family FOREIGN KEY (familyId)
+            REFERENCES Families(id) ON DELETE NO ACTION
     );
 END
 GO
 
--- Recambios
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Recambios')
+-- Products
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Products')
 BEGIN
-    CREATE TABLE Recambios (
+    CREATE TABLE Products (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        referenciaCMH NVARCHAR(50) NOT NULL UNIQUE,
-        referenciaCliente NVARCHAR(50),
-        codigo NVARCHAR(50),
-        nombre NVARCHAR(200) NOT NULL,
-        marca NVARCHAR(100),
-        descripcion NVARCHAR(MAX),
-        metrica NVARCHAR(100),
-        unidadEmbalaje NVARCHAR(100),
-        imagen NVARCHAR(500),
-        plazoEntrega NVARCHAR(50),
-        familiaId INT NOT NULL,
-        subcategoriaId INT,
-        nReposicion INT NOT NULL DEFAULT 1,
+        cmhReference NVARCHAR(50) NOT NULL UNIQUE,
+        customerReference NVARCHAR(50),
+        code NVARCHAR(50),
+        name NVARCHAR(200) NOT NULL,
+        brand NVARCHAR(100),
+        description NVARCHAR(MAX),
+        metric NVARCHAR(100),
+        packagingUnit NVARCHAR(100),
+        image NVARCHAR(500),
+        deliveryTime NVARCHAR(50),
+        familyId INT NOT NULL,
+        subcategoryId INT,
+        reorderPoint INT NOT NULL DEFAULT 1,
         panel NVARCHAR(10) NOT NULL,
         col TINYINT NOT NULL CHECK (col BETWEEN 1 AND 6),
         row TINYINT NOT NULL CHECK (row BETWEEN 1 AND 15),
         stock INT DEFAULT 0,
-        oculto BIT NOT NULL DEFAULT 0,
+        hidden BIT NOT NULL DEFAULT 0,
         createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
         updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        CONSTRAINT FK_Rec_Familia FOREIGN KEY (familiaId) REFERENCES Familias(id),
-        CONSTRAINT FK_Rec_Subcategoria FOREIGN KEY (subcategoriaId) REFERENCES Subcategorias(id),
+        CONSTRAINT FK_Product_Family FOREIGN KEY (familyId) REFERENCES Families(id),
+        CONSTRAINT FK_Product_Subcategory FOREIGN KEY (subcategoryId) REFERENCES Subcategories(id),
         CONSTRAINT UQ_Recambio_Ubicacion UNIQUE (panel, col, row)
     );
 
-    CREATE INDEX IX_Recambios_RefCMH ON Recambios(referenciaCMH);
-    CREATE INDEX IX_Recambios_Nombre ON Recambios(nombre);
-    CREATE INDEX IX_Recambios_Panel ON Recambios(panel);
-    CREATE INDEX IX_Recambios_Codigo ON Recambios(codigo);
+    CREATE INDEX IX_Products_cmhReference ON Products(cmhReference);
+    CREATE INDEX IX_Products_name ON Products(name);
+    CREATE INDEX IX_Products_panel ON Products(panel);
+    CREATE INDEX IX_Products_code ON Products(code);
 END
 GO
 
--- Pedidos
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Pedidos')
+-- Orders
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'Orders')
 BEGIN
-    CREATE TABLE Pedidos (
+    CREATE TABLE Orders (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        recambioId INT NOT NULL,
-        solicitanteId INT NOT NULL,
-        tipo NVARCHAR(30) NOT NULL
-            CHECK (tipo IN (N'Reposición', N'Solicitud', N'Solicitud Express')),
-        cantidad INT NOT NULL CHECK (cantidad > 0),
-        plazoDeseado NVARCHAR(50),
-        estado NVARCHAR(30) NOT NULL DEFAULT 'Solicitado'
-            CHECK (estado IN ('Solicitado','Pedido realizado','Pedido recibido','Finalizado')),
-        prioritario BIT NOT NULL DEFAULT 0,
-        observaciones NVARCHAR(MAX),
-        oculto BIT NOT NULL DEFAULT 0,
-        fechaSolicitud DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        fechaActualizacion DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        CONSTRAINT FK_Ped_Recambio FOREIGN KEY (recambioId) REFERENCES Recambios(id),
-        CONSTRAINT FK_Ped_Solicitante FOREIGN KEY (solicitanteId) REFERENCES Users(id)
+        productId INT NOT NULL,
+        requesterId INT NOT NULL,
+        type NVARCHAR(30) NOT NULL
+            CHECK (type IN (N'Reposición', N'Solicitud', N'Solicitud Express')),
+        quantity INT NOT NULL CHECK (quantity > 0),
+        desiredDeadline NVARCHAR(50),
+        status NVARCHAR(30) NOT NULL DEFAULT 'Solicitado'
+            CHECK (status IN ('Solicitado','Pedido realizado','Pedido recibido','Finalizado')),
+        priority BIT NOT NULL DEFAULT 0,
+        notes NVARCHAR(MAX),
+        hidden BIT NOT NULL DEFAULT 0,
+        requestedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+        CONSTRAINT FK_Order_Product FOREIGN KEY (productId) REFERENCES Products(id),
+        CONSTRAINT FK_Order_Requester FOREIGN KEY (requesterId) REFERENCES Users(id)
     );
 
-    CREATE INDEX IX_Pedidos_Estado ON Pedidos(estado);
-    CREATE INDEX IX_Pedidos_Tipo ON Pedidos(tipo);
-    CREATE INDEX IX_Pedidos_Prioritario ON Pedidos(prioritario, fechaSolicitud DESC);
-    CREATE INDEX IX_Pedidos_Recambio ON Pedidos(recambioId);
+    CREATE INDEX IX_Orders_status ON Orders(status);
+    CREATE INDEX IX_Orders_type ON Orders(type);
+    CREATE INDEX IX_Orders_priority_requestedAt ON Orders(priority, requestedAt DESC);
+    CREATE INDEX IX_Orders_productId ON Orders(productId);
 END
 GO
 
--- PedidosEstadoHistorial
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'PedidosEstadoHistorial')
+-- OrderStatusHistory
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'OrderStatusHistory')
 BEGIN
-    CREATE TABLE PedidosEstadoHistorial (
+    CREATE TABLE OrderStatusHistory (
         id INT IDENTITY(1,1) PRIMARY KEY,
-        pedidoId INT NOT NULL,
-        usuarioId INT NOT NULL,
-        estadoAnterior NVARCHAR(30),
-        estadoNuevo NVARCHAR(30) NOT NULL,
-        observaciones NVARCHAR(500),
+        orderId INT NOT NULL,
+        userId INT NOT NULL,
+        previousStatus NVARCHAR(30),
+        newStatus NVARCHAR(30) NOT NULL,
+        notes NVARCHAR(500),
         fecha DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
-        CONSTRAINT FK_Hist_Pedido FOREIGN KEY (pedidoId) REFERENCES Pedidos(id) ON DELETE CASCADE,
-        CONSTRAINT FK_Hist_Usuario FOREIGN KEY (usuarioId) REFERENCES Users(id)
+        CONSTRAINT FK_History_Order FOREIGN KEY (orderId) REFERENCES Orders(id) ON DELETE CASCADE,
+        CONSTRAINT FK_History_User FOREIGN KEY (userId) REFERENCES Users(id)
     );
 END
 GO
 
--- EmailsPermitidos (para MSAL)
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EmailsPermitidos')
+-- AllowedEmails (para MSAL)
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AllowedEmails')
 BEGIN
-    CREATE TABLE EmailsPermitidos (
+    CREATE TABLE AllowedEmails (
         id INT IDENTITY(1,1) PRIMARY KEY,
         email NVARCHAR(100) NOT NULL UNIQUE,
         role NVARCHAR(20) NOT NULL DEFAULT 'user',
@@ -147,46 +147,46 @@ END
 GO
 
 -- ============================================================
--- 2. DATOS INICIALES (Familias + Subcategorias)
+-- 2. DATOS INICIALES (Families + Subcategories)
 -- ============================================================
 
--- Familias
-IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Tornillería')
-    INSERT INTO Familias (nombre, descripcion) VALUES (N'Tornillería', N'Tornillos, tuercas, arandelas y elementos de unión roscados');
-IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Herramientas')
-    INSERT INTO Familias (nombre, descripcion) VALUES (N'Herramientas', N'Herramientas manuales, eléctricas y de medición');
-IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Electricidad')
-    INSERT INTO Familias (nombre, descripcion) VALUES (N'Electricidad', N'Cables, conectores, protecciones y material eléctrico');
-IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Fontanería')
-    INSERT INTO Familias (nombre, descripcion) VALUES (N'Fontanería', N'Tuberías, válvulas, racores y componentes');
-IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Neumatica')
-    INSERT INTO Familias (nombre, descripcion) VALUES (N'Neumatica', N'Cilindros, válvulas, racores y componentes neumáticos');
-IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Climatización')
-    INSERT INTO Familias (nombre, descripcion) VALUES (N'Climatización', N'Aire acondicionado y calefacción');
-IF NOT EXISTS (SELECT 1 FROM Familias WHERE nombre = N'Seguridad')
-    INSERT INTO Familias (nombre, descripcion) VALUES (N'Seguridad', N'EPIs y material de seguridad');
+-- Families
+IF NOT EXISTS (SELECT 1 FROM Families WHERE name = N'Tornillería')
+    INSERT INTO Families (name, description) VALUES (N'Tornillería', N'Tornillos, tuercas, arandelas y elementos de unión roscados');
+IF NOT EXISTS (SELECT 1 FROM Families WHERE name = N'Herramientas')
+    INSERT INTO Families (name, description) VALUES (N'Herramientas', N'Herramientas manuales, eléctricas y de medición');
+IF NOT EXISTS (SELECT 1 FROM Families WHERE name = N'Electricidad')
+    INSERT INTO Families (name, description) VALUES (N'Electricidad', N'Cables, conectores, protecciones y material eléctrico');
+IF NOT EXISTS (SELECT 1 FROM Families WHERE name = N'Fontanería')
+    INSERT INTO Families (name, description) VALUES (N'Fontanería', N'Tuberías, válvulas, racores y componentes');
+IF NOT EXISTS (SELECT 1 FROM Families WHERE name = N'Neumatica')
+    INSERT INTO Families (name, description) VALUES (N'Neumatica', N'Cilindros, válvulas, racores y componentes neumáticos');
+IF NOT EXISTS (SELECT 1 FROM Families WHERE name = N'Climatización')
+    INSERT INTO Families (name, description) VALUES (N'Climatización', N'Aire acondicionado y calefacción');
+IF NOT EXISTS (SELECT 1 FROM Families WHERE name = N'Seguridad')
+    INSERT INTO Families (name, description) VALUES (N'Seguridad', N'EPIs y material de seguridad');
 GO
 
-DECLARE @tornId INT = (SELECT id FROM Familias WHERE nombre = N'Tornillería');
-DECLARE @elecId INT = (SELECT id FROM Familias WHERE nombre = N'Electricidad');
-DECLARE @fontId INT = (SELECT id FROM Familias WHERE nombre = N'Fontanería');
-DECLARE @herrId INT = (SELECT id FROM Familias WHERE nombre = N'Herramientas');
+DECLARE @tornId INT = (SELECT id FROM Families WHERE name = N'Tornillería');
+DECLARE @elecId INT = (SELECT id FROM Families WHERE name = N'Electricidad');
+DECLARE @fontId INT = (SELECT id FROM Families WHERE name = N'Fontanería');
+DECLARE @herrId INT = (SELECT id FROM Families WHERE name = N'Herramientas');
 
--- Subcategorias
-IF NOT EXISTS (SELECT 1 FROM Subcategorias WHERE nombre = N'Tornillos métricos' AND familiaId = @tornId)
-    INSERT INTO Subcategorias (familiaId, nombre) VALUES (@tornId, N'Tornillos métricos');
-IF NOT EXISTS (SELECT 1 FROM Subcategorias WHERE nombre = N'Tuercas' AND familiaId = @tornId)
-    INSERT INTO Subcategorias (familiaId, nombre) VALUES (@tornId, N'Tuercas');
-IF NOT EXISTS (SELECT 1 FROM Subcategorias WHERE nombre = N'Arandelas' AND familiaId = @tornId)
-    INSERT INTO Subcategorias (familiaId, nombre) VALUES (@tornId, N'Arandelas');
-IF NOT EXISTS (SELECT 1 FROM Subcategorias WHERE nombre = N'Cables' AND familiaId = @elecId)
-    INSERT INTO Subcategorias (familiaId, nombre) VALUES (@elecId, N'Cables');
-IF NOT EXISTS (SELECT 1 FROM Subcategorias WHERE nombre = N'Interruptores' AND familiaId = @elecId)
-    INSERT INTO Subcategorias (familiaId, nombre) VALUES (@elecId, N'Interruptores');
-IF NOT EXISTS (SELECT 1 FROM Subcategorias WHERE nombre = N'Racores' AND familiaId = @fontId)
-    INSERT INTO Subcategorias (familiaId, nombre) VALUES (@fontId, N'Racores');
-IF NOT EXISTS (SELECT 1 FROM Subcategorias WHERE nombre = N'Brocas' AND familiaId = @herrId)
-    INSERT INTO Subcategorias (familiaId, nombre) VALUES (@herrId, N'Brocas');
+-- Subcategories
+IF NOT EXISTS (SELECT 1 FROM Subcategories WHERE name = N'Tornillos métricos' AND familyId = @tornId)
+    INSERT INTO Subcategories (familyId, name) VALUES (@tornId, N'Tornillos métricos');
+IF NOT EXISTS (SELECT 1 FROM Subcategories WHERE name = N'Tuercas' AND familyId = @tornId)
+    INSERT INTO Subcategories (familyId, name) VALUES (@tornId, N'Tuercas');
+IF NOT EXISTS (SELECT 1 FROM Subcategories WHERE name = N'Arandelas' AND familyId = @tornId)
+    INSERT INTO Subcategories (familyId, name) VALUES (@tornId, N'Arandelas');
+IF NOT EXISTS (SELECT 1 FROM Subcategories WHERE name = N'Cables' AND familyId = @elecId)
+    INSERT INTO Subcategories (familyId, name) VALUES (@elecId, N'Cables');
+IF NOT EXISTS (SELECT 1 FROM Subcategories WHERE name = N'Interruptores' AND familyId = @elecId)
+    INSERT INTO Subcategories (familyId, name) VALUES (@elecId, N'Interruptores');
+IF NOT EXISTS (SELECT 1 FROM Subcategories WHERE name = N'Racores' AND familyId = @fontId)
+    INSERT INTO Subcategories (familyId, name) VALUES (@fontId, N'Racores');
+IF NOT EXISTS (SELECT 1 FROM Subcategories WHERE name = N'Brocas' AND familyId = @herrId)
+    INSERT INTO Subcategories (familyId, name) VALUES (@herrId, N'Brocas');
 GO
 
 -- ============================================================
@@ -199,7 +199,7 @@ GO
 -- 4. NOTAS PARA IMPORTAR DATOS EXISTENTES
 -- ============================================================
 -- Para importar datos desde el bacpac de Azure:
--- 1. Recambios, Pedidos, PedidosEstadoHistorial, EmailsPermitidos
+-- 1. Products, Orders, OrderStatusHistory, AllowedEmails
 --    deben importarse con SSMS (Import Data-tier Application)
 --    o con sqlpackage: 
 --    sqlpackage /Action:Import /SourceFile:Backup_SeeFerreteria.bacpac

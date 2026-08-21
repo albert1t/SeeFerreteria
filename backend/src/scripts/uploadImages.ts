@@ -11,10 +11,10 @@ const FRAME_SIZE = 400;
 
 interface RecambioRow {
   id: number;
-  referenciaCMH: string;
-  referenciaCliente: string | null;
-  nombre: string;
-  imagen: string | null;
+  cmhReference: string;
+  customerReference: string | null;
+  name: string;
+  image: string | null;
 }
 
 function normalizeForMatch(name: string): string {
@@ -53,12 +53,12 @@ function collectImages(): Map<string, string> {
 }
 
 function findMatch(
-  referenciaCMH: string,
-  referenciaCliente: string | null,
+  cmhReference: string,
+  customerReference: string | null,
   images: Map<string, string>
 ): string | null {
-  const refs = [referenciaCMH];
-  if (referenciaCliente) refs.push(referenciaCliente);
+  const refs = [cmhReference];
+  if (customerReference) refs.push(customerReference);
 
   for (const ref of refs) {
     const clean = ref.trim();
@@ -110,10 +110,10 @@ async function processImage(filepath: string): Promise<Buffer> {
   return composite;
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
 
@@ -140,14 +140,14 @@ async function main() {
   const pool = await getPool();
   console.log('Connected.');
 
-  console.log('Querying all recambios...');
+  console.log('Querying all products...');
   const result = await pool.request().query<RecambioRow>(`
-    SELECT id, referenciaCMH, referenciaCliente, nombre, imagen
-    FROM Recambios
+    SELECT id, cmhReference, customerReference, name, image
+    FROM Products
     ORDER BY id
   `);
-  const recambios = result.recordset;
-  console.log(`Found ${recambios.length} recambios.`);
+  const products = result.recordset;
+  console.log(`Found ${products.length} products.`);
 
   console.log('Scanning ImgFerreteria for images...');
   const images = collectImages();
@@ -163,49 +163,49 @@ async function main() {
   let skipped = 0;
   let errors: string[] = [];
 
-  for (const recambio of recambios) {
-    if (recambio.imagen && recambio.imagen.includes('ferreteriastorageacc')) {
-      console.log(`  [SKIP] ${recambio.referenciaCMH} already has Azure image`);
+  for (const product of products) {
+    if (product.image && product.image.includes('ferreteriastorageacc')) {
+      console.log(`  [SKIP] ${product.cmhReference} already has Azure image`);
       continue;
     }
 
-    const matchPath = findMatch(recambio.referenciaCMH, recambio.referenciaCliente, images);
+    const matchPath = findMatch(product.cmhReference, product.customerReference, images);
 
     if (!matchPath) {
-      console.log(`  [SKIP] No image match for ${recambio.referenciaCMH} (${recambio.nombre})`);
+      console.log(`  [SKIP] No image match for ${product.cmhReference} (${product.name})`);
       skipped++;
       continue;
     }
 
     matched++;
-    console.log(`  [MATCH] ${recambio.referenciaCMH} -> ${path.basename(matchPath)}`);
+    console.log(`  [MATCH] ${product.cmhReference} -> ${path.basename(matchPath)}`);
 
     try {
       console.log(`    Processing image...`);
       const processed = await processImage(matchPath);
 
       console.log(`    Uploading to Azure...`);
-      const url = await uploadToAzure(processed, recambio.referenciaCMH);
+      const url = await uploadToAzure(processed, product.cmhReference);
 
-      console.log(`    Updating DB record ${recambio.id}...`);
+      console.log(`    Updating DB record ${product.id}...`);
       await pool.request()
-        .input('imagen', sql.NVarChar(500), url)
-        .input('id', sql.Int, recambio.id)
-        .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+        .input('image', sql.NVarChar(500), url)
+        .input('id', sql.Int, product.id)
+        .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
 
       console.log(`    OK -> ${url}`);
       uploaded++;
     } catch (err: any) {
-      const msg = `Error processing ${recambio.referenciaCMH} (${path.basename(matchPath)}): ${err.message}`;
+      const msg = `Error processing ${product.cmhReference} (${path.basename(matchPath)}): ${err.message}`;
       console.error(`    ${msg}`);
       errors.push(msg);
     }
   }
 
   console.log('\n========== SUMMARY ==========');
-  console.log(`Total recambios:     ${recambios.length}`);
+  console.log(`Total products:     ${products.length}`);
   console.log(`Images found:        ${images.size}`);
-  console.log(`Already had Azure:   ${recambios.filter(r => r.imagen?.includes('ferreteriastorageacc')).length}`);
+  console.log(`Already had Azure:   ${products.filter(r => r.image?.includes('ferreteriastorageacc')).length}`);
   console.log(`Matched:             ${matched}`);
   console.log(`Uploaded & Updated:  ${uploaded}`);
   console.log(`Skipped (no match):  ${skipped}`);

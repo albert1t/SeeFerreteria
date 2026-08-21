@@ -3,7 +3,7 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
 import { btnStyle, colors } from '../styles/theme';
-import * as importacionesApi from '../api/importaciones';
+import * as importacionesApi from '../api/imports';
 
 const FESTO_MARCA = 'festo';
 const OBsolescencia_DIAS = 180;
@@ -27,21 +27,21 @@ export function FestoImportPage() {
   const puedeEditar = can('tarifas', 'edit');
 
   const { data: status } = useQuery({
-    queryKey: ['importaciones', FESTO_MARCA, 'status'],
+    queryKey: ['imports', FESTO_MARCA, 'status'],
     queryFn: () => importacionesApi.getImportacionStatus(FESTO_MARCA),
     refetchInterval: 30_000,
   });
 
   const importarMut = useMutation({
-    mutationFn: (f: File) => importacionesApi.importarCatalogo(FESTO_MARCA, f),
+    mutationFn: (f: File) => importacionesApi.importCatalog(FESTO_MARCA, f),
     onSuccess: (data) => {
       const { importacion } = data;
-      const fallido = importacion.estado === 'fallido';
+      const fallido = importacion.status === 'fallido';
       setResult({
         ok: !fallido,
         message: fallido
-          ? `No se actualizó ningún producto. ${importacion.errores > 0 ? `Se descartaron ${importacion.errores} filas inválidas.` : 'Ningún código del CSV coincide con un producto existente.'}`
-          : `Importación completada: ${importacion.actualizados} productos actualizados de ${importacion.totalRegistros} filas leídas${importacion.errores > 0 ? ` (${importacion.errores} filas descartadas)` : ''}.`,
+          ? `No se actualizó ningún producto. ${importacion.errors > 0 ? `Se descartaron ${importacion.errors} filas inválidas.` : 'Ningún código del CSV coincide con un producto existente.'}`
+          : `Importación completada: ${importacion.updated} productos updated de ${importacion.totalRecords} filas leídas${importacion.errors > 0 ? ` (${importacion.errors} filas descartadas)` : ''}.`,
       });
       setFile(null);
       showToast(

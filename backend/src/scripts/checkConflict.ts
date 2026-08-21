@@ -7,10 +7,10 @@ async function main() {
   for (const panel of ['A8', 'A9']) {
     const r = await pool.request()
       .input('panel', panel)
-      .query("SELECT col, [row], referenciaCMH FROM Recambios WHERE panel = @panel ORDER BY col, [row]");
+      .query("SELECT col, [row], cmhReference FROM Products WHERE panel = @panel ORDER BY col, [row]");
     console.log(`\n${panel}:`);
     for (const row of r.recordset) {
-      console.log(`  col=${row.col} row=${row.row} => ${row.referenciaCMH}`);
+      console.log(`  col=${row.col} row=${row.row} => ${row.cmhReference}`);
     }
   }
 

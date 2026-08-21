@@ -1,10 +1,10 @@
 import { Router } from 'express';
-import * as pedidosService from '../services/pedidosService.js';
+import * as ordersService from '../services/ordersService.js';
 import { enviarCorreoDePrueba, esEmailValido, getMailConfigStatus } from '../services/mailService.js';
 import { env } from '../config/env.js';
 import { authMiddleware, requirePermission } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
-import { pedidoCreateSchema, pedidoEstadoSchema, pedidoUpdateSchema, pedidosQuerySchema } from '../schemas/index.js';
+import { orderCreateSchema, orderStatusSchema, orderUpdateSchema, ordersQuerySchema } from '../schemas/index.js';
 
 const router = Router();
 
@@ -25,32 +25,32 @@ router.post('/test-email', async (req, res, next) => {
 
 router.get('/urgentes/count', async (_req, res, next) => {
   try {
-    const count = await pedidosService.countUrgentes();
+    const count = await ordersService.countUrgentes();
     res.json({ count });
   } catch (err) {
     next(err);
   }
 });
 
-router.get('/', validateQuery(pedidosQuerySchema), async (req, res, next) => {
+router.get('/', validateQuery(ordersQuerySchema), async (req, res, next) => {
   try {
     const q = req.query as {
       busqueda?: string;
-      tipo?: 'Reposición' | 'Solicitud' | 'Solicitud Express';
+      type?: 'Reposición' | 'Solicitud' | 'Solicitud Express';
       fecha?: string;
       orden?: 'reciente' | 'antiguo';
       incluirFinalizados?: string;
       incluirOcultos?: string;
     };
-    const pedidos = await pedidosService.listPedidos({
+    const orders = await ordersService.listOrders({
       busqueda: q.busqueda,
-      tipo: q.tipo,
+      type: q.type,
       fecha: q.fecha,
       orden: q.orden,
       incluirFinalizados: q.incluirFinalizados === 'true',
       incluirOcultos: q.incluirOcultos === 'true',
     });
-    res.json(pedidos);
+    res.json(orders);
   } catch (err) {
     next(err);
   }
@@ -59,57 +59,57 @@ router.get('/', validateQuery(pedidosQuerySchema), async (req, res, next) => {
 router.get('/:id', async (req, res, next) => {
   try {
     const id = parseInt(String(req.params.id), 10);
-    const pedido = await pedidosService.getPedido(id);
-    res.json(pedido);
+    const order = await ordersService.getPedido(id);
+    res.json(order);
   } catch (err) {
     next(err);
   }
 });
 
-router.post('/', validateBody(pedidoCreateSchema), async (req, res, next) => {
+router.post('/', validateBody(orderCreateSchema), async (req, res, next) => {
   try {
-    const pedido = await pedidosService.createPedido(req.body, req.user!.userId);
-    res.status(201).json(pedido);
+    const order = await ordersService.createOrder(req.body, req.user!.userId);
+    res.status(201).json(order);
   } catch (err) {
     next(err);
   }
 });
 
-router.patch('/:id/estado', validateBody(pedidoEstadoSchema), async (req, res, next) => {
-  try {
-    const id = parseInt(String(req.params.id), 10);
-    const pedido = await pedidosService.advanceEstado(id, req.body.estado, req.user!.userId);
-    res.json(pedido);
-  } catch (err) {
-    next(err);
-  }
-});
-
-router.put('/:id', requirePermission('pedidos', 'edit'), validateBody(pedidoUpdateSchema), async (req, res, next) => {
+router.patch('/:id/status', validateBody(orderStatusSchema), async (req, res, next) => {
   try {
     const id = parseInt(String(req.params.id), 10);
-    const pedido = await pedidosService.updatePedido(id, req.body);
-    res.json(pedido);
+    const order = await ordersService.advanceStatus(id, req.body.status, req.user!.userId);
+    res.json(order);
   } catch (err) {
     next(err);
   }
 });
 
-router.delete('/:id', requirePermission('pedidos', 'delete'), async (req, res, next) => {
+router.put('/:id', requirePermission('orders', 'edit'), validateBody(orderUpdateSchema), async (req, res, next) => {
   try {
     const id = parseInt(String(req.params.id), 10);
-    await pedidosService.deletePedido(id);
+    const order = await ordersService.updatePedido(id, req.body);
+    res.json(order);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.delete('/:id', requirePermission('orders', 'delete'), async (req, res, next) => {
+  try {
+    const id = parseInt(String(req.params.id), 10);
+    await ordersService.deletePedido(id);
     res.status(204).end();
   } catch (err) {
     next(err);
   }
 });
 
-router.patch('/:id/oculto', requirePermission('pedidos', 'edit'), async (req, res, next) => {
+router.patch('/:id/hidden', requirePermission('orders', 'edit'), async (req, res, next) => {
   try {
     const id = parseInt(String(req.params.id), 10);
-    const pedido = await pedidosService.toggleOcultoPedido(id);
-    res.json(pedido);
+    const order = await ordersService.toggleOcultoPedido(id);
+    res.json(order);
   } catch (err) {
     next(err);
   }

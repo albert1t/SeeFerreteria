@@ -75,7 +75,7 @@ export default function App() {
                 }
               >
                 <Route index element={<AlmacenPage />} />
-                <Route path="pedidos" element={<PedidosPage />} />
+                <Route path="orders" element={<PedidosPage />} />
                 <Route path="usuarios" element={<AdminRoute><UsersPage /></AdminRoute>} />
                 <Route path="datos" element={<DatosPage />} />
                 <Route

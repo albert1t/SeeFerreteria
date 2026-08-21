@@ -12,18 +12,18 @@ export const msalLoginSchema = z.object({
     idToken: z.string().min(1, 'Token de Microsoft requerido'),
 });
 const baseRecambioSchema = z.object({
-    referenciaCMH: z.string().min(1).max(50),
-    referenciaCliente: z.string().max(50).optional().nullable(),
-    codigo: z.string().max(50).optional().nullable(),
-    nombre: z.string().min(1).max(200),
-    marca: z.string().max(100).optional().nullable(),
-    descripcion: z.string().optional().nullable(),
-    metrica: z.string().max(100).optional().nullable(),
-    unidadEmbalaje: z.string().max(100).optional().nullable(),
-    imagen: z.string().max(500).optional().nullable(),
-    plazoEntrega: z.string().max(50).optional().nullable(),
-    familiaId: z.number().int().positive(),
-    nReposicion: z.number().int().positive().nullable().default(1),
+    cmhReference: z.string().min(1).max(50),
+    customerReference: z.string().max(50).optional().nullable(),
+    code: z.string().max(50).optional().nullable(),
+    name: z.string().min(1).max(200),
+    brand: z.string().max(100).optional().nullable(),
+    description: z.string().optional().nullable(),
+    metric: z.string().max(100).optional().nullable(),
+    packagingUnit: z.string().max(100).optional().nullable(),
+    image: z.string().max(500).optional().nullable(),
+    deliveryTime: z.string().max(50).optional().nullable(),
+    familyId: z.number().int().positive(),
+    reorderPoint: z.number().int().positive().nullable().default(1),
     panel: z.string().min(1).max(10),
     col: z.number().int().min(1).max(6),
     row: z.number().int().min(1).max(15),
@@ -39,14 +39,14 @@ function refineUbicacion(data, ctx) {
             if (data.col !== undefined && data.col > 6) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'La columna no puede ser mayor a 6 para paneles A1-A9',
+                    message: 'La columna no puede ser mayor a 6 para panels A1-A9',
                     path: ['col'],
                 });
             }
             if (data.row !== undefined && data.row > 15) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'La fila no puede ser mayor a 15 para paneles A1-A9',
+                    message: 'La fila no puede ser mayor a 15 para panels A1-A9',
                     path: ['row'],
                 });
             }
@@ -55,46 +55,46 @@ function refineUbicacion(data, ctx) {
             if (data.col !== undefined && data.col > 5) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'La columna no puede ser mayor a 5 para paneles A10-A25',
+                    message: 'La columna no puede ser mayor a 5 para panels A10-A25',
                     path: ['col'],
                 });
             }
             if (data.row !== undefined && data.row > 10) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
-                    message: 'La fila no puede ser mayor a 10 para paneles A10-A25',
+                    message: 'La fila no puede ser mayor a 10 para panels A10-A25',
                     path: ['row'],
                 });
             }
         }
     }
 }
-export const recambioCreateSchema = baseRecambioSchema.superRefine(refineUbicacion);
-export const recambioUpdateSchema = baseRecambioSchema.partial().superRefine(refineUbicacion);
-export const pedidoCreateSchema = z.object({
-    recambioId: z.number().int().positive(),
-    tipo: z.enum(['Reposición', 'Solicitud', 'Solicitud Express']),
-    cantidad: z.number().int().positive().optional(),
-    plazoDeseado: z.string().max(50).optional().nullable(),
-    observaciones: z.string().optional().nullable(),
+export const productCreateSchema = baseRecambioSchema.superRefine(refineUbicacion);
+export const productUpdateSchema = baseRecambioSchema.partial().superRefine(refineUbicacion);
+export const orderCreateSchema = z.object({
+    productId: z.number().int().positive(),
+    type: z.enum(['Reposición', 'Solicitud', 'Solicitud Express']),
+    quantity: z.number().int().positive().optional(),
+    desiredDeadline: z.string().max(50).optional().nullable(),
+    notes: z.string().optional().nullable(),
 });
-export const pedidoEstadoSchema = z.object({
-    estado: z.enum(['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado']),
+export const orderStatusSchema = z.object({
+    status: z.enum(['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado']),
 });
-export const pedidoUpdateSchema = z.object({
-    cantidad: z.number().int().positive().optional(),
-    plazoDeseado: z.string().max(50).optional().nullable(),
-    observaciones: z.string().optional().nullable(),
+export const orderUpdateSchema = z.object({
+    quantity: z.number().int().positive().optional(),
+    desiredDeadline: z.string().max(50).optional().nullable(),
+    notes: z.string().optional().nullable(),
 });
-export const recambiosQuerySchema = z.object({
+export const productsQuerySchema = z.object({
     panel: z.string().optional(),
     busqueda: z.string().optional(),
     incluirOcultos: z.enum(['true', 'false']).optional(),
     preview: z.enum(['true', 'false']).optional(),
 });
-export const pedidosQuerySchema = z.object({
+export const ordersQuerySchema = z.object({
     busqueda: z.string().optional(),
-    tipo: z.enum(['Reposición', 'Solicitud', 'Solicitud Express']).optional(),
+    type: z.enum(['Reposición', 'Solicitud', 'Solicitud Express']).optional(),
     fecha: z.string().optional(),
     orden: z.enum(['reciente', 'antiguo']).optional(),
     incluirFinalizados: z.enum(['true', 'false']).optional(),
@@ -123,6 +123,6 @@ export const allowedEmailUpdateSchema = z.object({
     role: z.enum(['admin', 'user', 'viewer', 'operario']),
     isActive: z.boolean(),
 });
-export const importarMarcaSchema = z.object({
-    marca: z.string().min(1).max(50),
+export const importBrandSchema = z.object({
+    brand: z.string().min(1).max(50),
 });

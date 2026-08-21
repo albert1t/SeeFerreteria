@@ -68,10 +68,10 @@ export function NoImageSlot({ size = 90, style, showText }: PlaceholderProps) {
     >
       <img
         src="/icons/screw.svg"
-        alt="Sin imagen"
+        alt="Sin image"
         style={{ width: size * 0.5, height: size * 0.5, objectFit: 'contain' }}
       />
-      {displayText && <span>Sin imagen</span>}
+      {displayText && <span>Sin image</span>}
     </div>
   );
 }

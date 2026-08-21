@@ -4,34 +4,34 @@ import * as authApi from '../api/auth';
 import { ApiError, clearToken, setToken, getToken } from '../api/client';
 import type { User, UserRole } from '../types';
 
-type Resource = 'pedidos' | 'recambios' | 'familias' | 'tarifas';
+type Resource = 'orders' | 'products' | 'families' | 'tarifas';
 type Action = 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage';
 
 type PermissionsMap = Record<Resource, Record<Action, boolean>>;
 
 const ROLE_PERMISSIONS: Record<UserRole, PermissionsMap> = {
   admin: {
-    pedidos: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    familias: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+    orders: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+    products: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+    families: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
     tarifas: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
   },
   operario: {
-    pedidos: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    orders: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
+    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
     tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
   },
   user: {
-    pedidos: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
-    recambios: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    orders: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
+    products: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
     tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
   },
   viewer: {
-    pedidos: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    orders: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
     tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
   },
 };

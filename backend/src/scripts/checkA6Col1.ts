@@ -23,24 +23,24 @@ async function main() {
     const col = parseInt(getVal(r, ['Col', 'Columna', 'C']) ?? '0', 10);
     if (col === 1) {
       const rown = parseInt(getVal(r, ['Row', 'Fila', 'F']) ?? '0', 10);
-      const nom = getVal(r, ['Nombre', 'nombre']) || '';
-      const marca = getVal(r, ['Marca', 'marca']) || '';
-      const desc = getVal(r, ['Descripcion', 'descripcion', 'Description']) || '';
-      const metrica = getVal(r, ['Metrica', 'metrica']) || '';
+      const nom = getVal(r, ['Nombre', 'name']) || '';
+      const brand = getVal(r, ['Marca', 'brand']) || '';
+      const desc = getVal(r, ['Descripcion', 'description', 'Description']) || '';
+      const metric = getVal(r, ['Metrica', 'metric']) || '';
       const ue = getVal(r, ['Unidad de embalaje', 'unidad de embalaje']) || '';
       const pe = getVal(r, ['Plazo de entrega', 'plazo de entrega']) || '';
-      const fam = getVal(r, ['Familia', 'familia']) || '';
+      const fam = getVal(r, ['Family', 'family']) || '';
       const nrep = getVal(r, ['Numero de reposicion - default']) || '';
-      console.log(`  F${rown}: ref="${ref}" nombre="${nom}" marca="${marca}" desc="${desc}" metrica="${metrica}" ue="${ue}" plazo="${pe}" familia="${fam}" nrep="${nrep}"`);
+      console.log(`  F${rown}: ref="${ref}" name="${nom}" brand="${brand}" desc="${desc}" metric="${metric}" ue="${ue}" plazo="${pe}" family="${fam}" nrep="${nrep}"`);
     }
   }
 
   // DB A6 Col1
   const pool = await getPool();
-  const db = await pool.request().query(`SELECT id, referenciaCMH, nombre, col, [row] FROM Recambios WHERE panel = 'A6' AND col = 1 ORDER BY [row]`);
-  console.log(`\n=== A6 COLUMNA 1 EN DB (${db.recordset.length} recambios) ===`);
+  const db = await pool.request().query(`SELECT id, cmhReference, name, col, [row] FROM Products WHERE panel = 'A6' AND col = 1 ORDER BY [row]`);
+  console.log(`\n=== A6 COLUMNA 1 EN DB (${db.recordset.length} products) ===`);
   for (const d of db.recordset) {
-    console.log(`  F${d.row}: id=${d.id} ref="${d.referenciaCMH}" nombre="${d.nombre}"`);
+    console.log(`  F${d.row}: id=${d.id} ref="${d.cmhReference}" name="${d.name}"`);
   }
 
   await pool.close();

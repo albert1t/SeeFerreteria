@@ -31,10 +31,10 @@ async function generateRingImage(): Promise<Buffer> {
     .toBuffer();
 }
 
-async function uploadToAzure(buffer: Buffer, referenciaCMH: string): Promise<string> {
+async function uploadToAzure(buffer: Buffer, cmhReference: string): Promise<string> {
   const sasUrl = env.AZURE_BLOB_SAS_URL;
-  const safeName = referenciaCMH.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
-  const blobName = `product-image/recambio-${safeName}-${Date.now()}.jpg`;
+  const safeName = cmhReference.replace(/[/\\?%*:|"<>]/g, '-').replace(/\n/g, '');
+  const blobName = `product-image/product-${safeName}-${Date.now()}.jpg`;
   const [baseUrl, sasToken] = sasUrl.split('?');
   const blobUrl = `${baseUrl}/${blobName}?${sasToken}`;
   const azureRes = await fetch(blobUrl, {
@@ -64,7 +64,7 @@ const OL_RINGS = [
 
 async function main() {
   const pool = await getPool();
-  let familiaId = 10; // Neumatica
+  let familyId = 10; // Neumatica
 
   console.log('=== GENERANDO IMAGEN SVG DEL ANILLO (VERSIÓN REDUCIDA) ===');
   const ringBuffer = await generateRingImage();
@@ -73,17 +73,17 @@ async function main() {
   // Step 1: Update existing OK rings (A6 C1 F1-F4) with smaller ring image
   console.log('=== ACTUALIZANDO ANILLOS OK (F1-F4) ===');
   const okResult = await pool.request()
-    .query(`SELECT id, referenciaCMH, imagen FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
+    .query(`SELECT id, cmhReference, image FROM Products WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 4 ORDER BY [row]`);
   const okRings = okResult.recordset;
   console.log(`Encontrados ${okRings.length} anillos OK\n`);
 
   for (const r of okRings) {
-    console.log(`[${r.referenciaCMH}] ID=${r.id}`);
-    const url = await uploadToAzure(ringBuffer, r.referenciaCMH);
+    console.log(`[${r.cmhReference}] ID=${r.id}`);
+    const url = await uploadToAzure(ringBuffer, r.cmhReference);
     await pool.request()
-      .input('imagen', sql.NVarChar(500), url)
+      .input('image', sql.NVarChar(500), url)
       .input('id', sql.Int, r.id)
-      .query('UPDATE Recambios SET imagen = @imagen, updatedAt = SYSUTCDATETIME() WHERE id = @id');
+      .query('UPDATE Products SET image = @image, updatedAt = SYSUTCDATETIME() WHERE id = @id');
     console.log(`  -> ${url}\n`);
   }
 
@@ -93,7 +93,7 @@ async function main() {
     // Check if already exists
     const existing = await pool.request()
       .input('ref', ring.ref)
-      .query(`SELECT id FROM Recambios WHERE referenciaCMH = @ref`);
+      .query(`SELECT id FROM Products WHERE cmhReference = @ref`);
     if (existing.recordset.length > 0) {
       console.log(`  ${ring.ref} YA EXISTE (ID ${existing.recordset[0].id}) — saltando`);
       continue;
@@ -104,21 +104,21 @@ async function main() {
 
     await pool.request()
       .input('ref', sql.NVarChar(50), ring.ref)
-      .input('nombre', sql.NVarChar(100), 'Anillo de junta')
-      .input('marca', sql.NVarChar(50), 'Festo')
-      .input('referenciaCliente', sql.NVarChar(50), ring.partNo)
-      .input('descripcion', sql.NVarChar(500), ring.desc)
-      .input('metrica', sql.NVarChar(50), ring.metric)
-      .input('unidadEmbalaje', sql.NVarChar(50), '1')
-      .input('familiaId', sql.Int, familiaId)
+      .input('name', sql.NVarChar(100), 'Anillo de junta')
+      .input('brand', sql.NVarChar(50), 'Festo')
+      .input('customerReference', sql.NVarChar(50), ring.partNo)
+      .input('description', sql.NVarChar(500), ring.desc)
+      .input('metric', sql.NVarChar(50), ring.metric)
+      .input('packagingUnit', sql.NVarChar(50), '1')
+      .input('familyId', sql.Int, familyId)
       .input('panel', sql.NVarChar(10), 'A6')
       .input('col', sql.TinyInt, 1)
       .input('row', sql.TinyInt, ring.row)
-      .input('imagen', sql.NVarChar(500), imgUrl)
-      .input('oculto', sql.Bit, false)
+      .input('image', sql.NVarChar(500), imgUrl)
+      .input('hidden', sql.Bit, false)
       .query(`
-        INSERT INTO Recambios (referenciaCMH, nombre, marca, referenciaCliente, descripcion, metrica, unidadEmbalaje, familiaId, panel, col, [row], imagen, oculto, createdAt, updatedAt)
-        VALUES (@ref, @nombre, @marca, @referenciaCliente, @descripcion, @metrica, @unidadEmbalaje, @familiaId, @panel, @col, @row, @imagen, @oculto, SYSUTCDATETIME(), SYSUTCDATETIME())
+        INSERT INTO Products (cmhReference, name, brand, customerReference, description, metric, packagingUnit, familyId, panel, col, [row], image, hidden, createdAt, updatedAt)
+        VALUES (@ref, @name, @brand, @customerReference, @description, @metric, @packagingUnit, @familyId, @panel, @col, @row, @image, @hidden, SYSUTCDATETIME(), SYSUTCDATETIME())
       `);
     console.log(`  ${ring.ref} insertado en A6 C1F${ring.row} -> ${imgUrl}\n`);
   }
@@ -126,9 +126,9 @@ async function main() {
   // Verify
   console.log('=== VERIFICACIÓN A6 C1 ===');
   const verify = await pool.request()
-    .query(`SELECT id, referenciaCMH, nombre, panel, col, [row] FROM Recambios WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 10 ORDER BY [row]`);
+    .query(`SELECT id, cmhReference, name, panel, col, [row] FROM Products WHERE panel = 'A6' AND col = 1 AND [row] BETWEEN 1 AND 10 ORDER BY [row]`);
   for (const v of verify.recordset) {
-    console.log(`  F${v.row}: id=${v.id} ref="${v.referenciaCMH}"`);
+    console.log(`  F${v.row}: id=${v.id} ref="${v.cmhReference}"`);
   }
 
   await pool.close();

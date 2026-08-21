@@ -2,14 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { Modal } from './Modal';
 import { btnStyle } from '../styles/theme';
-import * as recambiosApi from '../api/recambios';
+import * as recambiosApi from '../api/products';
 import { useToast } from './Toast';
-import type { Recambio } from '../types';
+import type { Product } from '../types';
 
 interface QrModalProps {
   open: boolean;
   onClose: () => void;
-  onFound: (recambio: Recambio) => void;
+  onFound: (product: Product) => void;
 }
 
 export function QrModal({ open, onClose, onFound }: QrModalProps) {
@@ -64,8 +64,8 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
     const trimmed = ref.trim();
     if (!trimmed) return;
     try {
-      const recambio = await recambiosApi.getRecambioByRef(trimmed);
-      onFound(recambio);
+      const product = await recambiosApi.getRecambioByRef(trimmed);
+      onFound(product);
       onClose();
       setManualRef('');
     } catch {

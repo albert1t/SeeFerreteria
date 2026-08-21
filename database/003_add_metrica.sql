@@ -1,2 +1,2 @@
-ALTER TABLE Recambios ADD metrica NVARCHAR(100);
+ALTER TABLE Products ADD metric NVARCHAR(100);
 GO

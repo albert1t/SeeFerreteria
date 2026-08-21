@@ -4,36 +4,36 @@ import { Modal } from '../components/Modal';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
 import { badgeStyle, btnStyle, fmtDate } from '../styles/theme';
-import * as pedidosApi from '../api/pedidos';
-import type { Pedido, PedidoEstado, PedidoTipo } from '../types';
+import * as pedidosApi from '../api/orders';
+import type { Order, OrderStatus, OrderType } from '../types';
 
-const TIPOS: (PedidoTipo | 'Todos')[] = ['Todos', 'Reposición', 'Solicitud', 'Solicitud Express'];
-const ESTADOS: PedidoEstado[] = ['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado'];
+const TIPOS: (OrderType | 'Todos')[] = ['Todos', 'Reposición', 'Solicitud', 'Solicitud Express'];
+const ESTADOS: OrderStatus[] = ['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado'];
 
-const SIGUIENTE_ESTADO: Partial<Record<PedidoEstado, PedidoEstado>> = {
+const SIGUIENTE_ESTADO: Partial<Record<OrderStatus, OrderStatus>> = {
   'Solicitado': 'Pedido realizado',
   'Pedido realizado': 'Pedido recibido',
   'Pedido recibido': 'Finalizado',
 };
 
-const ESTADO_COLOR: Record<PedidoEstado, string> = {
+const ESTADO_COLOR: Record<OrderStatus, string> = {
   'Solicitado': 'var(--warning-text)',
   'Pedido realizado': 'var(--accent)',
   'Pedido recibido': 'var(--success-text)',
   'Finalizado': 'var(--text-muted-2)',
 };
 
-function EstadoSteps({ current, onAdvance, disabled }: { current: PedidoEstado; onAdvance?: (next: PedidoEstado) => void; disabled?: boolean }) {
+function EstadoSteps({ current, onAdvance, disabled }: { current: OrderStatus; onAdvance?: (next: OrderStatus) => void; disabled?: boolean }) {
   const idx = ESTADOS.indexOf(current);
   const progressColor = 'var(--accent)';
   return (
-    <div className="pedido-estado-steps" style={{ display: 'flex', gap: 0, alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-      {ESTADOS.map((estado, i) => {
+    <div className="order-status-steps" style={{ display: 'flex', gap: 0, alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+      {ESTADOS.map((status, i) => {
         const done = i < idx;
         const active = i === idx;
         const isNext = i === idx + 1 && onAdvance;
         return (
-          <Fragment key={estado}>
+          <Fragment key={status}>
             {i > 0 && (
               <div className="step-connector" style={{ flex: 1, display: 'flex', alignItems: 'center', marginTop: 15 }}>
                 <div style={{
@@ -46,8 +46,8 @@ function EstadoSteps({ current, onAdvance, disabled }: { current: PedidoEstado; 
             )}
             <div className="step-node" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, minWidth: 0 }}>
               <div
-                onClick={() => isNext && !disabled && onAdvance?.(estado)}
-                title={isNext ? `Avanzar a ${estado}` : estado}
+                onClick={() => isNext && !disabled && onAdvance?.(status)}
+                title={isNext ? `Avanzar a ${status}` : status}
                 style={{
                   width: 32, height: 32, borderRadius: '50%', flexShrink: 0,
                   background: done || active ? progressColor : 'var(--step-fill)',
@@ -89,7 +89,7 @@ function EstadoSteps({ current, onAdvance, disabled }: { current: PedidoEstado; 
                 color: isNext ? progressColor : active ? progressColor : done ? 'var(--text-muted)' : 'var(--text-faint-2)',
                 whiteSpace: 'nowrap', textAlign: 'center', maxWidth: 96,
               }}>
-                {estado}
+                {status}
               </div>
             </div>
           </Fragment>
@@ -99,11 +99,11 @@ function EstadoSteps({ current, onAdvance, disabled }: { current: PedidoEstado; 
   );
 }
 
-function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => void }) {
+function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }) {
   const { can } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
-  const [confirmEstado, setConfirmEstado] = useState<PedidoEstado | null>(null);
+  const [confirmStatus, setConfirmStatus] = useState<OrderStatus | null>(null);
   const [editando, setEditando] = useState(false);
   const [editCantidad, setEditCantidad] = useState('');
   const [editPlazo, setEditPlazo] = useState('');
@@ -111,28 +111,28 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
   const [confirmDelete, setConfirmDelete] = useState(false);
 
   const { data: detail } = useQuery({
-    queryKey: ['pedidos', pedido.id],
-    queryFn: () => pedidosApi.getPedido(pedido.id),
-    initialData: { ...pedido, historial: [] },
+    queryKey: ['orders', order.id],
+    queryFn: () => pedidosApi.getPedido(order.id),
+    initialData: { ...order, historial: [] },
   });
 
   const updateMut = useMutation({
-    mutationFn: (estado: PedidoEstado) => pedidosApi.updatePedidoEstado(pedido.id, estado),
+    mutationFn: (status: OrderStatus) => pedidosApi.updateOrderStatus(order.id, status),
     onSuccess: () => {
       showToast('Estado actualizado', 'success');
-      queryClient.invalidateQueries({ queryKey: ['pedidos'] });
-      setConfirmEstado(null);
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
+      setConfirmStatus(null);
       onClose();
     },
     onError: (err: Error) => showToast(err.message),
   });
 
   const editMut = useMutation({
-    mutationFn: (data: { cantidad?: number; plazoDeseado?: string | null; observaciones?: string | null }) =>
-      pedidosApi.updatePedido(pedido.id, data),
+    mutationFn: (data: { quantity?: number; desiredDeadline?: string | null; notes?: string | null }) =>
+      pedidosApi.updatePedido(order.id, data),
     onSuccess: () => {
-      showToast('Pedido actualizado', 'success');
-      queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+      showToast('Order actualizado', 'success');
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       setEditando(false);
       onClose();
     },
@@ -140,10 +140,10 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
   });
 
   const deleteMut = useMutation({
-    mutationFn: () => pedidosApi.deletePedido(pedido.id),
+    mutationFn: () => pedidosApi.deletePedido(order.id),
     onSuccess: () => {
-      showToast('Pedido eliminado', 'success');
-      queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+      showToast('Order eliminado', 'success');
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       setConfirmDelete(false);
       onClose();
     },
@@ -151,26 +151,26 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
   });
 
   const toggleOcultoMut = useMutation({
-    mutationFn: () => pedidosApi.toggleOcultoPedido(pedido.id),
+    mutationFn: () => pedidosApi.toggleOcultoPedido(order.id),
     onSuccess: (r) => {
-      showToast(r.oculto ? 'Pedido ocultado' : 'Pedido visible', 'success');
-      queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+      showToast(r.hidden ? 'Order ocultado' : 'Order visible', 'success');
+      queryClient.invalidateQueries({ queryKey: ['orders'] });
       onClose();
     },
     onError: (err: Error) => showToast(err.message),
   });
 
   function abrirEditar() {
-    setEditCantidad(String(detail.cantidad));
-    setEditPlazo(detail.plazoDeseado ?? '');
-    setEditObs(detail.observaciones ?? '');
+    setEditCantidad(String(detail.quantity));
+    setEditPlazo(detail.desiredDeadline ?? '');
+    setEditObs(detail.notes ?? '');
     setEditando(true);
   }
 
-  const next = SIGUIENTE_ESTADO[detail.estado];
-  const puedeAvanzar = !!(next && can('pedidos', 'edit'));
-  const puedeEditar = can('pedidos', 'edit');
-  const puedeEliminar = can('pedidos', 'delete');
+  const next = SIGUIENTE_ESTADO[detail.status];
+  const puedeAvanzar = !!(next && can('orders', 'edit'));
+  const puedeEditar = can('orders', 'edit');
+  const puedeEliminar = can('orders', 'delete');
   const labelStyle: React.CSSProperties = {
     fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 2, display: 'block',
   };
@@ -181,27 +181,27 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
     return match ? parseInt(match[1], 10) : 1;
   }
 
-  const embalaje = parseEmbalaje(detail.recambioEmbalaje);
-  const paquetes = detail.cantidad;
+  const embalaje = parseEmbalaje(detail.productPackaging);
+  const paquetes = detail.quantity;
   const totalUnidades = paquetes * embalaje;
-  const precioTotal = detail.recambioPrecio != null ? paquetes * detail.recambioPrecio : null;
+  const precioTotal = detail.productPrice != null ? paquetes * detail.productPrice : null;
 
   return (
     <div>
       {/* Header badges + avanzar */}
       <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center', flex: 1, minWidth: 0 }}>
-          {detail.prioritario && <span style={{ fontSize: 11, color: 'var(--danger-text)', fontWeight: 700, marginRight: 4 }}>URGENTE</span>}
-          <span style={badgeStyle(detail.tipo)}>{detail.tipo}</span>
-          <span style={badgeStyle(detail.estado)}>{detail.estado}</span>
-          {detail.oculto && <span style={{ ...badgeStyle('Finalizado'), fontSize: 11 }}>Oculto</span>}
+          {detail.priority && <span style={{ fontSize: 11, color: 'var(--danger-text)', fontWeight: 700, marginRight: 4 }}>URGENTE</span>}
+          <span style={badgeStyle(detail.type)}>{detail.type}</span>
+          <span style={badgeStyle(detail.status)}>{detail.status}</span>
+          {detail.hidden && <span style={{ ...badgeStyle('Finalizado'), fontSize: 11 }}>Oculto</span>}
         </div>
-        {puedeAvanzar && detail.estado !== 'Finalizado' && (
+        {puedeAvanzar && detail.status !== 'Finalizado' && (
           <button
             type="button"
             disabled={updateMut.isPending}
-            onClick={() => setConfirmEstado(SIGUIENTE_ESTADO[detail.estado]!)}
-            title={`Avanzar a ${SIGUIENTE_ESTADO[detail.estado]}`}
+            onClick={() => setConfirmStatus(SIGUIENTE_ESTADO[detail.status]!)}
+            title={`Avanzar a ${SIGUIENTE_ESTADO[detail.status]}`}
             style={{
               ...btnStyle('primary'),
               background: 'var(--accent)',
@@ -213,7 +213,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
               whiteSpace: 'nowrap',
             }}
           >
-            Avanzar a {SIGUIENTE_ESTADO[detail.estado]}
+            Avanzar a {SIGUIENTE_ESTADO[detail.status]}
           </button>
         )}
       </div>
@@ -221,19 +221,19 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       {/* Progress steps */}
       <div style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', background: 'var(--bg-card-soft)', borderRadius: 10, border: '1px solid var(--border-soft)' }}>
         <div style={{ ...labelStyle, marginBottom: 8 }}>Progreso</div>
-        <EstadoSteps current={detail.estado} onAdvance={puedeAvanzar ? (estado) => setConfirmEstado(estado) : undefined} disabled={updateMut.isPending} />
+        <EstadoSteps current={detail.status} onAdvance={puedeAvanzar ? (status) => setConfirmStatus(status) : undefined} disabled={updateMut.isPending} />
       </div>
 
       {/* Data grid */}
-      <div className="detalle-pedido-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1.5rem', marginBottom: '1.25rem' }}>
+      <div className="detalle-order-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1.5rem', marginBottom: '1.25rem' }}>
         {[
-          ['Recambio', detail.recambioNombre],
-          ['Referencia CMH', detail.recambioRef],
-          ['Cantidad', `${detail.cantidad} paquete${detail.cantidad === 1 ? '' : 's'}${detail.recambioEmbalaje ? ` × ${embalaje} uds = ${totalUnidades} uds` : ''}`],
-          ['Plazo deseado', detail.plazoDeseado ?? '—'],
-          ['Solicitante', detail.solicitanteNombre],
-          ['Fecha solicitud', fmtDate(detail.fechaSolicitud)],
-          ['PVP orientativo', detail.recambioPrecio != null ? `${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(detail.recambioPrecio)}/paquete` : '—'],
+          ['Product', detail.productName],
+          ['Referencia CMH', detail.productRef],
+          ['Cantidad', `${detail.quantity} paquete${detail.quantity === 1 ? '' : 's'}${detail.productPackaging ? ` × ${embalaje} uds = ${totalUnidades} uds` : ''}`],
+          ['Plazo deseado', detail.desiredDeadline ?? '—'],
+          ['Requester', detail.requesterName],
+          ['Fecha solicitud', fmtDate(detail.requestedAt)],
+          ['PVP orientativo', detail.productPrice != null ? `${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(detail.productPrice)}/paquete` : '—'],
           ['Total orientativo', precioTotal != null ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(precioTotal) : '—'],
         ].map(([k, v]) => (
           <div key={k as string}>
@@ -244,10 +244,10 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       </div>
 
       {/* Observaciones */}
-      {detail.observaciones && (
+      {detail.notes && (
         <div style={{ marginBottom: '1.25rem', padding: '0.75rem 1rem', background: 'var(--bg-card-soft)', borderRadius: 8, border: '1px solid var(--border-soft-2)' }}>
           <div style={labelStyle}>Observaciones</div>
-          <div style={{ fontSize: 13, color: 'var(--text-soft)' }}>{detail.observaciones}</div>
+          <div style={{ fontSize: 13, color: 'var(--text-soft)' }}>{detail.notes}</div>
         </div>
       )}
 
@@ -258,7 +258,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
             <>
               <button style={btnStyle('primary')} onClick={abrirEditar} disabled={editMut.isPending}>Editar</button>
               <button style={btnStyle('ghost')} onClick={() => toggleOcultoMut.mutate()} disabled={toggleOcultoMut.isPending}>
-                {detail.oculto ? 'Mostrar' : 'Ocultar'}
+                {detail.hidden ? 'Mostrar' : 'Ocultar'}
               </button>
             </>
           )}
@@ -274,7 +274,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       {detail.historial && detail.historial.length > 0 && (
         <div style={{ marginBottom: '1rem' }}>
           <div style={{ ...labelStyle, marginBottom: 8 }}>Historial</div>
-          <div className="pedido-historial" style={{ position: 'relative', paddingLeft: 20 }}>
+          <div className="order-historial" style={{ position: 'relative', paddingLeft: 20 }}>
             {detail.historial.map((h, i) => {
               const isLast = i === detail.historial.length - 1;
               return (
@@ -287,15 +287,15 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
                   )}
                   <div style={{
                     position: 'absolute', left: -15, top: 4, width: 10, height: 10, borderRadius: '50%',
-                    background: ESTADO_COLOR[h.estadoNuevo as PedidoEstado] || 'var(--accent)',
+                    background: ESTADO_COLOR[h.newStatus as OrderStatus] || 'var(--accent)',
                     border: '2px solid var(--bg)',
                   }} />
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
                     <span style={{ color: 'var(--text-light)', fontWeight: 600 }}>{fmtDate(h.fecha)}</span>
-                    {' · '}{h.usuarioNombre}
+                    {' · '}{h.userName}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>
-                    {h.estadoAnterior ?? '—'} <span style={{ color: 'var(--text-muted)' }}>→</span> <span style={{ color: ESTADO_COLOR[h.estadoNuevo as PedidoEstado] || 'var(--accent)', fontWeight: 600 }}>{h.estadoNuevo}</span>
+                    {h.previousStatus ?? '—'} <span style={{ color: 'var(--text-muted)' }}>→</span> <span style={{ color: ESTADO_COLOR[h.newStatus as OrderStatus] || 'var(--accent)', fontWeight: 600 }}>{h.newStatus}</span>
                   </div>
                 </div>
               );
@@ -305,7 +305,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       )}
 
       {/* Edit modal */}
-      <Modal open={editando} onClose={() => setEditando(false)} title="Editar pedido">
+      <Modal open={editando} onClose={() => setEditando(false)} title="Editar order">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 300 }}>
           <div>
             <label style={labelStyle}>Cantidad (paquetes)</label>
@@ -325,7 +325,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
           <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: '0.5rem' }}>
             <button style={btnStyle('ghost')} onClick={() => setEditando(false)}>Cancelar</button>
             <button style={btnStyle('primary')} disabled={editMut.isPending || !editCantidad || parseInt(editCantidad, 10) < 1}
-              onClick={() => editMut.mutate({ cantidad: parseInt(editCantidad, 10), plazoDeseado: editPlazo || null, observaciones: editObs || null })}>
+              onClick={() => editMut.mutate({ quantity: parseInt(editCantidad, 10), desiredDeadline: editPlazo || null, notes: editObs || null })}>
               {editMut.isPending ? 'Guardando...' : 'Guardar'}
             </button>
           </div>
@@ -336,7 +336,7 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Confirmar eliminación">
         <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
           <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: '1.25rem' }}>
-            ¿Eliminar el pedido <strong>#{pedido.id}</strong>? Esta acción no se puede deshacer.
+            ¿Eliminar el order <strong>#{order.id}</strong>? Esta acción no se puede deshacer.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             <button style={btnStyle('ghost')} onClick={() => setConfirmDelete(false)}>Cancelar</button>
@@ -348,15 +348,15 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
       </Modal>
 
       {/* Confirm state advance */}
-      <Modal open={!!confirmEstado} onClose={() => setConfirmEstado(null)} title="Confirmar avance">
-        {confirmEstado && (
+      <Modal open={!!confirmStatus} onClose={() => setConfirmStatus(null)} title="Confirmar avance">
+        {confirmStatus && (
           <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
             <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: '1.25rem' }}>
-              ¿Avanzar pedido a <strong style={{ color: ESTADO_COLOR[confirmEstado] }}>{confirmEstado}</strong>?
+              ¿Avanzar order a <strong style={{ color: ESTADO_COLOR[confirmStatus] }}>{confirmStatus}</strong>?
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-              <button style={btnStyle('ghost')} onClick={() => setConfirmEstado(null)}>Cancelar</button>
-              <button style={btnStyle(confirmEstado === 'Finalizado' ? 'success' : 'primary')} disabled={updateMut.isPending} onClick={() => updateMut.mutate(confirmEstado)}>
+              <button style={btnStyle('ghost')} onClick={() => setConfirmStatus(null)}>Cancelar</button>
+              <button style={btnStyle(confirmStatus === 'Finalizado' ? 'success' : 'primary')} disabled={updateMut.isPending} onClick={() => updateMut.mutate(confirmStatus)}>
                 {updateMut.isPending ? 'Actualizando...' : 'Confirmar'}
               </button>
             </div>
@@ -369,19 +369,19 @@ function DetallePedido({ pedido, onClose }: { pedido: Pedido; onClose: () => voi
 
 export function PedidosPage() {
   const [busqueda, setBusqueda] = useState('');
-  const [filtroTipo, setFiltroTipo] = useState<PedidoTipo | 'Todos'>('Todos');
+  const [filtroTipo, setFiltroTipo] = useState<OrderType | 'Todos'>('Todos');
   const [filtroFecha, setFiltroFecha] = useState('');
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente');
   const [mostrarFinalizados, setMostrarFinalizados] = useState(false);
   const [mostrarOcultos, setMostrarOcultos] = useState(false);
-  const [pedidoDetalle, setPedidoDetalle] = useState<Pedido | null>(null);
+  const [pedidoDetalle, setPedidoDetalle] = useState<Order | null>(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
-  const { data: pedidos = [], isLoading } = useQuery({
-    queryKey: ['pedidos', busqueda, filtroTipo, filtroFecha, orden, mostrarFinalizados, mostrarOcultos],
-    queryFn: () => pedidosApi.getPedidos({
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ['orders', busqueda, filtroTipo, filtroFecha, orden, mostrarFinalizados, mostrarOcultos],
+    queryFn: () => pedidosApi.getOrders({
       busqueda: busqueda || undefined,
-      tipo: filtroTipo,
+      type: filtroTipo,
       fecha: filtroFecha || undefined,
       orden,
       incluirFinalizados: mostrarFinalizados,
@@ -389,8 +389,8 @@ export function PedidosPage() {
     }),
   });
 
-  const activos = pedidos.filter((p) => p.estado !== 'Finalizado').length;
-  const urgentes = pedidos.filter((p) => p.prioritario && p.estado !== 'Finalizado').length;
+  const activos = orders.filter((p) => p.status !== 'Finalizado').length;
+  const urgentes = orders.filter((p) => p.priority && p.status !== 'Finalizado').length;
 
   const inputStyle: React.CSSProperties = {
     padding: '8px 12px', background: 'var(--bg-input)',
@@ -406,10 +406,10 @@ export function PedidosPage() {
   };
 
   return (
-    <div className="pedidos-page" style={{ padding: '1.5rem' }}>
+    <div className="orders-page" style={{ padding: '1.5rem' }}>
       {/* Header */}
-      <div className="pedidos-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: 8 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Pedidos</h2>
+      <div className="orders-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: 8 }}>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Orders</h2>
         <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
           <span><span style={{ color: 'var(--warning-text)', fontWeight: 700 }}>{activos}</span> activos</span>
           {urgentes > 0 && <span><span style={{ color: 'var(--danger-text)', fontWeight: 700 }}>{urgentes}</span> urgentes</span>}
@@ -417,15 +417,15 @@ export function PedidosPage() {
       </div>
 
       {/* Filters */}
-      <div className="pedidos-filters" style={{
+      <div className="orders-filters" style={{
         display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap', padding: '0.75rem 1rem',
         background: 'var(--bg-card-soft)', borderRadius: 10, border: '1px solid var(--border-soft-2)',
         alignItems: 'center',
       }}>
         <input
-          className="pedidos-search-input"
+          className="orders-search-input"
           style={{ ...inputStyle, maxWidth: 220, flex: 1, minWidth: 120 }}
-          placeholder="Buscar pedido..."
+          placeholder="Buscar order..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -433,7 +433,7 @@ export function PedidosPage() {
           {mostrarFiltros ? 'Ocultar' : 'Filtrar'}
         </button>
         <div className="filters-collapsible" data-expanded={mostrarFiltros} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <select style={{ ...inputStyle, width: 'auto' }} value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as PedidoTipo | 'Todos')}>
+          <select style={{ ...inputStyle, width: 'auto' }} value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as OrderType | 'Todos')}>
             {TIPOS.map((t) => <option key={t} value={t}>{t === 'Todos' ? 'Todos los tipos' : t}</option>)}
           </select>
           <input type="date" style={{ ...inputStyle, width: 'auto' }} value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} />
@@ -460,50 +460,50 @@ export function PedidosPage() {
             }} />
           ))}
         </div>
-      ) : pedidos.length === 0 ? (
+      ) : orders.length === 0 ? (
         <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '3rem', fontSize: 14 }}>
-          Sin pedidos con los filtros actuales
+          Sin orders con los filtros actuales
         </div>
       ) : (
-        <div className="pedidos-list" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {pedidos.map((p) => {
-            const borderColor = ESTADO_CARD_BORDER[p.estado] || 'var(--border-strong)';
+        <div className="orders-list" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {orders.map((p) => {
+            const borderColor = ESTADO_CARD_BORDER[p.status] || 'var(--border-strong)';
             return (
               <div
                 key={p.id}
-                className="pedido-card"
+                className="order-card"
                 onClick={() => setPedidoDetalle(p)}
                 style={{
-                  background: p.oculto ? 'rgba(100,100,100,0.05)' : p.prioritario ? 'var(--bg-danger-soft)' : 'var(--bg-card-soft)',
-                  border: `1px solid ${p.oculto ? 'rgba(100,100,100,0.2)' : p.prioritario ? 'var(--border-danger-strong)' : 'var(--border-soft-2)'}`,
-                  borderLeft: `4px solid ${p.prioritario ? 'var(--danger)' : borderColor}`,
+                  background: p.hidden ? 'rgba(100,100,100,0.05)' : p.priority ? 'var(--bg-danger-soft)' : 'var(--bg-card-soft)',
+                  border: `1px solid ${p.hidden ? 'rgba(100,100,100,0.2)' : p.priority ? 'var(--border-danger-strong)' : 'var(--border-soft-2)'}`,
+                  borderLeft: `4px solid ${p.priority ? 'var(--danger)' : borderColor}`,
                   borderRadius: 10, padding: '1rem 1.2rem', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: '0.75rem',
                   transition: 'all 0.15s',
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = p.prioritario ? 'var(--bg-danger-hover)' : 'var(--bg-accent-faint)'; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = p.prioritario ? 'var(--bg-danger-soft)' : 'var(--bg-card-soft)'; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = p.priority ? 'var(--bg-danger-hover)' : 'var(--bg-accent-faint)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = p.priority ? 'var(--bg-danger-soft)' : 'var(--bg-card-soft)'; }}
               >
-                {p.recambioImagen && (
-                <img className="pedido-card-img" src={p.recambioImagen} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
+                {p.productImage && (
+                <img className="order-card-img" src={p.productImage} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
               )}
-              {p.prioritario && <span className="urgente-tag" style={{ fontSize: 10, color: 'var(--danger-text)', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
-              {p.oculto && <span style={{ fontSize: 10, color: 'var(--text-muted-2)', fontWeight: 700, flexShrink: 0 }}>OCULTO</span>}
-                <div className="pedido-card-info" style={{ flex: 1, minWidth: 140 }}>
-                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.recambioNombre}</div>
-                  <div className="pedido-card-meta" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {p.recambioRef} · {p.solicitanteNombre} · Qty: {p.cantidad} paq
+              {p.priority && <span className="urgente-tag" style={{ fontSize: 10, color: 'var(--danger-text)', fontWeight: 700, flexShrink: 0 }}>URGENTE</span>}
+              {p.hidden && <span style={{ fontSize: 10, color: 'var(--text-muted-2)', fontWeight: 700, flexShrink: 0 }}>OCULTO</span>}
+                <div className="order-card-info" style={{ flex: 1, minWidth: 140 }}>
+                  <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.productName}</div>
+                  <div className="order-card-meta" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
+                    {p.productRef} · {p.requesterName} · Qty: {p.quantity} paq
                   </div>
-                  {p.recambioPrecio != null && (
+                  {p.productPrice != null && (
                     <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--success-text)' }}>
-                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(p.recambioPrecio * p.cantidad)}
+                      {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(p.productPrice * p.quantity)}
                     </div>
                   )}
                 </div>
-                <div className="pedido-badges-row" style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                  <span style={{ ...badgeStyle(p.tipo), fontSize: 11 }}>{p.tipo}</span>
-                  <span style={{ ...badgeStyle(p.estado), fontSize: 11 }}>{p.estado}</span>
-                  <span className="pedido-date" style={{ fontSize: 11, color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmtDate(p.fechaSolicitud)}</span>
+                <div className="order-badges-row" style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                  <span style={{ ...badgeStyle(p.type), fontSize: 11 }}>{p.type}</span>
+                  <span style={{ ...badgeStyle(p.status), fontSize: 11 }}>{p.status}</span>
+                  <span className="order-date" style={{ fontSize: 11, color: 'var(--text-dim)', whiteSpace: 'nowrap' }}>{fmtDate(p.requestedAt)}</span>
                 </div>
               </div>
             );
@@ -511,8 +511,8 @@ export function PedidosPage() {
         </div>
       )}
 
-      <Modal open={!!pedidoDetalle} onClose={() => setPedidoDetalle(null)} title={pedidoDetalle ? `Pedido #${pedidoDetalle.id}` : ''}>
-        {pedidoDetalle && <DetallePedido pedido={pedidoDetalle} onClose={() => setPedidoDetalle(null)} />}
+      <Modal open={!!pedidoDetalle} onClose={() => setPedidoDetalle(null)} title={pedidoDetalle ? `Order #${pedidoDetalle.id}` : ''}>
+        {pedidoDetalle && <DetallePedido order={pedidoDetalle} onClose={() => setPedidoDetalle(null)} />}
       </Modal>
     </div>
   );

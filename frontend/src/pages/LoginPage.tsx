@@ -121,7 +121,7 @@ export function LoginPage() {
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <div style={{ fontSize: 50 }}><img src={resolved === 'light' ? logoBlue : logoWhite} width={140} height={140} alt="Logo" /></div>
           <h1 style={{ color: 'var(--accent)', fontWeight: 800, fontSize: 28, margin: 0, letterSpacing: '0.05em' }}>FERRETERÍA</h1>
-          <p style={{ color: 'var(--text-dim)', fontSize: 14, margin: '6px 0 0' }}>Sistema de Gestión de Recambios</p>
+          <p style={{ color: 'var(--text-dim)', fontSize: 14, margin: '6px 0 0' }}>Sistema de Gestión de Products</p>
         </div>
         <div style={{
           background: 'var(--bg-card)', border: '1px solid var(--border)',

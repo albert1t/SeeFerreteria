@@ -12,7 +12,7 @@ function findKey(row: Record<string, any>, keys: string[]): string | undefined {
 }
 
 async function compare() {
-  console.log('=== Comparación: Excel vs Base de Datos (Recambios) ===\n');
+  console.log('=== Comparación: Excel vs Base de Datos (Products) ===\n');
 
   // 1. Leer Excel
   const excelPath = resolve(process.cwd(), '../Lista materiales.xlsx');
@@ -37,28 +37,28 @@ async function compare() {
   await getPool();
   const pool = await getPool();
   const dbResult = await pool.request().query(`
-    SELECT id, referenciaCMH, panel, col, row, nombre, marca, oculto
-    FROM Recambios
-    ORDER BY referenciaCMH
+    SELECT id, cmhReference, panel, col, row, name, brand, hidden
+    FROM Products
+    ORDER BY cmhReference
   `);
 
   const dbRefs = dbResult.recordset.map((r: any) => ({
     id: r.id,
-    referenciaCMH: String(r.referenciaCMH).trim(),
+    cmhReference: String(r.cmhReference).trim(),
     panel: r.panel,
     col: r.col,
     row: r.row,
-    nombre: r.nombre,
-    marca: r.marca,
-    oculto: r.oculto,
+    name: r.name,
+    brand: r.brand,
+    hidden: r.hidden,
   }));
 
-  const dbRefMap = new Map(dbRefs.map(r => [r.referenciaCMH, r]));
+  const dbRefMap = new Map(dbRefs.map(r => [r.cmhReference, r]));
   const excelRefSet = new Set(excelRefs.map(r => r.referencia));
 
   // 3. Comparar
   const enExcelNoDB = excelRefs.filter(r => !dbRefMap.has(r.referencia));
-  const enDBNoExcel = dbRefs.filter(r => !excelRefSet.has(r.referenciaCMH));
+  const enDBNoExcel = dbRefs.filter(r => !excelRefSet.has(r.cmhReference));
 
   // 4. Reportar
   console.log(`Total en Excel:      ${excelRefs.length}`);
@@ -75,8 +75,8 @@ async function compare() {
   console.log(`\n--- En DB pero NO en Excel: ${enDBNoExcel.length} ---`);
   if (enDBNoExcel.length > 0) {
     for (const r of enDBNoExcel) {
-      const oculto = r.oculto ? ' [oculto]' : '';
-      console.log(`  ID=${r.id} | ${r.referenciaCMH} | panel=${r.panel} C${r.col}F${r.row}${oculto}`);
+      const hidden = r.hidden ? ' [hidden]' : '';
+      console.log(`  ID=${r.id} | ${r.cmhReference} | panel=${r.panel} C${r.col}F${r.row}${hidden}`);
     }
   } else {
     console.log('  (ninguno)');
