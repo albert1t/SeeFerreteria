@@ -48,15 +48,15 @@ export function requirePermission(resource, action) {
             next(new AppError(401, 'No autenticado'));
             return;
         }
-        const perms = req.user.permissions;
-        if (perms?.admin || perms?.[resource]?.[action]) {
+        const perms = getDefaultPermissions(req.user.role);
+        if (perms.admin || perms[resource]?.[action]) {
             next();
             return;
         }
         next(new AppError(403, 'No tienes permisos para esta acción'));
     };
 }
-export function getDefaultPermissions(role) {
+function getDefaultPermissions(role) {
     const full = {
         admin: true,
         pedidos: { create: true, view: true, edit: true, delete: true },

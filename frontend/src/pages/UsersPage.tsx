@@ -5,7 +5,7 @@ import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
 import { badgeStyle, btnStyle, colors } from '../styles/theme';
 import * as usersApi from '../api/users';
-import type { User, UserRole, Permissions } from '../types';
+import type { User, UserRole } from '../types';
 import { ApiError } from '../api/client';
 
 const ROLE_LABELS: Record<UserRole, string> = {
@@ -15,100 +15,11 @@ const ROLE_LABELS: Record<UserRole, string> = {
   viewer: 'Solo lectura',
 };
 
-const DEFAULT_PERMISSIONS: Record<UserRole, Permissions> = {
-  admin: {
-    admin: true,
-    pedidos: { create: true, view: true, edit: true, delete: true },
-    recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    familias: { create: true, view: true, edit: true, delete: true },
-    tarifas: { create: true, view: true, edit: true, delete: true },
-  },
-  operario: {
-    admin: false,
-    pedidos: { create: true, view: true, edit: true, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false },
-    tarifas: { create: false, view: false, edit: false, delete: false },
-  },
-  user: {
-    admin: false,
-    pedidos: { create: true, view: true, edit: true, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false },
-    tarifas: { create: false, view: false, edit: false, delete: false },
-  },
-  viewer: {
-    admin: false,
-    pedidos: { create: false, view: true, edit: false, delete: false },
-    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    familias: { create: false, view: false, edit: false, delete: false },
-    tarifas: { create: false, view: false, edit: false, delete: false },
-  },
-};
-
-function PermissionsEditor({
-  permissions,
-  onChange,
-}: {
-  permissions: Permissions;
-  onChange: (p: Permissions) => void;
-}) {
-  const toggle = (resource: 'pedidos' | 'recambios' | 'familias' | 'tarifas', action: 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage') => {
-    const current = (permissions[resource] as any)[action];
-    onChange({
-      ...permissions,
-      [resource]: {
-        ...permissions[resource],
-        [action]: !current,
-      },
-    });
-  };
-
-  return (
-    <div style={{ fontSize: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
-        <input
-          type="checkbox"
-          checked={permissions.admin}
-          onChange={(e) => onChange({ ...permissions, admin: e.target.checked })}
-        />
-        Admin total
-      </label>
-      {!permissions.admin && (
-        <>
-          {(['pedidos', 'recambios', 'familias', 'tarifas'] as const).map((resource) => {
-            const actions: ('create' | 'view' | 'edit' | 'delete' | 'viewDataPage')[] =
-              resource === 'recambios'
-                ? ['create', 'view', 'edit', 'delete', 'viewDataPage']
-                : ['create', 'view', 'edit', 'delete'];
-            return (
-            <div key={resource} style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ width: 80, color: colors.textMuted, textTransform: 'capitalize' }}>{resource}</span>
-              {actions.map((action) => (
-                <label key={action} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={(permissions[resource] as any)[action]}
-                    onChange={() => toggle(resource, action)}
-                  />
-                  <span style={{ textTransform: 'capitalize' }}>{action === 'viewDataPage' ? 'Ver Datos' : action}</span>
-                </label>
-              ))}
-            </div>
-            );
-          })}
-        </>
-      )}
-    </div>
-  );
-}
-
 export function UsersPage() {
   const { isAdmin } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [editingPermissions, setEditingPermissions] = useState<Permissions | null>(null);
   const [newEmail, setNewEmail] = useState('');
   const [newEmailRole, setNewEmailRole] = useState<UserRole>('user');
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
@@ -133,13 +44,11 @@ export function UsersPage() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, role, permissions }: { id: number; role: UserRole; permissions?: Permissions }) =>
-      usersApi.updateUserRoleAndPermissions(id, role, permissions),
+    mutationFn: ({ id, role }: { id: number; role: UserRole }) => usersApi.updateUserRole(id, role),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      showToast('Usuario actualizado', 'success');
+      showToast('Rol actualizado', 'success');
       setEditingUser(null);
-      setEditingPermissions(null);
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
@@ -149,7 +58,7 @@ export function UsersPage() {
       usersApi.createUser(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      showToast('Usuario creado (inactivo). Actívalo y configura sus permisos para que pueda acceder.', 'success');
+      showToast('Usuario creado (inactivo). Actívalo para que pueda acceder.', 'success');
       setShowCreate(false);
       setCreateForm({ username: '', password: '', name: '', role: 'user' });
       setCreateError('');
@@ -256,13 +165,10 @@ export function UsersPage() {
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button
                         type="button"
-                        onClick={() => {
-                          setEditingUser(user);
-                          setEditingPermissions(user.permissions);
-                        }}
+                        onClick={() => setEditingUser(user)}
                         style={btnStyle('ghost')}
                       >
-                        Editar permisos
+                        Editar rol
                       </button>
                       <button
                         type="button"
@@ -292,7 +198,7 @@ export function UsersPage() {
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Crear usuario">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 320 }}>
           <div style={{ fontSize: 13, color: 'var(--warning-text-soft)', background: 'var(--bg-danger-soft)', border: '1px solid var(--border-danger)', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
-            El usuario se creará <strong>desactivado</strong> y sin acceso. Para que pueda entrar, un administrador debe <strong>activarlo</strong> y asignarle los <strong>permisos</strong> en "Editar permisos".
+            El usuario se creará <strong>desactivado</strong> y sin acceso. Para que pueda entrar, un administrador debe <strong>activarlo</strong>.
           </div>
           <div>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Usuario</label>
@@ -348,19 +254,14 @@ export function UsersPage() {
         </div>
       </Modal>
 
-      {editingUser && editingPermissions && (
+      {editingUser && (
         <div style={{ background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, padding: '1.5rem', marginBottom: '2rem' }}>
-          <h3 style={{ margin: '0 0 1rem' }}>Editar: {editingUser.name}</h3>
+          <h3 style={{ margin: '0 0 1rem' }}>Editar rol: {editingUser.name}</h3>
           <div style={{ marginBottom: '1rem' }}>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 6 }}>Rol base</label>
+            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 6 }}>Rol</label>
             <select
               value={editingUser.role}
-              onChange={(e) => {
-                const role = e.target.value as UserRole;
-                const newPerms = DEFAULT_PERMISSIONS[role];
-                setEditingUser({ ...editingUser, role });
-                setEditingPermissions(newPerms);
-              }}
+              onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
               style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
             >
               <option value="admin">Administrador</option>
@@ -369,14 +270,10 @@ export function UsersPage() {
               <option value="viewer">Solo lectura</option>
             </select>
           </div>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 6 }}>Permisos</label>
-            <PermissionsEditor permissions={editingPermissions} onChange={setEditingPermissions} />
-          </div>
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               type="button"
-              onClick={() => updateMutation.mutate({ id: editingUser.id, role: editingUser.role, permissions: editingPermissions })}
+              onClick={() => updateMutation.mutate({ id: editingUser.id, role: editingUser.role })}
               disabled={updateMutation.isPending}
               style={btnStyle('primary')}
             >
@@ -384,7 +281,7 @@ export function UsersPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setEditingUser(null); setEditingPermissions(null); }}
+              onClick={() => setEditingUser(null)}
               style={btnStyle('ghost')}
             >
               Cancelar
@@ -395,7 +292,7 @@ export function UsersPage() {
 
       <h3 style={{ margin: '0 0 1rem', fontSize: 18 }}>Correos autorizados para Microsoft login</h3>
       <p style={{ color: colors.textMuted, fontSize: 13, marginBottom: '1rem' }}>
-        Solo los correos de esta lista pueden iniciar sesión con Microsoft. Se les asigna el rol y permisos configurados al crear su cuenta.
+        Solo los correos de esta lista pueden iniciar sesión con Microsoft. Se les asigna el rol configurado al crear su cuenta.
       </p>
 
       <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>

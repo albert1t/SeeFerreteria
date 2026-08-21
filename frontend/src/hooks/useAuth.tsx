@@ -2,10 +2,39 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as authApi from '../api/auth';
 import { ApiError, clearToken, setToken, getToken } from '../api/client';
-import type { User } from '../types';
+import type { User, UserRole } from '../types';
 
 type Resource = 'pedidos' | 'recambios' | 'familias' | 'tarifas';
 type Action = 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage';
+
+type PermissionsMap = Record<Resource, Record<Action, boolean>>;
+
+const ROLE_PERMISSIONS: Record<UserRole, PermissionsMap> = {
+  admin: {
+    pedidos: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+    recambios: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+    familias: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+    tarifas: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
+  },
+  operario: {
+    pedidos: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
+    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    familias: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+  },
+  user: {
+    pedidos: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
+    recambios: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    familias: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+  },
+  viewer: {
+    pedidos: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    recambios: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
+    familias: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+    tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
+  },
+};
 
 interface AuthContextValue {
   user: User | null;
@@ -78,10 +107,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   const can = useCallback((resource: Resource, action: Action) => {
-    const perms = user?.permissions;
-    if (!perms) return false;
-    if (perms.admin) return true;
-    return Boolean((perms[resource] as any)?.[action]);
+    if (!user) return false;
+    return Boolean(ROLE_PERMISSIONS[user.role][resource][action]);
   }, [user]);
 
   return (

@@ -1,8 +1,27 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
-import type { JwtPayload, UserRole, Permissions } from '../types/index.js';
+import type { JwtPayload, UserRole } from '../types/index.js';
 import { AppError } from './errorHandler.js';
+
+// Mapa interno de permisos por rol. Se mantiene solo para no reescribir requirePermission.
+type ResourceAction = 'create' | 'view' | 'edit' | 'delete';
+interface ResourcePerms {
+  create: boolean;
+  view: boolean;
+  edit: boolean;
+  delete: boolean;
+}
+interface RecambiosPerms extends ResourcePerms {
+  viewDataPage: boolean;
+}
+interface Permissions {
+  admin: boolean;
+  pedidos: ResourcePerms;
+  recambios: RecambiosPerms;
+  familias: ResourcePerms;
+  tarifas: ResourcePerms;
+}
 
 const COOKIE_NAME = 'see_token';
 
@@ -56,8 +75,8 @@ export function requirePermission(resource: Resource, action: Action) {
       next(new AppError(401, 'No autenticado'));
       return;
     }
-    const perms = req.user.permissions;
-    if (perms?.admin || perms?.[resource]?.[action]) {
+    const perms = getDefaultPermissions(req.user.role);
+    if (perms.admin || (perms[resource] as any)?.[action]) {
       next();
       return;
     }
@@ -65,7 +84,7 @@ export function requirePermission(resource: Resource, action: Action) {
   };
 }
 
-export function getDefaultPermissions(role: UserRole): Permissions {
+function getDefaultPermissions(role: UserRole): Permissions {
   const full: Permissions = {
     admin: true,
     pedidos: { create: true, view: true, edit: true, delete: true },

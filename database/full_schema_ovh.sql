@@ -19,7 +19,6 @@ BEGIN
         role NVARCHAR(20) NOT NULL DEFAULT 'user'
             CHECK (role IN ('admin','user','viewer','operario')),
         isActive BIT NOT NULL DEFAULT 1,
-        permissions NVARCHAR(MAX) NULL,
         createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
         updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
     );
@@ -134,14 +133,13 @@ BEGIN
 END
 GO
 
--- AllowedEmails (para MSAL)
-IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'AllowedEmails')
+-- EmailsPermitidos (para MSAL)
+IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'EmailsPermitidos')
 BEGIN
-    CREATE TABLE AllowedEmails (
+    CREATE TABLE EmailsPermitidos (
         id INT IDENTITY(1,1) PRIMARY KEY,
         email NVARCHAR(100) NOT NULL UNIQUE,
         role NVARCHAR(20) NOT NULL DEFAULT 'user',
-        permissions NVARCHAR(MAX) NULL,
         isActive BIT NOT NULL DEFAULT 1,
         createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
     );
@@ -201,7 +199,7 @@ GO
 -- 4. NOTAS PARA IMPORTAR DATOS EXISTENTES
 -- ============================================================
 -- Para importar datos desde el bacpac de Azure:
--- 1. Recambios, Pedidos, PedidosEstadoHistorial, AllowedEmails
+-- 1. Recambios, Pedidos, PedidosEstadoHistorial, EmailsPermitidos
 --    deben importarse con SSMS (Import Data-tier Application)
 --    o con sqlpackage: 
 --    sqlpackage /Action:Import /SourceFile:Backup_SeeFerreteria.bacpac

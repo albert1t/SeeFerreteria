@@ -1,25 +1,21 @@
 import { apiFetch } from './client';
-import type { User, AllowedEmail, UserRole, Permissions } from '../types';
+import type { User, AllowedEmail, UserRole } from '../types';
 
 export function getUsers() {
   return apiFetch<{ users: User[] }>('/api/users');
 }
 
-export function createUser(data: { username: string; password: string; name: string; role: UserRole; permissions?: Permissions }) {
+export function createUser(data: { username: string; password: string; name: string; role: UserRole }) {
   return apiFetch<{ ok: boolean }>('/api/users', {
     method: 'POST',
     body: JSON.stringify(data),
   });
 }
 
-export function updateUserRoleAndPermissions(
-  id: number,
-  role: UserRole,
-  permissions?: Permissions,
-) {
-  return apiFetch<{ ok: boolean }>(`/api/users/${id}/permissions`, {
+export function updateUserRole(id: number, role: UserRole) {
+  return apiFetch<{ ok: boolean }>(`/api/users/${id}/role`, {
     method: 'PATCH',
-    body: JSON.stringify({ role, permissions }),
+    body: JSON.stringify({ role }),
   });
 }
 
@@ -34,26 +30,17 @@ export function getAllowedEmails() {
   return apiFetch<{ emails: AllowedEmail[] }>('/api/users/allowed-emails');
 }
 
-export function createAllowedEmail(
-  email: string,
-  role: UserRole,
-  permissions?: Permissions,
-) {
+export function createAllowedEmail(email: string, role: UserRole) {
   return apiFetch<{ ok: boolean }>('/api/users/allowed-emails', {
     method: 'POST',
-    body: JSON.stringify({ email, role, permissions }),
+    body: JSON.stringify({ email, role }),
   });
 }
 
-export function updateAllowedEmail(
-  id: number,
-  role: UserRole,
-  isActive: boolean,
-  permissions?: Permissions,
-) {
+export function updateAllowedEmail(id: number, role: UserRole, isActive: boolean) {
   return apiFetch<{ ok: boolean }>(`/api/users/allowed-emails/${id}`, {
     method: 'PATCH',
-    body: JSON.stringify({ role, isActive, permissions }),
+    body: JSON.stringify({ role, isActive }),
   });
 }
 

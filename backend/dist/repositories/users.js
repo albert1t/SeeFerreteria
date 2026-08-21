@@ -1,43 +1,16 @@
 import { getPool } from '../config/db.js';
-import { getDefaultPermissions } from '../middleware/auth.js';
-function deepMergePerms(stored, defaults) {
-    const result = { ...defaults };
-    for (const key of Object.keys(defaults)) {
-        if (key === 'admin' && typeof stored.admin === 'boolean') {
-            result.admin = stored.admin;
-        }
-        else if (key !== 'admin' && stored[key] && typeof stored[key] === 'object') {
-            result[key] = { ...defaults[key], ...stored[key] };
-        }
-    }
-    return result;
-}
-function parsePermissions(json, role) {
-    const defaults = getDefaultPermissions(role);
-    if (!json)
-        return defaults;
-    try {
-        const stored = JSON.parse(json);
-        return deepMergePerms(stored, defaults);
-    }
-    catch {
-        return defaults;
-    }
-}
 function mapUser(record) {
-    const role = record.role;
     return {
         id: record.id,
         username: record.username,
         name: record.name,
-        role,
+        role: record.role,
         isActive: Boolean(record.isActive),
-        permissions: parsePermissions(record.permissions, role),
     };
 }
 export async function findByUsername(username) {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, username, passwordHash, name, role, isActive, permissions FROM Users WHERE username = ? AND isActive = 1', [username]);
+    const [rows] = await pool.query('SELECT id, username, passwordHash, name, role, isActive FROM Users WHERE username = ? AND isActive = 1', [username]);
     const row = rows[0];
     if (!row)
         return null;
@@ -45,7 +18,7 @@ export async function findByUsername(username) {
 }
 export async function findByUsernameAll(username) {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, username, passwordHash, name, role, isActive, permissions FROM Users WHERE username = ?', [username]);
+    const [rows] = await pool.query('SELECT id, username, passwordHash, name, role, isActive FROM Users WHERE username = ?', [username]);
     const row = rows[0];
     if (!row)
         return null;
@@ -53,39 +26,36 @@ export async function findByUsernameAll(username) {
 }
 export async function findById(id) {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, username, name, role, isActive, permissions FROM Users WHERE id = ? AND isActive = 1', [id]);
+    const [rows] = await pool.query('SELECT id, username, name, role, isActive FROM Users WHERE id = ? AND isActive = 1', [id]);
     const row = rows[0];
     return row ? mapUser(row) : null;
 }
-export async function createUser(username, passwordHash, name, role, permissions, isActive = false) {
+export async function createUser(username, passwordHash, name, role, isActive = false) {
     const pool = await getPool();
     const [rows] = await pool.query('SELECT 1 AS existsUser FROM Users WHERE username = ? LIMIT 1', [username]);
     if (rows.length > 0)
         return false;
-    const perms = permissions ?? getDefaultPermissions(role);
-    await pool.query('INSERT INTO Users (username, passwordHash, name, role, permissions, isActive) VALUES (?, ?, ?, ?, ?, ?)', [username, passwordHash, name, role, JSON.stringify(perms), isActive ? 1 : 0]);
+    await pool.query('INSERT INTO Users (username, passwordHash, name, role, isActive) VALUES (?, ?, ?, ?, ?)', [username, passwordHash, name, role, isActive ? 1 : 0]);
     return true;
 }
-export async function upsertUser(username, passwordHash, name, role, permissions) {
+export async function upsertUser(username, passwordHash, name, role) {
     const pool = await getPool();
-    const perms = permissions ?? getDefaultPermissions(role);
     const [existing] = await pool.query('SELECT id FROM Users WHERE username = ?', [username]);
     if (existing.length > 0) {
-        await pool.query('UPDATE Users SET passwordHash = ?, name = ?, role = ?, permissions = ?, updatedAt = UTC_TIMESTAMP(6) WHERE username = ?', [passwordHash, name, role, JSON.stringify(perms), username]);
+        await pool.query('UPDATE Users SET passwordHash = ?, name = ?, role = ?, updatedAt = UTC_TIMESTAMP(6) WHERE username = ?', [passwordHash, name, role, username]);
     }
     else {
-        await pool.query('INSERT INTO Users (username, passwordHash, name, role, permissions) VALUES (?, ?, ?, ?, ?)', [username, passwordHash, name, role, JSON.stringify(perms)]);
+        await pool.query('INSERT INTO Users (username, passwordHash, name, role) VALUES (?, ?, ?, ?)', [username, passwordHash, name, role]);
     }
 }
 export async function findAll() {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, username, name, role, isActive, permissions FROM Users ORDER BY name');
+    const [rows] = await pool.query('SELECT id, username, name, role, isActive FROM Users ORDER BY name');
     return rows.map(mapUser);
 }
-export async function updateRoleAndPermissions(id, role, permissions) {
+export async function updateRole(id, role) {
     const pool = await getPool();
-    const perms = permissions ?? getDefaultPermissions(role);
-    const [result] = await pool.query('UPDATE Users SET role = ?, permissions = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [role, JSON.stringify(perms), id]);
+    const [result] = await pool.query('UPDATE Users SET role = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [role, id]);
     return result.affectedRows > 0;
 }
 export async function updateActive(id, isActive) {
@@ -112,21 +82,20 @@ export async function deleteUser(id, reassignToId) {
         connection.release();
     }
 }
-// Allowed emails for MSAL
-export async function findAllowedEmails() {
+// Emails permitidos para MSAL
+export async function findEmailsPermitidos() {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, email, role, isActive, permissions FROM AllowedEmails ORDER BY email');
+    const [rows] = await pool.query('SELECT id, email, role, isActive FROM EmailsPermitidos ORDER BY email');
     return rows.map((row) => ({
         id: row.id,
         email: row.email,
         role: row.role,
         isActive: Boolean(row.isActive),
-        permissions: parsePermissions(row.permissions, row.role),
     }));
 }
-export async function findAllowedEmailByEmail(email) {
+export async function findEmailPermitidoByEmail(email) {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT id, email, role, isActive, permissions FROM AllowedEmails WHERE email = ?', [email]);
+    const [rows] = await pool.query('SELECT id, email, role, isActive FROM EmailsPermitidos WHERE email = ?', [email]);
     const row = rows[0];
     if (!row)
         return null;
@@ -135,29 +104,23 @@ export async function findAllowedEmailByEmail(email) {
         email: row.email,
         role: row.role,
         isActive: Boolean(row.isActive),
-        permissions: parsePermissions(row.permissions, row.role),
     };
 }
-export async function createAllowedEmail(email, role = 'user', permissions) {
+export async function createEmailPermitido(email, role = 'user') {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT 1 AS existsEmail FROM AllowedEmails WHERE email = ? LIMIT 1', [email]);
+    const [rows] = await pool.query('SELECT 1 AS existsEmail FROM EmailsPermitidos WHERE email = ? LIMIT 1', [email]);
     if (rows.length > 0)
         return false;
-    const perms = permissions ?? getDefaultPermissions(role);
-    await pool.query('INSERT INTO AllowedEmails (email, role, permissions) VALUES (?, ?, ?)', [email, role, JSON.stringify(perms)]);
+    await pool.query('INSERT INTO EmailsPermitidos (email, role) VALUES (?, ?)', [email, role]);
     return true;
 }
-export async function updateAllowedEmail(id, role, isActive, permissions) {
+export async function updateEmailPermitido(id, role, isActive) {
     const pool = await getPool();
-    if (permissions) {
-        const [result] = await pool.query('UPDATE AllowedEmails SET role = ?, isActive = ?, permissions = ? WHERE id = ?', [role, isActive ? 1 : 0, JSON.stringify(permissions), id]);
-        return result.affectedRows > 0;
-    }
-    const [result] = await pool.query('UPDATE AllowedEmails SET role = ?, isActive = ? WHERE id = ?', [role, isActive ? 1 : 0, id]);
+    const [result] = await pool.query('UPDATE EmailsPermitidos SET role = ?, isActive = ? WHERE id = ?', [role, isActive ? 1 : 0, id]);
     return result.affectedRows > 0;
 }
-export async function deleteAllowedEmail(id) {
+export async function deleteEmailPermitido(id) {
     const pool = await getPool();
-    const [result] = await pool.query('DELETE FROM AllowedEmails WHERE id = ?', [id]);
+    const [result] = await pool.query('DELETE FROM EmailsPermitidos WHERE id = ?', [id]);
     return result.affectedRows > 0;
 }

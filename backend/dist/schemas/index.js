@@ -104,58 +104,24 @@ export const userIdSchema = z.object({
     id: z.coerce.number().int().positive(),
 });
 export const updateRoleSchema = z.object({
-    role: z.enum(['admin', 'user']),
+    role: z.enum(['admin', 'user', 'viewer', 'operario']),
 });
 export const updateActiveSchema = z.object({
     isActive: z.boolean(),
-});
-const permissionsSchema = z.object({
-    admin: z.boolean(),
-    pedidos: z.object({
-        create: z.boolean(),
-        view: z.boolean(),
-        edit: z.boolean(),
-        delete: z.boolean(),
-    }),
-    recambios: z.object({
-        create: z.boolean(),
-        view: z.boolean(),
-        edit: z.boolean(),
-        delete: z.boolean(),
-    }),
-    familias: z.object({
-        create: z.boolean(),
-        view: z.boolean(),
-        edit: z.boolean(),
-        delete: z.boolean(),
-    }),
-    tarifas: z.object({
-        create: z.boolean(),
-        view: z.boolean(),
-        edit: z.boolean(),
-        delete: z.boolean(),
-    }),
-});
-export const updatePermissionsSchema = z.object({
-    role: z.enum(['admin', 'user', 'viewer', 'operario']),
-    permissions: permissionsSchema.optional(),
 });
 export const createUserSchema = z.object({
     username: z.string().min(1, 'Usuario requerido'),
     password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
     name: z.string().min(1, 'Nombre requerido'),
     role: z.enum(['admin', 'user', 'viewer', 'operario']),
-    permissions: permissionsSchema.optional(),
 });
 export const allowedEmailSchema = z.object({
     email: z.string().email(),
     role: z.enum(['admin', 'user', 'viewer', 'operario']),
-    permissions: permissionsSchema.optional(),
 });
 export const allowedEmailUpdateSchema = z.object({
     role: z.enum(['admin', 'user', 'viewer', 'operario']),
     isActive: z.boolean(),
-    permissions: permissionsSchema.optional(),
 });
 export const importarMarcaSchema = z.object({
     marca: z.string().min(1).max(50),
