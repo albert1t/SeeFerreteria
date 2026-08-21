@@ -156,6 +156,6 @@ export async function importCsv(brand, buffer, fileName, userId) {
         connection.release();
     }
 }
-export async function getUltimaImportacion(brand) {
+export async function getLastImport(brand) {
     return importsRepo.findLastCompleted(brand);
 }

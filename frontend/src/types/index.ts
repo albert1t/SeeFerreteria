@@ -111,8 +111,8 @@ export interface CatalogImport {
 
 export interface ImportStatusResponse {
   brand: string;
-  ultimaImportacion: string | null;
-  diasDesdeUltima: number | null;
+  lastImport: string | null;
+  daysSinceLastImport: number | null;
 }
 
 export interface ProductFormData {

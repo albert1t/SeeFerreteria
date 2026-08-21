@@ -40,7 +40,7 @@ export function Layout() {
 
   const { data: tarifaStatus } = useQuery({
     queryKey: ['imports', 'festo', 'status'],
-    queryFn: () => importacionesApi.getImportacionStatus('festo'),
+    queryFn: () => importacionesApi.getImportStatus('festo'),
     enabled: puedeTarifas,
     refetchInterval: 30_000,
   });
@@ -155,7 +155,7 @@ export function Layout() {
         </div>
       </header>
 
-      {puedeTarifas && tarifaStatus?.diasDesdeUltima != null && tarifaStatus.diasDesdeUltima > TARIFA_OBSOLESCENCIA_DIAS && !tarifaAlertDescartada && (
+      {puedeTarifas && tarifaStatus?.daysSinceLastImport != null && tarifaStatus.daysSinceLastImport > TARIFA_OBSOLESCENCIA_DIAS && !tarifaAlertDescartada && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 12, margin: '0 1.5rem',
           marginTop: '1rem', padding: '0.75rem 1rem',
@@ -163,7 +163,7 @@ export function Layout() {
           borderRadius: 8, color: 'var(--danger-text)', fontSize: 13,
         }}>
           <span style={{ flex: 1 }}>
-            ⚠️ La tarifa de precios de Festo tiene más de 6 meses de antigüedad ({tarifaStatus.diasDesdeUltima} días). Importa un nuevo CSV para mantener los PVP orientativos al día.{' '}
+            ⚠️ La tarifa de precios de Festo tiene más de 6 meses de antigüedad ({tarifaStatus.daysSinceLastImport} días). Importa un nuevo CSV para mantener los PVP orientativos al día.{' '}
             <NavLink to="/admin/importar-tarifas-festo" onClick={closeMenu} style={{ color: 'var(--danger-text)', fontWeight: 700 }}>Ir a importar</NavLink>
           </span>
           <button

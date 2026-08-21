@@ -1,18 +1,18 @@
 import { apiFetch, BASE_URL } from './client';
 import type { CatalogImport, ImportStatusResponse } from '../types';
 
-export function getImportacionStatus(brand: string): Promise<ImportStatusResponse> {
-  return apiFetch(`/api/catalogs/importar/${encodeURIComponent(brand)}/status`);
+export function getImportStatus(brand: string): Promise<ImportStatusResponse> {
+  return apiFetch(`/api/catalogs/import/${encodeURIComponent(brand)}/status`);
 }
 
 export async function importCatalog(
   brand: string,
   file: File,
-): Promise<{ ok: boolean; importacion: CatalogImport }> {
+): Promise<{ ok: boolean; result: CatalogImport }> {
   const formData = new FormData();
   formData.append('file', file);
 
-  const res = await fetch(`${BASE_URL}/api/catalogs/importar/${encodeURIComponent(brand)}`, {
+  const res = await fetch(`${BASE_URL}/api/catalogs/import/${encodeURIComponent(brand)}`, {
     method: 'POST',
     credentials: 'include',
     body: formData,

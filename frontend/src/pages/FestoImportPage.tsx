@@ -28,20 +28,20 @@ export function FestoImportPage() {
 
   const { data: status } = useQuery({
     queryKey: ['imports', FESTO_MARCA, 'status'],
-    queryFn: () => importacionesApi.getImportacionStatus(FESTO_MARCA),
+    queryFn: () => importacionesApi.getImportStatus(FESTO_MARCA),
     refetchInterval: 30_000,
   });
 
   const importarMut = useMutation({
     mutationFn: (f: File) => importacionesApi.importCatalog(FESTO_MARCA, f),
     onSuccess: (data) => {
-      const { importacion } = data;
-      const fallido = importacion.status === 'fallido';
+      const { result } = data;
+      const fallido = result.status === 'fallido';
       setResult({
         ok: !fallido,
         message: fallido
-          ? `No se actualizó ningún producto. ${importacion.errors > 0 ? `Se descartaron ${importacion.errors} filas inválidas.` : 'Ningún código del CSV coincide con un producto existente.'}`
-          : `Importación completada: ${importacion.updated} productos updated de ${importacion.totalRecords} filas leídas${importacion.errors > 0 ? ` (${importacion.errors} filas descartadas)` : ''}.`,
+          ? `No se actualizó ningún producto. ${result.errors > 0 ? `Se descartaron ${result.errors} filas inválidas.` : 'Ningún código del CSV coincide con un producto existente.'}`
+          : `Importación completada: ${result.updated} productos updated de ${result.totalRecords} filas leídas${result.errors > 0 ? ` (${result.errors} filas descartadas)` : ''}.`,
       });
       setFile(null);
       showToast(
@@ -91,7 +91,7 @@ export function FestoImportPage() {
     importarMut.mutate(file);
   }
 
-  const dias = status?.diasDesdeUltima ?? null;
+  const dias = status?.daysSinceLastImport ?? null;
   const obsoleto = dias !== null && dias > OBsolescencia_DIAS;
 
   useEffect(() => {
@@ -118,8 +118,8 @@ export function FestoImportPage() {
         {dias !== null && (
           <div style={{ fontSize: 13, color: obsoleto ? 'var(--danger-text)' : colors.textMuted }}>
             Última importación: {dias === 0 ? 'hoy' : `hace ${dias} días`}
-            {status?.ultimaImportacion && (
-              <span style={{ marginLeft: 8, opacity: 0.7 }}>({new Date(status.ultimaImportacion).toLocaleDateString('es-ES')})</span>
+            {status?.lastImport && (
+              <span style={{ marginLeft: 8, opacity: 0.7 }}>({new Date(status.lastImport).toLocaleDateString('es-ES')})</span>
             )}
           </div>
         )}

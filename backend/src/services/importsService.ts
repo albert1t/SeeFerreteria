@@ -181,6 +181,6 @@ export async function importCsv(
   }
 }
 
-export async function getUltimaImportacion(brand: string): Promise<CatalogImport | null> {
+export async function getLastImport(brand: string): Promise<CatalogImport | null> {
   return importsRepo.findLastCompleted(brand);
 }

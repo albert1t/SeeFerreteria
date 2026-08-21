@@ -22,19 +22,19 @@ const router = Router();
 
 router.use(authMiddleware);
 
-// GET /api/catalogs/importar/:brand/status
+// GET /api/catalogs/import/:brand/status
 // Returns the last successful import date for a given brand/catalog.
 router.get(
-  '/importar/:brand/status',
+  '/import/:brand/status',
   validateParams(importBrandSchema),
   async (req, res, next) => {
     try {
       const { brand } = req.params as { brand: string };
-      const ultima = await importsService.getUltimaImportacion(brand);
+      const ultima = await importsService.getLastImport(brand);
       res.json({
         brand,
-        ultimaImportacion: ultima?.finishedAt ?? null,
-        diasDesdeUltima: ultima?.finishedAt
+        lastImport: ultima?.finishedAt ?? null,
+        daysSinceLastImport: ultima?.finishedAt
           ? Math.floor((Date.now() - new Date(ultima.finishedAt).getTime()) / (1000 * 60 * 60 * 24))
           : null,
       });
@@ -44,11 +44,11 @@ router.get(
   },
 );
 
-// POST /api/catalogs/importar/:brand
+// POST /api/catalogs/import/:brand
 // Protected by tariff edit permission. Receives a CSV, parses it in a stream,
 // normalizes prices, and bulk-updates the product master in chunks of 1000.
 router.post(
-  '/importar/:brand',
+  '/import/:brand',
   requirePermission('tarifas', 'edit'),
   validateParams(importBrandSchema),
   (req, res, next) => {
@@ -74,7 +74,7 @@ router.post(
       );
       res.status(201).json({
         ok: true,
-        importacion: resultado,
+        result: resultado,
       });
     } catch (err) {
       next(err);
