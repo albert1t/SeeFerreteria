@@ -1,38 +1,16 @@
--- Migración 008: renombrar todas las tablas y columnas a inglés
--- Estado previo (MySQL OVH): Familias, Subcategorias, Recambios, Pedidos, PedidosEstadoHistorial, ImportacionesCatalogo, EmailsPermitidos
--- Estado objetivo: Families, Subcategories, Products, Orders, OrderStatusHistory, CatalogImports, AllowedEmails
+-- Migración 008: renombrar columnas restantes a inglés
+-- Estado actual en producción: tablas ya en inglés, columnas aún en español en Products, Orders, OrderStatusHistory y CatalogImports.
 
 SET FOREIGN_KEY_CHECKS = 0;
 
--- Quitar FKs que referencian tablas a renombrar (IF EXISTS para seguridad)
-ALTER TABLE Subcategorias DROP FOREIGN KEY IF EXISTS FK_Subcategory_Family;
-ALTER TABLE Recambios DROP FOREIGN KEY IF EXISTS FK_Product_Family;
-ALTER TABLE Recambios DROP FOREIGN KEY IF EXISTS FK_Product_Subcategory;
-ALTER TABLE Pedidos DROP FOREIGN KEY IF EXISTS FK_Order_Product;
-ALTER TABLE Pedidos DROP FOREIGN KEY IF EXISTS FK_Order_Requester;
-ALTER TABLE PedidosEstadoHistorial DROP FOREIGN KEY IF EXISTS FK_History_Order;
-ALTER TABLE PedidosEstadoHistorial DROP FOREIGN KEY IF EXISTS FK_History_User;
-ALTER TABLE ImportacionesCatalogo DROP FOREIGN KEY IF EXISTS FK_Import_User;
-
--- Renombrar tablas
-RENAME TABLE
-  Familias TO Families,
-  Subcategorias TO Subcategories,
-  Recambios TO Products,
-  Pedidos TO Orders,
-  PedidosEstadoHistorial TO OrderStatusHistory,
-  ImportacionesCatalogo TO CatalogImports,
-  EmailsPermitidos TO AllowedEmails;
-
--- Families
-ALTER TABLE Families
-  CHANGE COLUMN nombre name VARCHAR(100) NOT NULL,
-  CHANGE COLUMN descripcion description VARCHAR(500);
-
--- Subcategories
-ALTER TABLE Subcategories
-  CHANGE COLUMN familiaId familyId INT NOT NULL,
-  CHANGE COLUMN nombre name VARCHAR(100) NOT NULL;
+-- Quitar FKs que usan columnas españolas
+ALTER TABLE Products DROP FOREIGN KEY IF EXISTS FK_Rec_Familia;
+ALTER TABLE Products DROP FOREIGN KEY IF EXISTS FK_Rec_Subcategoria;
+ALTER TABLE Orders DROP FOREIGN KEY IF EXISTS FK_Ped_Recambio;
+ALTER TABLE Orders DROP FOREIGN KEY IF EXISTS FK_Ped_Solicitante;
+ALTER TABLE OrderStatusHistory DROP FOREIGN KEY IF EXISTS FK_Hist_Pedido;
+ALTER TABLE OrderStatusHistory DROP FOREIGN KEY IF EXISTS FK_Hist_Usuario;
+ALTER TABLE CatalogImports DROP FOREIGN KEY IF EXISTS FK_Import_Usuario;
 
 -- Products
 ALTER TABLE Products
@@ -75,12 +53,20 @@ ALTER TABLE OrderStatusHistory
   CHANGE COLUMN observaciones notes VARCHAR(500),
   CHANGE COLUMN fecha createdAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3);
 
--- AllowedEmails: ya en inglés excepto nombre de tabla renombrado arriba
+-- CatalogImports
+ALTER TABLE CatalogImports
+  CHANGE COLUMN marca brand VARCHAR(50) NOT NULL,
+  CHANGE COLUMN totalRegistros totalRecords INT NOT NULL DEFAULT 0,
+  CHANGE COLUMN actualizados updated INT NOT NULL DEFAULT 0,
+  CHANGE COLUMN errores errors INT NOT NULL DEFAULT 0,
+  CHANGE COLUMN erroresDetalle errorDetails TEXT,
+  CHANGE COLUMN estado status ENUM('procesando', 'completado', 'fallido') NOT NULL DEFAULT 'procesando',
+  CHANGE COLUMN archivoNombre fileName VARCHAR(255),
+  CHANGE COLUMN usuarioId userId INT NOT NULL,
+  CHANGE COLUMN fechaInicio startedAt DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  CHANGE COLUMN fechaFin finishedAt DATETIME(3);
 
--- Restaurar FKs
-ALTER TABLE Subcategories
-  ADD CONSTRAINT FK_Subcategory_Family FOREIGN KEY (familyId) REFERENCES Families(id) ON DELETE NO ACTION;
-
+-- Restaurar FKs con nombres en inglés
 ALTER TABLE Products
   ADD CONSTRAINT FK_Product_Family FOREIGN KEY (familyId) REFERENCES Families(id),
   ADD CONSTRAINT FK_Product_Subcategory FOREIGN KEY (subcategoryId) REFERENCES Subcategories(id);
@@ -98,11 +84,14 @@ ALTER TABLE CatalogImports
 
 SET FOREIGN_KEY_CHECKS = 1;
 
--- Renombrar índices viejos (si existen) a nombres en inglés
+-- Renombrar índices viejos a nombres en inglés
+ALTER TABLE Products DROP INDEX IF EXISTS referenciaCMH;
 ALTER TABLE Products DROP INDEX IF EXISTS IX_Recambios_RefCMH;
 ALTER TABLE Products DROP INDEX IF EXISTS IX_Recambios_Nombre;
 ALTER TABLE Products DROP INDEX IF EXISTS IX_Recambios_Panel;
 ALTER TABLE Products DROP INDEX IF EXISTS IX_Recambios_Codigo;
+ALTER TABLE Products DROP INDEX IF EXISTS UQ_Recambio_Ubicacion;
+CREATE UNIQUE INDEX UQ_Product_Location ON Products(panel, col, row);
 CREATE INDEX IX_Products_cmhReference ON Products(cmhReference);
 CREATE INDEX IX_Products_name ON Products(name);
 CREATE INDEX IX_Products_panel ON Products(panel);
