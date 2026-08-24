@@ -178,7 +178,9 @@ router.post('/', requireRole('admin'), validateBody(productCreateSchema), async 
 router.put('/:id', requireRole('admin'), validateBody(productUpdateSchema), async (req, res, next) => {
     try {
         const id = parseInt(String(req.params.id), 10);
+        console.log('[PUT /api/products/' + id + '] body:', JSON.stringify(req.body));
         const product = await productsService.updateProduct(id, req.body);
+        console.log('[PUT /api/products/' + id + '] response hidden:', product.hidden);
         res.json(product);
     }
     catch (err) {
