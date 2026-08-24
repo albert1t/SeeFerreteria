@@ -158,7 +158,8 @@ export function DatosPage() {
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) =>
       recambiosApi.updateProduct(id, data as any),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['products', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['panels'] });
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });

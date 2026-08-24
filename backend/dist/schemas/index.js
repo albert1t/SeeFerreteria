@@ -27,6 +27,7 @@ const baseRecambioSchema = z.object({
     panel: z.string().min(1).max(10),
     col: z.number().int().min(1).max(6),
     row: z.number().int().min(1).max(15),
+    hidden: z.boolean().optional(),
 });
 function refineUbicacion(data, ctx) {
     if (data.panel === undefined)

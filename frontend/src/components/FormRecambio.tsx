@@ -47,6 +47,7 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
     panel: product?.panel ?? '',
     col: product?.col ?? null,
     row: product?.row ?? null,
+    hidden: product?.hidden ?? false,
   });
 
   const [uploading, setUploading] = useState(false);
@@ -162,6 +163,18 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
       <div>
         <label style={labelStyle}>Fila * (1-{panelLimits.rows})</label>
         <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row ?? ''} onChange={(e) => { const v = e.target.value; upd('row', v === '' ? null : parseInt(v, 10)); }} placeholder="Ej: 1" />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1/-1' }}>
+        <input
+          id="hidden-check"
+          type="checkbox"
+          checked={form.hidden}
+          onChange={(e) => upd('hidden', e.target.checked)}
+          style={{ width: 18, height: 18, accentColor: 'var(--accent)' }}
+        />
+        <label htmlFor="hidden-check" style={{ ...labelStyle, marginBottom: 0, cursor: 'pointer' }}>
+          Producto oculto
+        </label>
       </div>
       {/* Image upload section */}
       <div style={{ gridColumn: '1/-1' }}>

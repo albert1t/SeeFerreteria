@@ -133,4 +133,5 @@ export interface ProductFormData {
   panel: string;
   col: number | null;
   row: number | null;
+  hidden?: boolean;
 }
