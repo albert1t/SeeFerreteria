@@ -35,7 +35,11 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     ...(options.headers as Record<string, string> || {}),
   };
 
-  const res = await fetch(`${BASE_URL}${path}`, {
+  // Cache-busting para evitar que LiteSpeed cachee respuestas de la API
+  const apiUrl = BASE_URL ? new URL(path, BASE_URL) : new URL(path, window.location.origin);
+  apiUrl.searchParams.set('_cb', Date.now().toString());
+
+  const res = await fetch(apiUrl.toString(), {
     ...options,
     credentials: 'include',
     headers,
