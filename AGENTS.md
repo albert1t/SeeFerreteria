@@ -150,9 +150,9 @@ The backend validates variables with `zod` in `backend/src/config/env.ts`.
 | `SMTP_PASS` | No | Contraseña SMTP | *(en cPanel)* |
 | `MAIL_FROM` | No | Remitente | `noreply@cmhautomacion.com` |
 | `MAIL_REPLY_TO` | No | Reply-To | `comercial@cmhautomacion.com` |
-| `NOTIFY_EMAIL` | No | Correo de notificaciones de orders | `comercial@cmhautomacion.com` |
+| `NOTIFY_EMAIL` | No | Correo de notificaciones de orders | `danexthegamer@gmail.com` (cambiar a `comercial@cmhautomacion.com` si se prefiere) |
 | `MAIL_ENABLED` | No | Activa/desactiva envíos | `true` |
-| `NOTIFY_ADMIN_ON_REGISTER` | No | Notificar al admin cuando un nuevo usuario se registra | `false` |
+| `NOTIFY_ADMIN_ON_REGISTER` | No | Notificar al admin cuando un nuevo usuario se registra | `true` |
 
 ### Variables del frontend / Frontend variables
 
@@ -399,12 +399,13 @@ npm run dev:all
 ## 12. Cambios recientes / Recent Changes
 
 ### Español
-- **Fix booleano `oculto`:** se asegura que la propiedad se devuelva como `boolean` en lugar de `0`/`1`.
+- **Full English refactor:** tablas, columnas, endpoints y tipos renombrados a inglés (`Products`, `Orders`, `OrderStatusHistory`, `CatalogImports`, etc.).
+- **Migración de BD:** `database/008_standardize_english_names.sql` renombra todas las tablas/columnas de producción.
 - **Notificaciones por email:** implementadas con Nodemailer; emails en nuevo pedido, acuse al solicitante y seguimiento de estado.
 - **Endpoint de prueba SMTP:** `POST /api/orders/test-email`.
 - **`.cpanel.yml` ajustado:** usa `npm-cli.js` directo de Node 24 y elimina `touch tmp/restart.txt`.
-- **Commit local pendiente de push:** `6f96093 fix(.cpanel.yml): usa npm directo de alt-nodejs24 y elimina touch tmp/restart.txt`.
-  El remote está en HTTPS y no hay credenciales de GitHub configuradas en este entorno.
+- **Backend desplegado y activo en cPanel:** aplicación Node.js recreada/iniciada; `public_html/api/.htaccess` limitado a configuración Passenger; se añadió `RewriteRule ^api/ - [L]` en `public_html/.htaccess` para evitar que WordPress intercepte `/api`.
+- **Caché de LiteSpeed purgada** tras el arreglo de `.htaccess` para que `/api/health` responda correctamente.
 
 ### English
 - **Full English refactor:** tables, columns, endpoints and types renamed to English (`Products`, `Orders`, `OrderStatusHistory`, `CatalogImports`, etc.).
@@ -412,7 +413,8 @@ npm run dev:all
 - **Email notifications:** order creation, status update and new-user registration (toggleable via `NOTIFY_ADMIN_ON_REGISTER`).
 - **SMTP test endpoint:** `POST /api/orders/test-email`.
 - **`.cpanel.yml` adjusted:** uses the direct Node 24 `npm-cli.js` path and removes `touch tmp/restart.txt`.
-- **Local commit pending push:** see latest commit after refactor.
+- **Backend deployed and active on cPanel:** Node.js app recreated/started; `public_html/api/.htaccess` limited to Passenger config; `RewriteRule ^api/ - [L]` added to `public_html/.htaccess` so WordPress does not intercept `/api`.
+- **LiteSpeed cache purged** after the `.htaccess` fix so `/api/health` responds correctly.
 
 
 ---
@@ -440,6 +442,11 @@ npm run dev:all
 **Errores CORS en producción**
 - Verificar que `CORS_ORIGIN` en cPanel incluya el origen exacto del frontend (por ejemplo `https://www.ferreteria.latecnologiaasumedida.com`).
 
+**`/api/...` devuelve 404 de WordPress**
+- Asegurar que `public_html/api/.htaccess` contenga solo la configuración Passenger de CloudLinux (`PassengerAppRoot`, `PassengerBaseURI /api`, `PassengerNodejs`, `PassengerAppType node`, `PassengerStartupFile dist/index.js`).
+- Añadir `RewriteRule ^api/ - [L]` **antes** del bloque WordPress en `public_html/.htaccess`.
+- Purgar la caché de LiteSpeed (desde el admin de WP o `do_action('litespeed_purge_all')`) hasta ver `x-litespeed-cache: miss`.
+
 **No llegan emails**
 - Revisar `backend/stderr.log` en busca de líneas `[mail] ...`.
 - Verificar `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`.
@@ -465,6 +472,11 @@ npm run dev:all
 
 **CORS errors in production**
 - Check that `CORS_ORIGIN` in cPanel includes the exact frontend origin (e.g. `https://www.ferreteria.latecnologiaasumedida.com`).
+
+**`/api/...` returns WordPress 404**
+- Ensure `public_html/api/.htaccess` contains only the CloudLinux Passenger configuration (`PassengerAppRoot`, `PassengerBaseURI /api`, `PassengerNodejs`, `PassengerAppType node`, `PassengerStartupFile dist/index.js`).
+- Add `RewriteRule ^api/ - [L]` **before** the WordPress block in `public_html/.htaccess`.
+- Purge the LiteSpeed cache (via WP admin or `do_action('litespeed_purge_all')`) until `x-litespeed-cache: miss` is seen.
 
 **Emails not arriving**
 - Check `backend/stderr.log` for `[mail] ...` lines.
