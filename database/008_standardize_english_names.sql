@@ -28,7 +28,7 @@ ALTER TABLE Products
   CHANGE COLUMN subcategoriaId subcategoryId INT,
   CHANGE COLUMN nReposicion reorderPoint INT NOT NULL DEFAULT 1,
   CHANGE COLUMN stock stock INT DEFAULT 0,
-  CHANGE COLUMN oculto hidden BIT NOT NULL DEFAULT 0;
+  CHANGE COLUMN oculto hidden TINYINT(1) NOT NULL DEFAULT 0;
 
 -- Orders
 ALTER TABLE Orders
