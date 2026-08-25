@@ -157,11 +157,24 @@ export function DatosPage() {
   const updateMut = useMutation({
     mutationFn: ({ id, data }: { id: number; data: Record<string, unknown> }) =>
       recambiosApi.updateProduct(id, data as any),
-    onSuccess: () => {
+    onMutate: async ({ id, data }) => {
+      await queryClient.cancelQueries({ queryKey: ['products', 'all'] });
+      const previous = queryClient.getQueryData<Product[]>(['products', 'all']);
+      queryClient.setQueryData<Product[]>(['products', 'all'], (old) =>
+        old ? old.map((p) => (p.id === id ? ({ ...p, ...data } as Product) : p)) : old
+      );
+      return { previous };
+    },
+    onError: (err: Error, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(['products', 'all'], context.previous);
+      }
+      showToast(err.message, 'error');
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['panels'] });
     },
-    onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const deleteMut = useMutation({
@@ -401,8 +414,9 @@ export function DatosPage() {
     const key = `${r.id}_${String(field)}`;
 
     if (field === 'hidden') {
+      const isUpdating = updateMut.isPending && updateMut.variables?.id === r.id;
       return (
-        <input type="checkbox" checked={r.hidden} disabled={!puedeEditar}
+        <input type="checkbox" checked={r.hidden} disabled={!puedeEditar || isUpdating}
           onChange={() => updateMut.mutate({ id: r.id, data: { hidden: !r.hidden } })} />
       );
     }
