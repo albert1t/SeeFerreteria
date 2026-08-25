@@ -99,14 +99,14 @@ export async function getHistorial(orderId) {
     FROM OrderStatusHistory h
     INNER JOIN Users u ON u.id = h.userId
     WHERE h.orderId = ?
-    ORDER BY h.fecha ASC`, [orderId]);
+    ORDER BY h.createdAt ASC`, [orderId]);
     return rows.map((row) => ({
         id: row.id,
         orderId: row.orderId,
         userId: row.userId,
         previousStatus: row.previousStatus,
         newStatus: row.newStatus,
-        fecha: row.fecha.toISOString(),
+        createdAt: row.createdAt.toISOString(),
         userName: row.userName,
     }));
 }

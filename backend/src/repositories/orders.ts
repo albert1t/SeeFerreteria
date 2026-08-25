@@ -146,12 +146,12 @@ export async function updateStatus(
 
 export async function getHistorial(orderId: number): Promise<OrderHistory[]> {
   const pool = await getPool();
-  const [rows] = await pool.query(
+  const [rows] =   await pool.query(
     `SELECT h.*, u.name AS userName
     FROM OrderStatusHistory h
     INNER JOIN Users u ON u.id = h.userId
     WHERE h.orderId = ?
-    ORDER BY h.fecha ASC`,
+    ORDER BY h.createdAt ASC`,
     [orderId]
   );
   return (rows as any[]).map((row: any) => ({
@@ -160,7 +160,7 @@ export async function getHistorial(orderId: number): Promise<OrderHistory[]> {
     userId: row.userId as number,
     previousStatus: row.previousStatus as string | null,
     newStatus: row.newStatus as string,
-    fecha: (row.fecha as Date).toISOString(),
+    createdAt: (row.createdAt as Date).toISOString(),
     userName: row.userName as string,
   }));
 }

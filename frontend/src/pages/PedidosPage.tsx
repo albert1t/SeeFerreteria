@@ -293,7 +293,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
                     border: '2px solid var(--bg)',
                   }} />
                   <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    <span style={{ color: 'var(--text-light)', fontWeight: 600 }}>{fmtDate(h.fecha)}</span>
+                    <span style={{ color: 'var(--text-light)', fontWeight: 600 }}>{fmtDate(h.createdAt)}</span>
                     {' · '}{h.userName}
                   </div>
                   <div style={{ fontSize: 12, color: 'var(--text-dim)' }}>

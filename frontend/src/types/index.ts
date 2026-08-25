@@ -68,7 +68,7 @@ export interface OrderHistory {
   userId: number;
   previousStatus: string | null;
   newStatus: string;
-  fecha: string;
+  createdAt: string;
   userName?: string;
 }
 
