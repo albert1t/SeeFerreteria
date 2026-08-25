@@ -100,7 +100,7 @@ BEGIN
         desiredDeadline NVARCHAR(50),
         status NVARCHAR(30) NOT NULL DEFAULT 'Solicitado'
             CHECK (status IN ('Solicitado','Pedido realizado','Pedido recibido','Finalizado')),
-        priority BIT NOT NULL DEFAULT 0,
+        priority TINYINT(1) NOT NULL DEFAULT 0,
         notes NVARCHAR(MAX),
         hidden TINYINT(1) NOT NULL DEFAULT 0,
         requestedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),

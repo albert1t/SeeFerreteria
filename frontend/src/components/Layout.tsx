@@ -136,6 +136,11 @@ export function Layout() {
               Usuarios
             </NavLink>
           )}
+          {isAdmin && (
+            <NavLink to="/admin/ajustes" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
+              Ajustes
+            </NavLink>
+          )}
           {can('products', 'viewDataPage') && (
             <NavLink to="/datos" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
               Datos
@@ -214,6 +219,14 @@ export function Layout() {
             ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
           })}>
             Usuarios
+          </NavLink>
+        )}
+        {isAdmin && (
+          <NavLink to="/admin/ajustes" onClick={closeMenu} style={({ isActive }) => ({
+            ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
+            ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
+          })}>
+            Ajustes
           </NavLink>
         )}
         {can('products', 'viewDataPage') && (

@@ -9,6 +9,7 @@ import { PedidosPage } from './pages/PedidosPage';
 import { UsersPage } from './pages/UsersPage';
 import { DatosPage } from './pages/DatosPage';
 import { FestoImportPage } from './pages/FestoImportPage';
+import { AdminSettingsPage } from './pages/AdminSettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,6 +78,7 @@ export default function App() {
                 <Route index element={<AlmacenPage />} />
                 <Route path="orders" element={<PedidosPage />} />
                 <Route path="usuarios" element={<AdminRoute><UsersPage /></AdminRoute>} />
+                <Route path="admin/ajustes" element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
                 <Route path="datos" element={<DatosPage />} />
                 <Route
                   path="admin/importar-tarifas-festo"

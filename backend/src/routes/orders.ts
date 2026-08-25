@@ -17,9 +17,9 @@ router.post('/test-email', async (req, res, next) => {
       ? req.user.username
       : env.NOTIFY_EMAIL;
     const info = await enviarCorreoDePrueba(to);
-    res.json({ ok: true, to, info, config: getMailConfigStatus() });
+    res.json({ ok: true, to, info, config: await getMailConfigStatus() });
   } catch (err: any) {
-    res.status(500).json({ ok: false, error: err.message, config: getMailConfigStatus() });
+    res.status(500).json({ ok: false, error: err.message, config: await getMailConfigStatus() });
   }
 });
 

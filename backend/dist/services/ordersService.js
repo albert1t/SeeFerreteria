@@ -107,6 +107,9 @@ export async function updatePedido(id, data) {
     const order = await ordersRepo.findById(id);
     if (!order)
         throw new AppError(404, 'Order no encontrado');
+    if (order.status !== 'Solicitado') {
+        throw new AppError(409, 'Solo se puede editar un pedido en estado "Solicitado"');
+    }
     const updated = await ordersRepo.updatePedido(id, data);
     if (!updated)
         throw new AppError(404, 'Order no encontrado');
@@ -116,6 +119,9 @@ export async function deletePedido(id) {
     const order = await ordersRepo.findById(id);
     if (!order)
         throw new AppError(404, 'Order no encontrado');
+    if (order.status !== 'Solicitado') {
+        throw new AppError(409, 'Solo se puede eliminar un pedido en estado "Solicitado"');
+    }
     await ordersRepo.deletePedido(id);
 }
 export async function toggleOcultoPedido(id) {

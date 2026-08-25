@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { env } from '../config/env.js';
+import * as settingsService from './settingsService.js';
 import type { Order, OrderStatus } from '../types/index.js';
 
 const emailSchema = z.string().email();
@@ -34,9 +35,15 @@ export function esEmailValido(value: string): boolean {
   return emailSchema.safeParse(value).success;
 }
 
-export function getMailConfigStatus() {
+export async function getMailConfigStatus() {
+  const settings = await settingsService.getNotificationSettings().catch(() => ({
+    mailEnabled: env.MAIL_ENABLED,
+    notifyEmail: env.NOTIFY_EMAIL,
+    notifyAdminOnRegister: env.NOTIFY_ADMIN_ON_REGISTER,
+    emailOrdersMode: env.EMAIL_ORDERS_MODE,
+  }));
   return {
-    enabled: env.MAIL_ENABLED,
+    enabled: settings.mailEnabled,
     configured: smtpConfigured(),
     host: env.SMTP_HOST ?? null,
     port: env.SMTP_PORT,
@@ -44,7 +51,9 @@ export function getMailConfigStatus() {
     user: env.SMTP_USER ?? null,
     from: env.MAIL_FROM,
     replyTo: env.MAIL_REPLY_TO,
-    notifyTo: env.NOTIFY_EMAIL,
+    notifyTo: settings.notifyEmail,
+    notifyAdminOnRegister: settings.notifyAdminOnRegister,
+    emailOrdersMode: settings.emailOrdersMode,
   };
 }
 
@@ -57,8 +66,9 @@ async function enviarCorreo({
   subject: string;
   html: string;
 }): Promise<void> {
-  if (!env.MAIL_ENABLED) {
-    console.error('[mail] Envío deshabilitado por MAIL_ENABLED=false');
+  const settings = await settingsService.getNotificationSettings().catch(() => null);
+  if (settings && !settings.mailEnabled) {
+    console.error('[mail] Envío deshabilitado por mailEnabled=false');
     return;
   }
 
@@ -82,7 +92,7 @@ async function enviarCorreo({
 }
 
 export async function enviarCorreoDePrueba(to: string): Promise<{ messageId?: string; accepted: string[] }> {
-  const status = getMailConfigStatus();
+  const status = await getMailConfigStatus();
   if (!status.enabled) {
     throw new Error('MAIL_ENABLED=false');
   }
@@ -101,6 +111,7 @@ export async function enviarCorreoDePrueba(to: string): Promise<{ messageId?: st
         <li>Usuario: ${status.user}</li>
         <li>From: ${status.from}</li>
         <li>Reply-To: ${status.replyTo}</li>
+        <li>Modo pedidos: ${status.emailOrdersMode}</li>
       </ul>
     `
   );
@@ -157,6 +168,10 @@ function envolverHtml(titulo: string, contenido: string): string {
 }
 
 export async function notificarNuevoPedido(order: Order): Promise<void> {
+  const settings = await settingsService.getNotificationSettings().catch(() => null);
+  if (!settings || !settings.mailEnabled) return;
+  if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
+
   const subject = `Nuevo pedido #${order.id} - ${order.productName ?? order.productRef ?? 'producto'}`;
   const html = envolverHtml(
     `Nuevo pedido #${order.id}`,
@@ -168,10 +183,14 @@ export async function notificarNuevoPedido(order: Order): Promise<void> {
     `
   );
 
-  await enviarCorreo({ to: env.NOTIFY_EMAIL, subject, html });
+  await enviarCorreo({ to: settings.notifyEmail, subject, html });
 }
 
 export async function enviarAcuseSolicitante(order: Order, emailSolicitante: string): Promise<void> {
+  const settings = await settingsService.getNotificationSettings().catch(() => null);
+  if (!settings || !settings.mailEnabled) return;
+  if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
+
   const subject = `Confirmación de tu pedido #${order.id}`;
   const html = envolverHtml(
     `Hemos recibido tu pedido #${order.id}`,
@@ -193,6 +212,10 @@ export async function enviarSeguimientoEstado(
   emailSolicitante: string,
   newStatus: OrderStatus,
 ): Promise<void> {
+  const settings = await settingsService.getNotificationSettings().catch(() => null);
+  if (!settings || !settings.mailEnabled) return;
+  if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
+
   const subject = `Actualización de tu pedido #${order.id} - ${newStatus}`;
   const html = envolverHtml(
     `Tu pedido #${order.id} ha pasado a: ${newStatus}`,
@@ -211,7 +234,8 @@ export async function enviarSeguimientoEstado(
 }
 
 export async function notificarNuevoRegistro(user: { id: number; username: string; name: string; role: string }): Promise<void> {
-  if (!env.NOTIFY_ADMIN_ON_REGISTER) {
+  const settings = await settingsService.getNotificationSettings().catch(() => null);
+  if (!settings || !settings.mailEnabled || !settings.notifyAdminOnRegister) {
     return;
   }
 
@@ -230,5 +254,5 @@ export async function notificarNuevoRegistro(user: { id: number; username: strin
     `
   );
 
-  await enviarCorreo({ to: env.NOTIFY_EMAIL, subject, html });
+  await enviarCorreo({ to: settings.notifyEmail, subject, html });
 }

@@ -1,6 +1,7 @@
 import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { env } from '../config/env.js';
+import * as settingsService from './settingsService.js';
 const emailSchema = z.string().email();
 function smtpConfigured() {
     return Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS);
@@ -26,9 +27,15 @@ const transporter = createTransporter();
 export function esEmailValido(value) {
     return emailSchema.safeParse(value).success;
 }
-export function getMailConfigStatus() {
+export async function getMailConfigStatus() {
+    const settings = await settingsService.getNotificationSettings().catch(() => ({
+        mailEnabled: env.MAIL_ENABLED,
+        notifyEmail: env.NOTIFY_EMAIL,
+        notifyAdminOnRegister: env.NOTIFY_ADMIN_ON_REGISTER,
+        emailOrdersMode: env.EMAIL_ORDERS_MODE,
+    }));
     return {
-        enabled: env.MAIL_ENABLED,
+        enabled: settings.mailEnabled,
         configured: smtpConfigured(),
         host: env.SMTP_HOST ?? null,
         port: env.SMTP_PORT,
@@ -36,12 +43,15 @@ export function getMailConfigStatus() {
         user: env.SMTP_USER ?? null,
         from: env.MAIL_FROM,
         replyTo: env.MAIL_REPLY_TO,
-        notifyTo: env.NOTIFY_EMAIL,
+        notifyTo: settings.notifyEmail,
+        notifyAdminOnRegister: settings.notifyAdminOnRegister,
+        emailOrdersMode: settings.emailOrdersMode,
     };
 }
 async function enviarCorreo({ to, subject, html, }) {
-    if (!env.MAIL_ENABLED) {
-        console.error('[mail] Envío deshabilitado por MAIL_ENABLED=false');
+    const settings = await settingsService.getNotificationSettings().catch(() => null);
+    if (settings && !settings.mailEnabled) {
+        console.error('[mail] Envío deshabilitado por mailEnabled=false');
         return;
     }
     if (!smtpConfigured() || !transporter) {
@@ -63,7 +73,7 @@ async function enviarCorreo({ to, subject, html, }) {
     }
 }
 export async function enviarCorreoDePrueba(to) {
-    const status = getMailConfigStatus();
+    const status = await getMailConfigStatus();
     if (!status.enabled) {
         throw new Error('MAIL_ENABLED=false');
     }
@@ -79,6 +89,7 @@ export async function enviarCorreoDePrueba(to) {
         <li>Usuario: ${status.user}</li>
         <li>From: ${status.from}</li>
         <li>Reply-To: ${status.replyTo}</li>
+        <li>Modo pedidos: ${status.emailOrdersMode}</li>
       </ul>
     `);
     const info = await transporter.sendMail({
@@ -129,6 +140,11 @@ function envolverHtml(titulo, contenido) {
   `.trim();
 }
 export async function notificarNuevoPedido(order) {
+    const settings = await settingsService.getNotificationSettings().catch(() => null);
+    if (!settings || !settings.mailEnabled)
+        return;
+    if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode))
+        return;
     const subject = `Nuevo pedido #${order.id} - ${order.productName ?? order.productRef ?? 'producto'}`;
     const html = envolverHtml(`Nuevo pedido #${order.id}`, `
       <p>Se ha creado un nuevo pedido en SeeFerreteria.</p>
@@ -136,9 +152,14 @@ export async function notificarNuevoPedido(order) {
         ${datosPedido(order)}
       </ul>
     `);
-    await enviarCorreo({ to: env.NOTIFY_EMAIL, subject, html });
+    await enviarCorreo({ to: settings.notifyEmail, subject, html });
 }
 export async function enviarAcuseSolicitante(order, emailSolicitante) {
+    const settings = await settingsService.getNotificationSettings().catch(() => null);
+    if (!settings || !settings.mailEnabled)
+        return;
+    if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode))
+        return;
     const subject = `Confirmación de tu pedido #${order.id}`;
     const html = envolverHtml(`Hemos recibido tu pedido #${order.id}`, `
       <p>Hola,</p>
@@ -151,6 +172,11 @@ export async function enviarAcuseSolicitante(order, emailSolicitante) {
     await enviarCorreo({ to: emailSolicitante, subject, html });
 }
 export async function enviarSeguimientoEstado(order, emailSolicitante, newStatus) {
+    const settings = await settingsService.getNotificationSettings().catch(() => null);
+    if (!settings || !settings.mailEnabled)
+        return;
+    if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode))
+        return;
     const subject = `Actualización de tu pedido #${order.id} - ${newStatus}`;
     const html = envolverHtml(`Tu pedido #${order.id} ha pasado a: ${newStatus}`, `
       <p>Hola,</p>
@@ -164,7 +190,8 @@ export async function enviarSeguimientoEstado(order, emailSolicitante, newStatus
     await enviarCorreo({ to: emailSolicitante, subject, html });
 }
 export async function notificarNuevoRegistro(user) {
-    if (!env.NOTIFY_ADMIN_ON_REGISTER) {
+    const settings = await settingsService.getNotificationSettings().catch(() => null);
+    if (!settings || !settings.mailEnabled || !settings.notifyAdminOnRegister) {
         return;
     }
     const subject = `Nuevo usuario registrado - ${user.username}`;
@@ -178,5 +205,5 @@ export async function notificarNuevoRegistro(user) {
       </ul>
       <p>Recuerda revisar y activar la cuenta si es necesario.</p>
     `);
-    await enviarCorreo({ to: env.NOTIFY_EMAIL, subject, html });
+    await enviarCorreo({ to: settings.notifyEmail, subject, html });
 }

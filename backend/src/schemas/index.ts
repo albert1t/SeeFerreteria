@@ -143,3 +143,10 @@ export const allowedEmailUpdateSchema = z.object({
 export const importBrandSchema = z.object({
   brand: z.string().min(1).max(50),
 });
+
+export const notificationSettingsSchema = z.object({
+  mailEnabled: z.boolean().optional(),
+  notifyEmail: z.string().email().optional(),
+  notifyAdminOnRegister: z.boolean().optional(),
+  emailOrdersMode: z.enum(['all', 'urgent_only', 'none']).optional(),
+});

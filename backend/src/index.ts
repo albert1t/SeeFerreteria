@@ -12,6 +12,7 @@ import panelsRoutes from './routes/panels.js';
 import ordersRoutes from './routes/orders.js';
 import catalogsRoutes from './routes/catalogs.js';
 import importsRoutes from './routes/imports.js';
+import settingsRoutes from './routes/settings.js';
 
 // Las imágenes se almacenan en Azure Blob Storage; no se sirven estáticos locales.
 
@@ -55,6 +56,7 @@ app.use('/api/panels', panelsRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/catalogs', catalogsRoutes);
 app.use('/api/catalogs', importsRoutes);
+app.use('/api/settings', settingsRoutes);
 
 app.use(errorHandler);
 

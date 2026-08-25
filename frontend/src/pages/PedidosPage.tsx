@@ -169,8 +169,10 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
 
   const next = SIGUIENTE_ESTADO[detail.status];
   const puedeAvanzar = !!(next && can('orders', 'edit'));
-  const puedeEditar = can('orders', 'edit');
-  const puedeEliminar = can('orders', 'delete');
+  const editablePorEstado = detail.status === 'Solicitado';
+  const puedeEditar = can('orders', 'edit') && editablePorEstado;
+  const puedeEliminar = can('orders', 'delete') && editablePorEstado;
+  const puedeOcultar = can('orders', 'edit');
   const labelStyle: React.CSSProperties = {
     fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 2, display: 'block',
   };
@@ -252,15 +254,15 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
       )}
 
       {/* Admin actions */}
-      {(puedeEditar || puedeEliminar) && (
+      {(puedeEditar || puedeOcultar || puedeEliminar) && (
         <div style={{ display: 'flex', gap: 8, marginBottom: '1.25rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-soft)' }}>
           {puedeEditar && (
-            <>
-              <button style={btnStyle('primary')} onClick={abrirEditar} disabled={editMut.isPending}>Editar</button>
-              <button style={btnStyle('ghost')} onClick={() => toggleOcultoMut.mutate()} disabled={toggleOcultoMut.isPending}>
-                {detail.hidden ? 'Mostrar' : 'Ocultar'}
-              </button>
-            </>
+            <button style={btnStyle('primary')} onClick={abrirEditar} disabled={editMut.isPending}>Editar</button>
+          )}
+          {puedeOcultar && (
+            <button style={btnStyle('ghost')} onClick={() => toggleOcultoMut.mutate()} disabled={toggleOcultoMut.isPending}>
+              {detail.hidden ? 'Mostrar' : 'Ocultar'}
+            </button>
           )}
           {puedeEliminar && (
             <button style={{ ...btnStyle('danger'), marginLeft: 'auto' }} onClick={() => setConfirmDelete(true)} disabled={deleteMut.isPending}>

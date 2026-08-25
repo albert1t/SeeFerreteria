@@ -39,15 +39,26 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
   const apiUrl = BASE_URL ? new URL(path, BASE_URL) : new URL(path, window.location.origin);
   apiUrl.searchParams.set('_cb', Date.now().toString());
 
-  const res = await fetch(apiUrl.toString(), {
-    ...options,
-    credentials: 'include',
-    headers,
-  });
+  let res: Response;
+  try {
+    res = await fetch(apiUrl.toString(), {
+      ...options,
+      credentials: 'include',
+      headers,
+    });
+  } catch (err) {
+    throw new ApiError(0, 'No se pudo conectar con el servidor. Verifica tu conexión.');
+  }
 
   if (!res.ok) {
-    const body = await res.json().catch(() => ({ error: res.statusText }));
-    throw new ApiError(res.status, body.error || 'Error de servidor', body.code, body.details);
+    const text = await res.text().catch(() => res.statusText);
+    let body: Record<string, any> = {};
+    try {
+      body = JSON.parse(text);
+    } catch {
+      body = { error: text || res.statusText };
+    }
+    throw new ApiError(res.status, body.error || body.message || 'Error de servidor', body.code, body.details);
   }
 
   if (res.status === 204) return undefined as T;
