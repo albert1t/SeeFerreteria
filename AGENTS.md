@@ -267,61 +267,71 @@ If the authenticated user's `username` is a valid email, the test email goes the
 ## 9. Despliegue / Deployment
 
 ### Español
-El despliegue usa **cPanel Git Version Control** + **CloudLinux Node.js Selector**.
+El despliegue ya **no usa cPanel Git Version Control** (fue eliminado). Se despliega mediante un script PHP temporal subido a `public_html` que ejecuta `git fetch/reset`, las migraciones SQL, `npm install` y reinicia la app.
 
 **Flujo normal:**
 1. Hacer cambios en local, compilar backend (`npm run build` en `backend/`) y frontend (`npm run build` en `frontend/`).
 2. Commit y push a `origin/main` (el remote es HTTPS, se necesitan credenciales de GitHub).
-3. En cPanel → Git Version Control → pulsar **Update** o **Deploy HEAD Commit**.
-4. Reiniciar la app Node.js.
+3. Subir y ejecutar un script PHP en `public_html` que haga `git reset --hard origin/main`, aplique migraciones pendientes, ejecute `npm install --omit=dev` y reinicie la app.
+4. El frontend en `www.ferreteria.latecnologiaasumedida.com` está en OVH (IP `46.105.204.26`); hay que copiar `frontend/dist` a `/home/iyxjhjj/repositories/SeeFerreteria/frontend/dist` y purgar la caché de OVH CDN manualmente.
 
 **Reiniciar la app (sin SSH):**
+`cloudlinux-selector restart` puede no matar el proceso antiguo. Para forzar la recarga:
 ```bash
-/usr/sbin/cloudlinux-selector restart --interpreter nodejs \
+# Obtener PID
+ps aux | grep 'lsnode:/home/cmhautomacion/repositories/SeeFerreteria/backend/'
+kill -9 <pid>
+# Luego iniciar
+/usr/sbin/cloudlinux-selector start --json --interpreter nodejs \
   --domain cmhautomacion.com \
   --app-root /home/cmhautomacion/repositories/SeeFerreteria/backend
 ```
 
 **Actualizar variables de entorno:**
 ```bash
-/usr/sbin/cloudlinux-selector set --interpreter nodejs \
+/usr/sbin/cloudlinux-selector set --json --interpreter nodejs \
   --domain cmhautomacion.com \
   --app-root /home/cmhautomacion/repositories/SeeFerreteria/backend \
   --env-vars '{"SMTP_PASS":"...",...}'
 ```
 
 **Notas importantes:**
-- `.cpanel.yml` copia `backend/` y `frontend/dist/` al document root y ejecuta `npm install --omit=dev`.
-- El `npm` normal del `nodevenv` falla cuando `node_modules` es un symlink; por eso `.cpanel.yml` usa la ruta directa de `npm-cli.js` de Node 24.
+- El `npm` normal del `nodevenv` falla cuando `node_modules` es un symlink; usar la ruta directa de `npm-cli.js` de Node 24:
+  `/opt/alt/alt-nodejs24/root/usr/bin/node /opt/alt/alt-nodejs24/root/usr/lib/node_modules/npm/bin/npm-cli.js install --omit=dev`
 - No usar `touch tmp/restart.txt`; creaba `backend/tmp/` sin trackear y bloqueaba el deploy.
 
 ### English
-Deployment uses **cPanel Git Version Control** + **CloudLinux Node.js Selector**.
+Deployment no longer uses **cPanel Git Version Control** (it was removed). Deploy via a temporary PHP script uploaded to `public_html` that runs `git fetch/reset`, applies SQL migrations, runs `npm install`, and restarts the app.
 
 **Normal flow:**
 1. Make local changes, build backend (`npm run build` in `backend/`) and frontend (`npm run build` in `frontend/`).
 2. Commit and push to `origin/main` (remote is HTTPS; GitHub credentials required).
-3. In cPanel → Git Version Control → click **Update** or **Deploy HEAD Commit**.
-4. Restart the Node.js app.
+3. Upload and run a PHP script in `public_html` that does `git reset --hard origin/main`, applies pending migrations, runs `npm install --omit=dev`, and restarts the app.
+4. The frontend at `www.ferreteria.latecnologiaasumedida.com` is on OVH (IP `46.105.204.26`); copy `frontend/dist` to `/home/iyxjhjj/repositories/SeeFerreteria/frontend/dist` and purge the OVH CDN cache manually.
 
 **Restart the app (no SSH):**
+`cloudlinux-selector restart` may not kill the old process. To force a reload:
 ```bash
-/usr/sbin/cloudlinux-selector restart --interpreter nodejs \
+# Get PID
+ps aux | grep 'lsnode:/home/cmhautomacion/repositories/SeeFerreteria/backend/'
+kill -9 <pid>
+# Then start
+/usr/sbin/cloudlinux-selector start --json --interpreter nodejs \
   --domain cmhautomacion.com \
   --app-root /home/cmhautomacion/repositories/SeeFerreteria/backend
 ```
 
 **Update environment variables:**
 ```bash
-/usr/sbin/cloudlinux-selector set --interpreter nodejs \
+/usr/sbin/cloudlinux-selector set --json --interpreter nodejs \
   --domain cmhautomacion.com \
   --app-root /home/cmhautomacion/repositories/SeeFerreteria/backend \
   --env-vars '{"SMTP_PASS":"...",...}'
 ```
 
 **Important notes:**
-- `.cpanel.yml` copies `backend/` and `frontend/dist/` to the document root and runs `npm install --omit=dev`.
-- The default `npm` from the `nodevenv` fails when `node_modules` is a symlink; therefore `.cpanel.yml` uses the direct Node 24 `npm-cli.js` path.
+- The default `npm` from the `nodevenv` fails when `node_modules` is a symlink; use the direct Node 24 `npm-cli.js` path:
+  `/opt/alt/alt-nodejs24/root/usr/bin/node /opt/alt/alt-nodejs24/root/usr/lib/node_modules/npm/bin/npm-cli.js install --omit=dev`
 - Do not use `touch tmp/restart.txt`; it created an untracked `backend/tmp/` and blocked deployment.
 
 
@@ -389,8 +399,9 @@ npm run dev:all
 | GET | `/api/orders` | Listar orders |
 | POST | `/api/orders` | Crear pedido (dispara emails) |
 | POST | `/api/orders/test-email` | Probar SMTP |
-| PATCH | `/api/orders/:id/estado` | Avanzar estado (dispara email) |
+| PATCH | `/api/orders/:id/status` | Avanzar estado (dispara email) |
 | GET | `/api/users` | Gestión de usuarios |
+| GET/PUT | `/api/settings/notifications` | Ajustes de notificaciones (admin) |
 | GET/POST | `/api/catalogs` | Catálogos |
 | GET/POST | `/api/imports` | Importaciones masivas |
 
@@ -402,19 +413,25 @@ npm run dev:all
 - **Full English refactor:** tablas, columnas, endpoints y tipos renombrados a inglés (`Products`, `Orders`, `OrderStatusHistory`, `CatalogImports`, etc.).
 - **Migración de BD:** `database/008_standardize_english_names.sql` renombra todas las tablas/columnas de producción.
 - **Notificaciones por email:** implementadas con Nodemailer; emails en nuevo pedido, acuse al solicitante y seguimiento de estado.
+- **Modo de emails de pedidos:** variable `EMAIL_ORDERS_MODE` (`all`, `urgent_only`, `none`) y ajustes dinámicos en `/api/settings/notifications`.
+- **Pestaña de ajustes de administrador:** `/admin/ajustes` para configurar notificaciones sin tocar variables de entorno.
+- **Permisos de pedidos:** edición/eliminación solo permitida mientras el estado sea `Solicitado`.
+- **Corrección flag urgente:** migración `010` cambia `Orders.priority` de `BIT(1)` a `TINYINT(1)`.
+- **Corrección historial:** columna `OrderStatusHistory.createdAt` en lugar de `fecha`.
 - **Endpoint de prueba SMTP:** `POST /api/orders/test-email`.
-- **`.cpanel.yml` ajustado:** usa `npm-cli.js` directo de Node 24 y elimina `touch tmp/restart.txt`.
-- **Backend desplegado y activo en cPanel:** aplicación Node.js recreada/iniciada; `public_html/api/.htaccess` limitado a configuración Passenger; se añadió `RewriteRule ^api/ - [L]` en `public_html/.htaccess` para evitar que WordPress intercepte `/api`.
-- **Caché de LiteSpeed purgada** tras el arreglo de `.htaccess` para que `/api/health` responda correctamente.
+- **Despliegue manual:** cPanel Git eliminado; deploy vía script PHP temporal + `kill -9` del proceso `lsnode` para forzar recarga.
 
 ### English
 - **Full English refactor:** tables, columns, endpoints and types renamed to English (`Products`, `Orders`, `OrderStatusHistory`, `CatalogImports`, etc.).
 - **DB migration:** `database/008_standardize_english_names.sql` renames all production tables/columns.
 - **Email notifications:** order creation, status update and new-user registration (toggleable via `NOTIFY_ADMIN_ON_REGISTER`).
+- **Order email mode:** `EMAIL_ORDERS_MODE` env var (`all`, `urgent_only`, `none`) and dynamic settings at `/api/settings/notifications`.
+- **Admin settings tab:** `/admin/ajustes` to configure notifications without editing environment variables.
+- **Order permissions:** edit/delete only allowed while status is `Solicitado`.
+- **Urgent flag fix:** migration `010` changes `Orders.priority` from `BIT(1)` to `TINYINT(1)`.
+- **History fix:** `OrderStatusHistory.createdAt` column instead of `fecha`.
 - **SMTP test endpoint:** `POST /api/orders/test-email`.
-- **`.cpanel.yml` adjusted:** uses the direct Node 24 `npm-cli.js` path and removes `touch tmp/restart.txt`.
-- **Backend deployed and active on cPanel:** Node.js app recreated/started; `public_html/api/.htaccess` limited to Passenger config; `RewriteRule ^api/ - [L]` added to `public_html/.htaccess` so WordPress does not intercept `/api`.
-- **LiteSpeed cache purged** after the `.htaccess` fix so `/api/health` responds correctly.
+- **Manual deployment:** cPanel Git removed; deploy via temporary PHP script + `kill -9` the `lsnode` process to force reload.
 
 
 ---
