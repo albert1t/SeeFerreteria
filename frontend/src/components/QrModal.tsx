@@ -133,7 +133,6 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           ref={videoRef}
           style={{
             width: '100%', maxHeight: 280, objectFit: 'cover', display: 'block',
-            transform: 'scaleX(-1)',
           }}
           playsInline
           muted
