@@ -131,7 +131,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
     mutationFn: (data: { quantity?: number; desiredDeadline?: string | null; notes?: string | null }) =>
       pedidosApi.updatePedido(order.id, data),
     onSuccess: () => {
-      showToast('Order actualizado', 'success');
+      showToast('Pedido actualizado', 'success');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       setEditando(false);
       onClose();
@@ -142,7 +142,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
   const deleteMut = useMutation({
     mutationFn: () => pedidosApi.deletePedido(order.id),
     onSuccess: () => {
-      showToast('Order eliminado', 'success');
+      showToast('Pedido eliminado', 'success');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       setConfirmDelete(false);
       onClose();
@@ -153,7 +153,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
   const toggleOcultoMut = useMutation({
     mutationFn: () => pedidosApi.toggleOcultoPedido(order.id),
     onSuccess: (r) => {
-      showToast(r.hidden ? 'Order ocultado' : 'Order visible', 'success');
+      showToast(r.hidden ? 'Pedido ocultado' : 'Pedido visible', 'success');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       onClose();
     },
@@ -229,7 +229,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
       {/* Data grid */}
       <div className="detalle-order-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem 1.5rem', marginBottom: '1.25rem' }}>
         {[
-          ['Product', detail.productName],
+          ['Producto', detail.productName],
           ['Referencia CMH', detail.productRef],
           ['Cantidad', `${detail.quantity} paquete${detail.quantity === 1 ? '' : 's'}${detail.productPackaging ? ` × ${embalaje} uds = ${totalUnidades} uds` : ''}`],
           ['Plazo deseado', detail.desiredDeadline ?? '—'],
@@ -307,7 +307,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
       )}
 
       {/* Edit modal */}
-      <Modal open={editando} onClose={() => setEditando(false)} title="Editar order">
+      <Modal open={editando} onClose={() => setEditando(false)} title="Editar pedido">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', minWidth: 300 }}>
           <div>
             <label style={labelStyle}>Cantidad (paquetes)</label>
@@ -338,7 +338,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
       <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)} title="Confirmar eliminación">
         <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
           <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: '1.25rem' }}>
-            ¿Eliminar el order <strong>#{order.id}</strong>? Esta acción no se puede deshacer.
+            ¿Eliminar el pedido <strong>#{order.id}</strong>? Esta acción no se puede deshacer.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
             <button style={btnStyle('ghost')} onClick={() => setConfirmDelete(false)}>Cancelar</button>
@@ -354,7 +354,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
         {confirmStatus && (
           <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
             <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: '1.25rem' }}>
-              ¿Avanzar order a <strong style={{ color: ESTADO_COLOR[confirmStatus] }}>{confirmStatus}</strong>?
+              ¿Avanzar pedido a <strong style={{ color: ESTADO_COLOR[confirmStatus] }}>{confirmStatus}</strong>?
             </p>
             <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
               <button style={btnStyle('ghost')} onClick={() => setConfirmStatus(null)}>Cancelar</button>
@@ -411,7 +411,7 @@ export function PedidosPage() {
     <div className="orders-page" style={{ padding: '1.5rem' }}>
       {/* Header */}
       <div className="orders-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: 8 }}>
-        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Orders</h2>
+        <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Pedidos</h2>
         <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
           <span><span style={{ color: 'var(--warning-text)', fontWeight: 700 }}>{activos}</span> activos</span>
           {urgentes > 0 && <span><span style={{ color: 'var(--danger-text)', fontWeight: 700 }}>{urgentes}</span> urgentes</span>}
@@ -427,7 +427,7 @@ export function PedidosPage() {
         <input
           className="orders-search-input"
           style={{ ...inputStyle, maxWidth: 220, flex: 1, minWidth: 120 }}
-          placeholder="Buscar order..."
+          placeholder="Buscar pedido..."
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
         />
@@ -464,7 +464,7 @@ export function PedidosPage() {
         </div>
       ) : orders.length === 0 ? (
         <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '3rem', fontSize: 14 }}>
-          Sin orders con los filtros actuales
+          Sin pedidos con los filtros actuales
         </div>
       ) : (
         <div className="orders-list" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -513,7 +513,7 @@ export function PedidosPage() {
         </div>
       )}
 
-      <Modal open={!!pedidoDetalle} onClose={() => setPedidoDetalle(null)} title={pedidoDetalle ? `Order #${pedidoDetalle.id}` : ''}>
+      <Modal open={!!pedidoDetalle} onClose={() => setPedidoDetalle(null)} title={pedidoDetalle ? `Pedido #${pedidoDetalle.id}` : ''}>
         {pedidoDetalle && <DetallePedido order={pedidoDetalle} onClose={() => setPedidoDetalle(null)} />}
       </Modal>
     </div>

@@ -330,7 +330,7 @@ export function AlmacenPage() {
         </div>
       </Modal>
 
-      {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo product...'} />}
+      {swapLoading && <LoadingOverlay message={swapLoading === 'swap' ? 'Intercambiando posiciones...' : 'Moviendo producto...'} />}
       <div className="almacen-page-root" style={{ display: 'flex', flexDirection: 'column', height: '100%', padding: '1.5rem', boxSizing: 'border-box', overflow: 'hidden' }}>
       <div className="almacen-title-row" style={{ position: 'relative', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexShrink: 0, gap: '1rem' }}>
         <div>
@@ -338,7 +338,7 @@ export function AlmacenPage() {
             {panelSeleccionado ? `Panel ${panelSeleccionado}` : 'Almacén — Vista General'}
             {!panelSeleccionado && can('products', 'create') && (
               <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px' }} onClick={() => setCrearRecambio(true)}>
-                + Nuevo Product
+                + Nuevo Producto
               </button>
             )}
             {!panelSeleccionado && can('families', 'edit') && (
@@ -379,7 +379,7 @@ export function AlmacenPage() {
               flexWrap: 'wrap',
             }}>
               {!selectedForSwap ? (
-                <span style={{ color: 'var(--warning-alt)' }}>Haz clic en un product para moverlo o intercambiarlo</span>
+                <span style={{ color: 'var(--warning-alt)' }}>Haz clic en un producto para moverlo o intercambiarlo</span>
               ) : (
                 <>
                   <span style={{ color: 'var(--warning-alt)', fontWeight: 600 }}>
@@ -397,7 +397,7 @@ export function AlmacenPage() {
                     Mover a otro panel
                   </button>
                   <span style={{ color: 'var(--text-faint-2)', fontSize: 11 }}>ó</span>
-                  <span style={{ color: 'var(--text-faint-2)' }}>Haz clic en otro product del mismo panel para intercambiarlo</span>
+                  <span style={{ color: 'var(--text-faint-2)' }}>Haz clic en otro producto del mismo panel para intercambiarlo</span>
                   <button style={{ ...btnStyle('ghost'), fontSize: 10, padding: '2px 8px', marginLeft: 'auto' }} onClick={() => setSelectedForSwap(null)}>
                     Cancelar
                   </button>
@@ -816,7 +816,7 @@ export function AlmacenPage() {
                                     setPickPanelName(null);
                                     setTargetPanelCubetas([]);
                                   } else {
-                                    showToast('Esa posición ya está ocupada. Usa el intercambio entre products del mismo panel.', 'info');
+                                    showToast('Esa posición ya está ocupada. Usa el intercambio entre productos del mismo panel.', 'info');
                                   }
                                   return;
                                 }

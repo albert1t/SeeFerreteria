@@ -182,7 +182,7 @@ export function DatosPage() {
     mutationFn: (id: number) => recambiosApi.deleteProduct(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['products', 'all'] });
-      showToast('Product eliminado', 'success');
+      showToast('Producto eliminado', 'success');
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
@@ -335,7 +335,7 @@ export function DatosPage() {
     );
     try {
       await Promise.all(saves);
-      showToast(`${saves.length} product(s) updated`, 'success');
+      showToast(`${saves.length} producto(s) actualizado(s)`, 'success');
       setEditMode(false);
       setEditValues({});
     } catch {
@@ -657,7 +657,7 @@ export function DatosPage() {
       </div>
 
       {showCrear && (
-        <Modal open onClose={() => setShowCrear(false)} title="Nuevo product" wide>
+        <Modal open onClose={() => setShowCrear(false)} title="Nuevo producto" wide>
           <FormRecambio
             onCancel={() => setShowCrear(false)}
             onSave={() => { setShowCrear(false); queryClient.invalidateQueries({ queryKey: ['products', 'all'] }); }}

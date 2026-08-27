@@ -59,7 +59,7 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
         ? recambiosApi.updateProduct(product.id, form)
         : recambiosApi.createProduct(form),
     onSuccess: (r) => {
-      showToast(product ? 'Product actualizado' : 'Product creado', 'success');
+      showToast(product ? 'Producto actualizado' : 'Producto creado', 'success');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['panels'] });
       onSave(r);
@@ -243,7 +243,7 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
           disabled={saveMut.isPending || uploading || !form.cmhReference || !form.name || !form.panel.trim() || form.col == null || form.col < 1 || form.row == null || form.row < 1 || !form.familyId || !(form.packagingUnit ?? '').trim()}
           onClick={() => saveMut.mutate()}
         >
-          {saveMut.isPending ? 'Guardando...' : product ? 'Guardar cambios' : 'Crear product'}
+          {saveMut.isPending ? 'Guardando...' : product ? 'Guardar cambios' : 'Crear producto'}
         </button>
       </div>
     </div>

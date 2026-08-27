@@ -49,7 +49,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
   const createOrderMut = useMutation({
     mutationFn: pedidosApi.createOrder,
     onSuccess: () => {
-      showToast('Order creado correctamente', 'success');
+      showToast('Pedido creado correctamente', 'success');
       queryClient.invalidateQueries({ queryKey: ['orders'] });
       queryClient.invalidateQueries({ queryKey: ['products', product.id] });
       setPedidoTipo(null);
@@ -64,7 +64,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
   const toggleOcultoMut = useMutation({
     mutationFn: () => recambiosApi.toggleOculto(product.id),
     onSuccess: (r) => {
-      showToast(r.hidden ? 'Product ocultado' : 'Product visible', 'success');
+      showToast(r.hidden ? 'Producto ocultado' : 'Producto visible', 'success');
       onUpdated?.(r);
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['panels'] });
@@ -85,7 +85,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
 
   function confirmarCreacion(type: OrderType) {
     if (type === 'Reposición' && r.reorderPoint == null) {
-      showToast('Este product no tiene un número de reposición. Configúralo antes de crear un order automático.', 'error');
+      showToast('Este producto no tiene un numero de reposicion. Configuralo antes de crear un pedido automatico.', 'error');
       return;
     }
     if (type === 'Solicitud' && (!quantity || !desiredDeadline)) {
@@ -165,7 +165,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
           {/* Pending orders banner */}
           {pendingOrders.length > 0 && (
             <div style={{ marginBottom: '1rem', padding: '0.75rem 1rem', background: 'var(--bg-warning-soft)', border: '1px solid var(--border-warning)', borderRadius: 8 }}>
-              <div style={{ fontWeight: 600, color: 'var(--warning-alt)', marginBottom: 4 }}>Orders pendientes</div>
+              <div style={{ fontWeight: 600, color: 'var(--warning-alt)', marginBottom: 4 }}>Pedidos pendientes</div>
               {pendingOrders.map(p => (
                 <div key={p.id} style={{ marginBottom: 6 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -206,7 +206,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-soft)' }}>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button style={btnStyle('ghost')} onClick={() => setEditando(true)}>Editar</button>
-                <button style={btnStyle('danger')} onClick={() => { if (confirm('¿Eliminar product?')) deleteMut.mutate(); }}>
+                <button style={btnStyle('danger')} onClick={() => { if (confirm('¿Eliminar producto?')) deleteMut.mutate(); }}>
                   Eliminar
                 </button>
               </div>
@@ -221,7 +221,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
       {tab === 'orders' && (
         <div>
           {myOrders.length === 0 ? (
-            <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '2rem' }}>Sin historial de orders</div>
+            <div style={{ textAlign: 'center', color: 'var(--text-dim)', padding: '2rem' }}>Sin historial de pedidos</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[...myOrders].sort((a, b) => new Date(b.requestedAt).getTime() - new Date(a.requestedAt).getTime()).map((p) => (
@@ -432,7 +432,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
         )}
       </Modal>
 
-      <Modal open={editando} onClose={() => setEditando(false)} title="Editar Product" wide>
+      <Modal open={editando} onClose={() => setEditando(false)} title="Editar Producto" wide>
         <FormRecambio
           product={r}
           onSave={(updated) => { setEditando(false); onUpdated?.(updated); }}

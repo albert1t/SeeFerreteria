@@ -120,7 +120,7 @@ export function Layout() {
             Almacén
           </NavLink>
           <NavLink to="/orders" style={({ isActive }) => ({ ...navBtn, position: 'relative', ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
-            Orders
+            Pedidos
             {(urgentes?.count ?? 0) > 0 && (
               <span style={{
                 position: 'absolute', top: -4, right: -4, background: 'var(--danger)', color: '#fff',
@@ -211,7 +211,7 @@ export function Layout() {
           ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14, position: 'relative',
           ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
         })}>
-          Orders {(urgentes?.count ?? 0) > 0 ? `(${urgentes!.count})` : ''}
+          Pedidos {(urgentes?.count ?? 0) > 0 ? `(${urgentes!.count})` : ''}
         </NavLink>
         {isAdmin && (
           <NavLink to="/usuarios" onClick={closeMenu} style={({ isActive }) => ({
@@ -269,7 +269,7 @@ export function Layout() {
         )}
       </Modal>
 
-        <Modal open={crearRecambio} onClose={() => setCrearRecambio(false)} title="Nuevo Product" wide>
+        <Modal open={crearRecambio} onClose={() => setCrearRecambio(false)} title="Nuevo Producto" wide>
         <FormRecambio
           onSave={() => setCrearRecambio(false)}
           onCancel={() => setCrearRecambio(false)}
