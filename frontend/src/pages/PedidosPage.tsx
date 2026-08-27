@@ -1,5 +1,6 @@
 import { useState, Fragment } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as XLSX from 'xlsx';
 import { Modal } from '../components/Modal';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
@@ -394,6 +395,37 @@ export function PedidosPage() {
   const activos = orders.filter((p) => p.status !== 'Finalizado').length;
   const urgentes = orders.filter((p) => p.priority && p.status !== 'Finalizado').length;
 
+  function exportToExcel() {
+    const activosOrders = orders.filter((p) => p.status !== 'Finalizado');
+    const rows = activosOrders.map((o) => ({
+      'ID': o.id,
+      'Tipo': o.type,
+      'Producto': o.productName ?? '',
+      'Ref. CMH': o.productRef ?? '',
+      'Cantidad': o.quantity,
+      'Estado': o.status,
+      'Urgente': o.priority ? 'Si' : 'No',
+      'Solicitante': o.requesterName ?? '',
+      'Fecha solicitud': o.requestedAt ? new Date(o.requestedAt).toLocaleDateString('es-ES') : '',
+      'Plazo deseado': o.desiredDeadline ?? '',
+      'Observaciones': o.notes ?? '',
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [
+      { wch: 6 }, { wch: 18 }, { wch: 25 }, { wch: 14 },
+      { wch: 10 }, { wch: 18 }, { wch: 10 }, { wch: 20 },
+      { wch: 16 }, { wch: 16 }, { wch: 30 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Pedidos activos');
+
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    XLSX.writeFile(wb, `Ferreteria_Pedidos_${dateStr}.xlsx`);
+  }
+
   const inputStyle: React.CSSProperties = {
     padding: '8px 12px', background: 'var(--bg-input)',
     border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 13,
@@ -412,9 +444,16 @@ export function PedidosPage() {
       {/* Header */}
       <div className="orders-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: 8 }}>
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700 }}>Pedidos</h2>
-        <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
-          <span><span style={{ color: 'var(--warning-text)', fontWeight: 700 }}>{activos}</span> activos</span>
-          {urgentes > 0 && <span><span style={{ color: 'var(--danger-text)', fontWeight: 700 }}>{urgentes}</span> urgentes</span>}
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-muted)' }}>
+            <span><span style={{ color: 'var(--warning-text)', fontWeight: 700 }}>{activos}</span> activos</span>
+            {urgentes > 0 && <span><span style={{ color: 'var(--danger-text)', fontWeight: 700 }}>{urgentes}</span> urgentes</span>}
+          </div>
+          {activos > 0 && (
+            <button type="button" style={{ ...btnStyle('ghost'), fontSize: 12, padding: '5px 12px', whiteSpace: 'nowrap' }} onClick={exportToExcel}>
+              ↓ Exportar Excel
+            </button>
+          )}
         </div>
       </div>
 
