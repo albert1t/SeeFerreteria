@@ -126,10 +126,10 @@ export function UsersPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', color: colors.text }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+    <div className="users-page" style={{ padding: '1.5rem', color: colors.text }}>
+      <div className="users-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0, fontSize: 22 }}>Gestión de Usuarios</h2>
-        <button type="button" onClick={() => setShowCreate(true)} style={btnStyle('primary')}>+ Nuevo usuario</button>
+        <button className="users-new-btn" type="button" onClick={() => setShowCreate(true)} style={btnStyle('primary')}>+ Nuevo usuario</button>
       </div>
 
       {usersLoading && <div style={{ color: colors.textMuted, marginBottom: '1rem' }}>Cargando usuarios...</div>}
@@ -255,7 +255,7 @@ export function UsersPage() {
       </Modal>
 
       {editingUser && (
-        <div style={{ background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, padding: '1.5rem', marginBottom: '2rem' }}>
+        <div className="user-edit-form" style={{ background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, padding: '1.5rem', marginBottom: '2rem' }}>
           <h3 style={{ margin: '0 0 1rem' }}>Editar rol: {editingUser.name}</h3>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 6 }}>Rol</label>
@@ -295,7 +295,7 @@ export function UsersPage() {
         Solo los correos de esta lista pueden iniciar sesión con Microsoft. Se les asigna el rol configurado al crear su cuenta.
       </p>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div className="emails-add-form" style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
         <input
           type="email"
           placeholder="correo@empresa.com"

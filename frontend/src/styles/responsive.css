@@ -344,11 +344,37 @@
   }
 
   /* -- USERS PAGE -- */
+  .users-page {
+    padding: 0.75rem 0.6rem !important;
+    overflow-x: hidden !important;
+  }
+
+  .users-page h2 {
+    font-size: 18px !important;
+  }
+  .users-page h3 {
+    font-size: 16px !important;
+  }
+
+  .users-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0.6rem !important;
+    margin-bottom: 1rem !important;
+  }
+  .users-new-btn {
+    width: 100% !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+    padding: 8px 12px !important;
+  }
+
   .users-table-wrapper,
   .emails-table-wrapper {
     overflow-x: visible !important;
     background: transparent !important;
     border: none !important;
+    border-radius: 0 !important;
   }
 
   .users-table,
@@ -375,7 +401,7 @@
 
   .users-row,
   .emails-row {
-    margin-bottom: 1rem !important;
+    margin-bottom: 0.75rem !important;
     padding: 0.75rem !important;
     border: 1px solid var(--border-soft-2) !important;
     border-radius: 10px !important;
@@ -385,37 +411,82 @@
   .users-cell,
   .emails-cell {
     display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-    padding: 0.5rem 0 !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 2px !important;
+    padding: 0.55rem 0 !important;
     border-bottom: 1px solid var(--border-soft) !important;
-    text-align: right !important;
+    text-align: left !important;
     min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
   }
   .users-cell:last-child,
   .emails-cell:last-child {
     border-bottom: none !important;
+    padding-bottom: 0 !important;
+  }
+  .users-cell:first-child,
+  .emails-cell:first-child {
+    padding-top: 0 !important;
   }
 
   .users-cell::before,
   .emails-cell::before {
     content: attr(data-label) !important;
+    font-size: 11px !important;
     font-weight: 600 !important;
     color: var(--text-muted) !important;
-    text-align: left !important;
-    flex-shrink: 0 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.3px !important;
   }
 
   .users-cell > div,
   .emails-cell > div {
-    justify-content: flex-end !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    gap: 6px !important;
   }
 
   .users-cell button,
-  .emails-cell button {
+  .emails-cell button,
+  .emails-add-form button {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
     font-size: 12px !important;
-    padding: 5px 10px !important;
+    padding: 6px 10px !important;
+    justify-content: center !important;
+  }
+
+  .emails-add-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .emails-add-form input,
+  .emails-add-form select,
+  .emails-add-form button {
+    width: 100% !important;
+    min-width: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  .user-edit-form {
+    padding: 1rem !important;
+  }
+  .user-edit-form h3 {
+    font-size: 15px !important;
+  }
+  .user-edit-form select {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .user-edit-form > div:last-child {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .user-edit-form button {
+    width: 100% !important;
+    justify-content: center !important;
   }
 
   /* -- SEARCH RESULTS -- */
