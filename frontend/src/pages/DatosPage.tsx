@@ -1,6 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import * as XLSX from 'xlsx';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
@@ -223,6 +224,37 @@ export function DatosPage() {
 
   function clearAllFilters() {
     setBusqueda(''); setColumnFilters({}); setSort(null);
+  }
+
+  function exportToExcel() {
+    const rows = products.map((r) => {
+      const row: Record<string, string | number | boolean> = {};
+      FIELDS.forEach((f) => {
+        row[f.label] = cellValue(r, f.key);
+      });
+      return row;
+    });
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+
+    const colWidths = FIELDS.map((f) => ({ wch: f.label.length + 2 }));
+    ws['!cols'] = colWidths;
+
+    const range = XLSX.utils.decode_range(ws['!ref']!);
+    for (let C = range.s.c; C <= range.e.c; ++C) {
+      const addr = XLSX.utils.encode_cell({ r: 0, c: C });
+      if (ws[addr]) {
+        ws[addr].s = { font: { bold: true } };
+      }
+    }
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Productos');
+
+    const now = new Date();
+    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    XLSX.writeFile(wb, `Ferreteria_Productos_${dateStr}.xlsx`);
+    showToast(`Exportados ${rows.length} productos a Excel`, 'success');
   }
 
   function handleHeaderClick(field: string) {
@@ -537,6 +569,9 @@ export function DatosPage() {
                 Tarifa Festo
               </button>
             )}
+            <button type="button" style={{ ...btnStyle('ghost'), fontSize: 13, padding: '6px 12px', whiteSpace: 'nowrap' }} onClick={exportToExcel}>
+              ↓ Exportar Excel
+            </button>
             {puedeCrear && (
               <button type="button" style={{ ...btnStyle('primary'), fontSize: 13, padding: '6px 12px', whiteSpace: 'nowrap' }} onClick={() => setShowCrear(true)}>
                 + Añadir

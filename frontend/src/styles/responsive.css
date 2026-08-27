@@ -347,15 +347,9 @@
     padding: 10px 12px !important;
   }
 
-  /* -- QR MODAL - CAMERA ONLY -- */
-  input[placeholder*="CMH"] {
-    display: none !important;
-  }
-  div[style*="z-index: 1000"] > div > div[style*="display: flex"][style*="gap: 8"] > button:first-child {
-    display: none !important;
-  }
-  div[style*="z-index: 1000"] > div > p:first-of-type {
-    display: none !important;
+  /* -- QR MODAL - improved mobile layout -- */
+  div[style*="z-index: 1000"] > div > div[style*="position: relative"][style*="border-radius: 8"] {
+    min-height: 260px !important;
   }
 
 }
