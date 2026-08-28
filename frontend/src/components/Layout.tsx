@@ -11,7 +11,6 @@ import { FormRecambio } from './FormRecambio';
 import { Footer } from './Footer';
 import { ThemeToggle } from './ThemeToggle';
 import { btnStyle } from '../styles/theme';
-import { generateManualPDF } from '../utils/generateManualPDF';
 import logoBlue from '../assets/logoCMH_blue_300.png';
 import logoWhite from '../assets/logoCMH_white_300.png';
 import * as pedidosApi from '../api/orders';
@@ -147,12 +146,6 @@ export function Layout() {
               Datos
             </NavLink>
           )}
-          <button
-            onClick={generateManualPDF}
-            style={{ ...navBtn, cursor: 'pointer' }}
-          >
-            📄 Manual
-          </button>
         </nav>
 
         <div className="desktop-only" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -244,12 +237,6 @@ export function Layout() {
             Datos
           </NavLink>
         )}
-        <button
-          onClick={() => { generateManualPDF(); closeMenu(); }}
-          style={{ ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14, cursor: 'pointer' }}
-        >
-          📄 Manual
-        </button>
         <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light)' }}>{user?.name}</div>
           <div style={{ fontSize: 11, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: 8 }}>{user?.role}</div>
