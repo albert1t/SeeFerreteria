@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { Html5Qrcode, type CameraDevice } from 'html5-qrcode';
+import { SwitchCamera, Flashlight, FlashlightOff, CameraOff } from 'lucide-react';
 import { Modal } from './Modal';
 import { btnStyle } from '../styles/theme';
 import * as recambiosApi from '../api/products';
@@ -148,6 +149,20 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
     }
   }, [torchOn, applyVideoConstraints]);
 
+  const cycleCamera = useCallback(() => {
+    if (cameras.length < 2) return;
+    const idx = cameras.findIndex((c) => c.id === selectedCamera);
+    const next = cameras[(idx + 1) % cameras.length];
+    setSelectedCamera(next.id);
+  }, [cameras, selectedCamera]);
+
+  useEffect(() => {
+    if (open && cameraState !== 'loading') {
+      startCamera();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCamera, open]);
+
   useEffect(() => {
     if (!open) {
       stopCamera();
@@ -226,12 +241,56 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           </div>
         )}
 
+        {cameraState === 'idle' && (
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'rgba(255,255,255,0.5)', fontSize: 13,
+          }}>
+            Preparando cámara...
+          </div>
+        )}
+
+        {(cameraState === 'active' || cameraState === 'loading') && (
+          <div style={{
+            position: 'absolute', top: 8, right: 8, display: 'flex', gap: 8, pointerEvents: 'auto', zIndex: 2,
+          }}>
+            {torchSupported && (
+              <button
+                type="button"
+                onClick={toggleTorch}
+                title={torchOn ? 'Apagar linterna' : 'Encender linterna'}
+                style={{
+                  width: 36, height: 36, borderRadius: '50%', border: 'none',
+                  background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }}
+              >
+                {torchOn ? <FlashlightOff size={18} /> : <Flashlight size={18} />}
+              </button>
+            )}
+            {cameras.length > 1 && (
+              <button
+                type="button"
+                onClick={cycleCamera}
+                title="Cambiar cámara"
+                style={{
+                  width: 36, height: 36, borderRadius: '50%', border: 'none',
+                  background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                }}
+              >
+                <SwitchCamera size={18} />
+              </button>
+            )}
+          </div>
+        )}
+
         {cameraState === 'error' && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
             alignItems: 'center', justifyContent: 'center', gap: 10, padding: 20, textAlign: 'center',
           }}>
-            <div style={{ fontSize: 36, opacity: 0.6 }}>&#128247;</div>
+            <CameraOff size={40} color="#fff" opacity={0.6} />
             <p style={{ color: '#fff', fontSize: 13, margin: 0, lineHeight: 1.4 }}>{errorMsg}</p>
             <button
               style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }}
@@ -241,53 +300,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
             </button>
           </div>
         )}
-
-        {cameraState === 'idle' && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'rgba(255,255,255,0.5)', fontSize: 13,
-          }}>
-            Preparando cámara...
-          </div>
-        )}
       </div>
-
-      {cameras.length > 1 && (
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{
-            fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase',
-            display: 'block', marginBottom: 4,
-          }}>
-            Cámara
-          </label>
-          <select
-            value={selectedCamera}
-            onChange={(e) => setSelectedCamera(e.target.value)}
-            style={{
-              width: '100%', padding: '8px 12px', background: 'var(--bg-input)',
-              border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 14,
-            }}
-          >
-            {cameras.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.label || `Cámara ${c.id}`}
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {torchSupported && (
-        <div style={{ marginBottom: '1rem' }}>
-          <button
-            type="button"
-            onClick={toggleTorch}
-            style={{ ...btnStyle(torchOn ? 'primary' : 'ghost'), width: '100%', justifyContent: 'center' }}
-          >
-            {torchOn ? 'Apagar linterna' : 'Encender linterna'}
-          </button>
-        </div>
-      )}
 
       <div style={{ marginBottom: '1rem' }}>
         <label style={{
