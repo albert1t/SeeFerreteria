@@ -48,7 +48,9 @@ export async function createProduct(data, skipDupeCheck = false) {
             throw new AppError(409, 'La referencia CMH ya existe');
         }
     }
-    await validateUbicacion(data.panel, data.col, data.row);
+    if (data.panel && data.col != null && data.row != null) {
+        await validateUbicacion(data.panel, data.col, data.row);
+    }
     return productsRepo.create({
         ...data,
         pvpOrientativo: data.pvpOrientativo ?? null,
@@ -64,7 +66,7 @@ export async function updateProduct(id, data) {
     const panel = data.panel ?? existing.panel;
     const col = data.col ?? existing.col;
     const row = data.row ?? existing.row;
-    if (panel !== existing.panel || col !== existing.col || row !== existing.row) {
+    if (panel && col != null && row != null && (panel !== existing.panel || col !== existing.col || row !== existing.row)) {
         await validateUbicacion(panel, col, row, id);
     }
     if (data.cmhReference && data.cmhReference !== existing.cmhReference) {
@@ -120,6 +122,19 @@ export async function swapPositions(id1, id2) {
 }
 export async function getPanelOcupacion(panel) {
     return productsRepo.getPanelOccupancy(panel);
+}
+export async function assignPosition(id, panel, col, row) {
+    const existing = await productsRepo.findById(id);
+    if (!existing)
+        throw new AppError(404, 'Product no encontrado');
+    await validateUbicacion(panel, col, row);
+    const updated = await productsRepo.assignPosition(id, panel, col, row);
+    if (!updated)
+        throw new AppError(404, 'Product no encontrado');
+    return updated;
+}
+export async function getUnpositioned() {
+    return productsRepo.findUnpositioned();
 }
 export async function importFromExcel(buffer) {
     const workbook = xlsx.read(buffer, { type: 'buffer' });

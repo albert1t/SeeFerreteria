@@ -209,3 +209,13 @@ export async function getPanelOccupancy(panel) {
         productId: r.productId,
     }));
 }
+export async function assignPosition(id, panel, col, row) {
+    const pool = await getPool();
+    await pool.query('UPDATE Products SET panel = ?, col = ?, `row` = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [panel, col, row, id]);
+    return findById(id);
+}
+export async function findUnpositioned() {
+    const pool = await getPool();
+    const [rows] = await pool.query(`${SELECT_BASE} WHERE r.panel IS NULL ORDER BY r.cmhReference`);
+    return rows.map(mapRecambio);
+}

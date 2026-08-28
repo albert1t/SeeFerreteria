@@ -77,6 +77,17 @@ export function swapProducts(id1: number, id2: number) {
   });
 }
 
+export function getUnpositioned() {
+  return apiFetch<Product[]>('/api/products/unpositioned');
+}
+
+export function assignPosition(id: number, panel: string, col: number, row: number) {
+  return apiFetch<Product>(`/api/products/${id}/assign-position`, {
+    method: 'POST',
+    body: JSON.stringify({ panel, col, row }),
+  });
+}
+
 export async function importarExcel(file: File): Promise<{ total: number, insertados: number, errors: any[] }> {
   const formData = new FormData();
   formData.append('file', file);

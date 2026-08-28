@@ -19,9 +19,9 @@ function mapRecambio(row: Record<string, unknown>): Product {
     familyId: row.familyId as number,
     familyName: row.familyName as string | undefined,
     reorderPoint: row.reorderPoint as number | null,
-    panel: row.panel as string,
-    col: row.col as number,
-    row: row.row as number,
+    panel: row.panel as string | null,
+    col: row.col as number | null,
+    row: row.row as number | null,
     hidden: Boolean(row.hidden),
     createdAt: row.createdAt ? (row.createdAt as Date).toISOString() : undefined,
     updatedAt: row.updatedAt ? (row.updatedAt as Date).toISOString() : undefined,
@@ -70,9 +70,9 @@ const SELECT_PREVIEW = `
 function mapPreview(row: Record<string, unknown>): ProductPreview {
   return {
     id: row.id as number,
-    panel: row.panel as string,
-    col: row.col as number,
-    row: row.row as number,
+    panel: row.panel as string | null,
+    col: row.col as number | null,
+    row: row.row as number | null,
     image: row.image as string | null,
     cmhReference: row.cmhReference as string,
     familyName: row.familyName as string | undefined,
@@ -251,4 +251,21 @@ export async function getPanelOccupancy(panel: string): Promise<{ col: number; r
     row: r.row as number,
     productId: r.productId as number,
   }));
+}
+
+export async function assignPosition(id: number, panel: string, col: number, row: number): Promise<Product | null> {
+  const pool = await getPool();
+  await pool.query(
+    'UPDATE Products SET panel = ?, col = ?, `row` = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?',
+    [panel, col, row, id]
+  );
+  return findById(id);
+}
+
+export async function findUnpositioned(): Promise<Product[]> {
+  const pool = await getPool();
+  const [rows] = await pool.query(
+    `${SELECT_BASE} WHERE r.panel IS NULL ORDER BY r.cmhReference`
+  );
+  return (rows as any[]).map(mapRecambio);
 }

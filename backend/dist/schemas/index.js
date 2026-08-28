@@ -24,27 +24,27 @@ const baseRecambioSchema = z.object({
     deliveryTime: z.string().max(50).optional().nullable(),
     familyId: z.number().int().positive(),
     reorderPoint: z.number().int().positive().nullable().default(1),
-    panel: z.string().min(1).max(10),
-    col: z.number().int().min(1).max(6),
-    row: z.number().int().min(1).max(15),
+    panel: z.string().max(10).optional().nullable(),
+    col: z.number().int().min(1).max(6).optional().nullable(),
+    row: z.number().int().min(1).max(15).optional().nullable(),
     hidden: z.boolean().optional(),
 });
 function refineUbicacion(data, ctx) {
-    if (data.panel === undefined)
+    if (!data.panel)
         return;
     const panel = data.panel.toUpperCase();
     const match = panel.match(/^A(\d+)$/);
     if (match) {
         const num = parseInt(match[1], 10);
         if (num >= 1 && num <= 9) {
-            if (data.col !== undefined && data.col > 6) {
+            if (data.col != null && data.col > 6) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: 'La columna no puede ser mayor a 6 para panels A1-A9',
                     path: ['col'],
                 });
             }
-            if (data.row !== undefined && data.row > 15) {
+            if (data.row != null && data.row > 15) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: 'La fila no puede ser mayor a 15 para panels A1-A9',
@@ -53,14 +53,14 @@ function refineUbicacion(data, ctx) {
             }
         }
         else if (num >= 10 && num <= 25) {
-            if (data.col !== undefined && data.col > 5) {
+            if (data.col != null && data.col > 5) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: 'La columna no puede ser mayor a 5 para panels A10-A25',
                     path: ['col'],
                 });
             }
-            if (data.row !== undefined && data.row > 10) {
+            if (data.row != null && data.row > 10) {
                 ctx.addIssue({
                     code: z.ZodIssueCode.custom,
                     message: 'La fila no puede ser mayor a 10 para panels A10-A25',
