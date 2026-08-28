@@ -144,6 +144,15 @@ function datosPedido(order: Order): string {
   `;
 }
 
+function asuntoPedido(order: Order): string {
+  const fecha = new Date(order.requestedAt).toLocaleDateString('es-ES');
+  return `${order.type} - ${fecha}`;
+}
+
+function prefijoUrgente(order: Order): string {
+  return order.priority ? 'URGENTE! ' : '';
+}
+
 function envolverHtml(titulo: string, contenido: string): string {
   return `
 <!doctype html>
@@ -172,7 +181,7 @@ export async function notificarNuevoPedido(order: Order): Promise<void> {
   if (!settings || !settings.mailEnabled) return;
   if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
 
-  const subject = `Nuevo pedido #${order.id} - ${order.productName ?? order.productRef ?? 'producto'}`;
+  const subject = `${prefijoUrgente(order)}Nuevo pedido #${order.id} - ${asuntoPedido(order)}`;
   const html = envolverHtml(
     `Nuevo pedido #${order.id}`,
     `
@@ -191,7 +200,7 @@ export async function enviarAcuseSolicitante(order: Order, emailSolicitante: str
   if (!settings || !settings.mailEnabled) return;
   if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
 
-  const subject = `Confirmación de tu pedido #${order.id}`;
+  const subject = `${prefijoUrgente(order)}Confirmación de tu pedido #${order.id} - ${asuntoPedido(order)}`;
   const html = envolverHtml(
     `Hemos recibido tu pedido #${order.id}`,
     `
@@ -216,7 +225,7 @@ export async function enviarSeguimientoEstado(
   if (!settings || !settings.mailEnabled) return;
   if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
 
-  const subject = `Actualización de tu pedido #${order.id} - ${newStatus}`;
+  const subject = `${prefijoUrgente(order)}Actualización de tu pedido #${order.id} - ${newStatus} - ${asuntoPedido(order)}`;
   const html = envolverHtml(
     `Tu pedido #${order.id} ha pasado a: ${newStatus}`,
     `

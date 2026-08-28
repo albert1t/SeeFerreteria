@@ -126,42 +126,42 @@ export function UsersPage() {
   }
 
   return (
-    <div style={{ padding: '1.5rem', color: colors.text }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+    <div className="users-page" style={{ padding: '1.5rem', color: colors.text }}>
+      <div className="users-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 style={{ margin: 0, fontSize: 22 }}>Gestión de Usuarios</h2>
-        <button type="button" onClick={() => setShowCreate(true)} style={btnStyle('primary')}>+ Nuevo usuario</button>
+        <button className="users-new-btn" type="button" onClick={() => setShowCreate(true)} style={btnStyle('primary')}>+ Nuevo usuario</button>
       </div>
 
       {usersLoading && <div style={{ color: colors.textMuted, marginBottom: '1rem' }}>Cargando usuarios...</div>}
 
       {users && (
-        <div style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, marginBottom: '2rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+        <div className="users-table-wrapper" style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, marginBottom: '2rem' }}>
+          <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: 'var(--bg-table-head)' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Nombre</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Usuario / Email</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Estado</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Acciones</th>
+              <tr className="users-row" style={{ background: 'var(--bg-table-head)' }}>
+                <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Nombre</th>
+                <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Usuario / Email</th>
+                <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol</th>
+                <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Estado</th>
+                <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user.id} style={{ borderTop: `1px solid ${colors.border}` }}>
-                  <td style={{ padding: '12px 16px' }}>{user.name}</td>
-                  <td style={{ padding: '12px 16px', color: colors.textMuted }}>{user.username}</td>
-                  <td style={{ padding: '12px 16px' }}>
+                <tr key={user.id} className="users-row" style={{ borderTop: `1px solid ${colors.border}` }}>
+                  <td className="users-cell" data-label="Nombre" style={{ padding: '12px 16px' }}>{user.name}</td>
+                  <td className="users-cell" data-label="Usuario / Email" style={{ padding: '12px 16px', color: colors.textMuted }}>{user.username}</td>
+                  <td className="users-cell" data-label="Rol" style={{ padding: '12px 16px' }}>
                     <span style={badgeStyle(user.role === 'admin' ? 'Solicitud Express' : 'info')}>
                       {ROLE_LABELS[user.role]}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
+                  <td className="users-cell" data-label="Estado" style={{ padding: '12px 16px' }}>
                     <span style={badgeStyle(user.isActive ? 'Reposición' : 'Finalizado')}>
                       {user.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
+                  <td className="users-cell" data-label="Acciones" style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button
                         type="button"
@@ -255,7 +255,7 @@ export function UsersPage() {
       </Modal>
 
       {editingUser && (
-        <div style={{ background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, padding: '1.5rem', marginBottom: '2rem' }}>
+        <div className="user-edit-form" style={{ background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, padding: '1.5rem', marginBottom: '2rem' }}>
           <h3 style={{ margin: '0 0 1rem' }}>Editar rol: {editingUser.name}</h3>
           <div style={{ marginBottom: '1rem' }}>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 6 }}>Rol</label>
@@ -295,7 +295,7 @@ export function UsersPage() {
         Solo los correos de esta lista pueden iniciar sesión con Microsoft. Se les asigna el rol configurado al crear su cuenta.
       </p>
 
-      <div style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div className="emails-add-form" style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
         <input
           type="email"
           placeholder="correo@empresa.com"
@@ -326,27 +326,27 @@ export function UsersPage() {
       {emailsLoading && <div style={{ color: colors.textMuted }}>Cargando correos...</div>}
 
       {allowedEmails && (
-        <div style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}` }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+        <div className="emails-table-wrapper" style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}` }}>
+          <table className="emails-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
-              <tr style={{ background: 'var(--bg-table-head)' }}>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Email</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol asignado</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Estado</th>
-                <th style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Acciones</th>
+              <tr className="emails-row" style={{ background: 'var(--bg-table-head)' }}>
+                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Email</th>
+                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol asignado</th>
+                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Estado</th>
+                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {allowedEmails.map((email) => (
-                <tr key={email.id} style={{ borderTop: `1px solid ${colors.border}` }}>
-                  <td style={{ padding: '12px 16px' }}>{email.email}</td>
-                  <td style={{ padding: '12px 16px' }}>{ROLE_LABELS[email.role]}</td>
-                  <td style={{ padding: '12px 16px' }}>
+                <tr key={email.id} className="emails-row" style={{ borderTop: `1px solid ${colors.border}` }}>
+                  <td className="emails-cell" data-label="Email" style={{ padding: '12px 16px' }}>{email.email}</td>
+                  <td className="emails-cell" data-label="Rol asignado" style={{ padding: '12px 16px' }}>{ROLE_LABELS[email.role]}</td>
+                  <td className="emails-cell" data-label="Estado" style={{ padding: '12px 16px' }}>
                     <span style={badgeStyle(email.isActive ? 'Reposición' : 'Finalizado')}>
                       {email.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
-                  <td style={{ padding: '12px 16px' }}>
+                  <td className="emails-cell" data-label="Acciones" style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button
                         type="button"
