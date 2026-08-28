@@ -39,9 +39,9 @@ export interface Product {
   familyId: number;
   familyName?: string;
   reorderPoint: number | null;
-  panel: string;
-  col: number;
-  row: number;
+  panel: string | null;
+  col: number | null;
+  row: number | null;
   hidden: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -80,9 +80,9 @@ export interface OrderHistory {
 
 export interface ProductPreview {
   id: number;
-  panel: string;
-  col: number;
-  row: number;
+  panel: string | null;
+  col: number | null;
+  row: number | null;
   image: string | null;
   cmhReference: string;
   familyName: string | undefined;

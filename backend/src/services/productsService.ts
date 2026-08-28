@@ -60,7 +60,9 @@ export async function createProduct(
       throw new AppError(409, 'La referencia CMH ya existe');
     }
   }
-  await validateUbicacion(data.panel, data.col, data.row);
+  if (data.panel && data.col != null && data.row != null) {
+    await validateUbicacion(data.panel, data.col, data.row);
+  }
   return productsRepo.create({
     ...data,
     pvpOrientativo: data.pvpOrientativo ?? null,
@@ -78,7 +80,7 @@ export async function updateProduct(id: number, data: Partial<Product>): Promise
   const col = data.col ?? existing.col;
   const row = data.row ?? existing.row;
 
-  if (panel !== existing.panel || col !== existing.col || row !== existing.row) {
+  if (panel && col != null && row != null && (panel !== existing.panel || col !== existing.col || row !== existing.row)) {
     await validateUbicacion(panel, col, row, id);
   }
 
@@ -134,6 +136,19 @@ export async function swapPositions(id1: number, id2: number): Promise<{ r1: Pro
 
 export async function getPanelOcupacion(panel: string) {
   return productsRepo.getPanelOccupancy(panel);
+}
+
+export async function assignPosition(id: number, panel: string, col: number, row: number): Promise<Product> {
+  const existing = await productsRepo.findById(id);
+  if (!existing) throw new AppError(404, 'Product no encontrado');
+  await validateUbicacion(panel, col, row);
+  const updated = await productsRepo.assignPosition(id, panel, col, row);
+  if (!updated) throw new AppError(404, 'Product no encontrado');
+  return updated;
+}
+
+export async function getUnpositioned(): Promise<Product[]> {
+  return productsRepo.findUnpositioned();
 }
 
 export async function importFromExcel(buffer: Buffer): Promise<{ total: number, insertados: number, errors: any[] }> {

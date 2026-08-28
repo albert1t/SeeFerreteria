@@ -30,7 +30,7 @@ export function Layout() {
   const { resolved } = useTheme();
   const [qrOpen, setQrOpen] = useState(false);
   const [fichaRecambio, setFichaRecambio] = useState<Product | null>(null);
-  const [crearRecambio, setCrearRecambio] = useState(false);
+  const [crearRecambio, setCrearRecambio] = useState<false | true | { panel: string; col: number; row: number }>(false);
   const [panelSeleccionado, setPanelSeleccionado] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -269,8 +269,9 @@ export function Layout() {
         )}
       </Modal>
 
-        <Modal open={crearRecambio} onClose={() => setCrearRecambio(false)} title="Nuevo Producto" wide>
+        <Modal open={!!crearRecambio} onClose={() => setCrearRecambio(false)} title="Nuevo Producto" wide>
         <FormRecambio
+          prefilledPosition={typeof crearRecambio === 'object' ? crearRecambio : null}
           onSave={() => setCrearRecambio(false)}
           onCancel={() => setCrearRecambio(false)}
         />

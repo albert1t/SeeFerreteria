@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type Dispatch, type SetStateAction } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback, type Dispatch, type SetStateAction } from 'react';
 import type { WheelEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -95,7 +95,109 @@ function getPanelDimensions(panelName: string) {
 interface AlmacenOutletContext {
   panelSeleccionado: string | null;
   setPanelSeleccionado: Dispatch<SetStateAction<string | null>>;
-  setCrearRecambio: Dispatch<SetStateAction<boolean>>;
+  setCrearRecambio: Dispatch<SetStateAction<false | true | { panel: string; col: number; row: number }>>;
+}
+
+function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
+  panel: string; col: number; row: number;
+  onClose: () => void; onAssigned: () => void;
+}) {
+  const { showToast } = useToast();
+  const queryClient = useQueryClient();
+  const [manualRef, setManualRef] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const controlsRef = useRef<any>(null);
+  const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const stopCamera = useCallback(() => {
+    controlsRef.current?.stop();
+    controlsRef.current = null;
+    const stream = videoRef.current?.srcObject as MediaStream | null;
+    stream?.getTracks().forEach((t) => t.stop());
+    if (videoRef.current) videoRef.current.srcObject = null;
+  }, []);
+
+  const assignProduct = useCallback(async (ref: string) => {
+    const trimmed = ref.trim();
+    if (!trimmed) return;
+    try {
+      const product = await recambiosApi.getRecambioByRef(trimmed);
+      await recambiosApi.assignPosition(product.id, panel, col, row);
+      showToast(`${product.cmhReference} asignado a ${panel} C${col}F${row}`, 'success');
+      onAssigned();
+    } catch {
+      showToast(`Referencia no encontrada: ${trimmed}`);
+    }
+  }, [panel, col, row, onAssigned, showToast]);
+
+  const startCamera = useCallback(async () => {
+    if (!videoRef.current) return;
+    stopCamera();
+    setCameraState('loading');
+    setErrorMsg('');
+    try {
+      const { BrowserQRCodeReader } = await import('@zxing/browser');
+      const reader = new BrowserQRCodeReader();
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+      if (!videoRef.current) { stream.getTracks().forEach((t) => t.stop()); return; }
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+      const controls = await reader.decodeFromVideoElement(videoRef.current, (result) => {
+        if (result) { const text = result.getText(); if (text) assignProduct(text); }
+      });
+      controlsRef.current = controls;
+      setCameraState('active');
+    } catch (err: unknown) {
+      let message = 'No se pudo acceder a la camara';
+      if (err instanceof DOMException) {
+        if (err.name === 'NotAllowedError') message = 'Permiso de camara denegado.';
+        else if (err.name === 'NotFoundError') message = 'No se encontro camara.';
+      }
+      setErrorMsg(message);
+      setCameraState('error');
+    }
+  }, [stopCamera, assignProduct]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => startCamera(), 150);
+    return () => { clearTimeout(timer); stopCamera(); };
+  }, [startCamera, stopCamera]);
+
+  return (
+    <Modal open onClose={onClose} title={`Asignar a ${panel} C${col}F${row}`}>
+      <div style={{ position: 'relative', borderRadius: 8, overflow: 'hidden', background: '#000', minHeight: 200, marginBottom: '1rem' }}>
+        <video ref={videoRef} style={{ width: '100%', maxHeight: 260, objectFit: 'cover', display: 'block' }} playsInline muted />
+        {cameraState === 'active' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none' }}>
+            <div style={{ width: 160, height: 160, border: '3px solid rgba(255,255,255,0.7)', borderRadius: 12, boxShadow: '0 0 0 9999px rgba(0,0,0,0.35)' }} />
+          </div>
+        )}
+        {cameraState === 'loading' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13 }}>Abriendo camara...</div>
+        )}
+        {cameraState === 'error' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, textAlign: 'center' }}>
+            <p style={{ color: '#fff', fontSize: 13, margin: 0 }}>{errorMsg}</p>
+            <button style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }} onClick={startCamera}>Reintentar</button>
+          </div>
+        )}
+      </div>
+      <div style={{ marginBottom: '1rem' }}>
+        <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Referencia manual</label>
+        <input value={manualRef} onChange={(e) => setManualRef(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && assignProduct(manualRef)}
+          placeholder="CMH00001" inputMode="text" autoComplete="off"
+          style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 14 }} />
+      </div>
+      <div style={{ display: 'flex', gap: 8 }}>
+        <button style={btnStyle('primary')} onClick={() => assignProduct(manualRef)}>Asignar</button>
+        <button style={btnStyle('ghost')} onClick={onClose}>Cancelar</button>
+      </div>
+    </Modal>
+  );
 }
 
 export function AlmacenPage() {
@@ -117,6 +219,8 @@ export function AlmacenPage() {
   const [editandoFamilia, setEditandoFamilia] = useState<{ id: number; name: string; description: string } | null>(null);
   const [newFamilyName, setNuevaFamiliaNombre] = useState('');
   const [nuevaFamiliaDesc, setNuevaFamiliaDesc] = useState('');
+  const [emptyCubetaClick, setEmptyCubetaClick] = useState<{ panel: string; col: number; row: number } | null>(null);
+  const [showAssignModal, setShowAssignModal] = useState(false);
 
   useEffect(() => {
     if (!swapLoading) return;
@@ -584,6 +688,8 @@ export function AlmacenPage() {
                             }
                           } else if (r) {
                             setFichaAbierta(r);
+                          } else if (can('products', 'create')) {
+                            setEmptyCubetaClick({ panel: panelSeleccionado!, col, row });
                           }
                         }}
                         className="panel-detail-cell"
@@ -591,7 +697,7 @@ export function AlmacenPage() {
                           background: r ? (r.hidden ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)') : 'var(--bg-cubeta-empty-detail)',
                           border: selectedForSwap && selectedForSwap.id === r?.id ? '2px solid var(--accent)' : r ? (r.hidden ? '1px dashed var(--border-danger)' : '1px solid var(--border-input-soft)') : '1px solid var(--border-cubeta-empty-detail)',
                           opacity: r?.hidden ? 0.84 : 1,
-                          borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : (swapMode && selectedForSwap ? 'pointer' : 'default'),
+                          borderRadius: 12, padding: '0.75rem', cursor: r ? 'pointer' : (can('products', 'create') ? 'pointer' : (swapMode && selectedForSwap ? 'pointer' : 'default')),
                           minHeight: 210, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
                           transition: 'all 0.2s',
                           boxSizing: 'border-box',
@@ -601,6 +707,9 @@ export function AlmacenPage() {
                           if (r) {
                             e.currentTarget.style.background = r.hidden ? 'var(--bg-danger-hover)' : 'var(--bg-cubeta-hover)';
                             e.currentTarget.style.borderColor = r.hidden ? 'var(--border-danger-strong)' : 'var(--border-input-strong)';
+                          } else if (can('products', 'create')) {
+                            e.currentTarget.style.background = 'var(--bg-accent-faint)';
+                            e.currentTarget.style.borderColor = 'var(--border-accent-soft)';
                           } else if (swapMode && selectedForSwap) {
                             e.currentTarget.style.background = 'var(--bg-cubeta-empty-detail)'; e.currentTarget.style.borderColor = 'var(--border-cubeta-empty-detail)';
                           }
@@ -609,6 +718,9 @@ export function AlmacenPage() {
                           if (r) {
                             e.currentTarget.style.background = r.hidden ? 'var(--bg-danger-soft)' : 'var(--bg-cubeta-filled-2)';
                             e.currentTarget.style.borderColor = r.hidden ? 'var(--border-danger)' : 'var(--border-input-soft)';
+                          } else if (can('products', 'create')) {
+                            e.currentTarget.style.background = 'var(--bg-cubeta-empty-detail)';
+                            e.currentTarget.style.borderColor = 'var(--border-cubeta-empty-detail)';
                           } else if (swapMode && selectedForSwap) {
                             e.currentTarget.style.background = 'var(--bg-cubeta-empty-detail)'; e.currentTarget.style.borderColor = 'var(--border-cubeta-empty-detail)';
                           }
@@ -894,6 +1006,58 @@ export function AlmacenPage() {
           )}
         </div>
       </Modal>
+
+      {/* Empty cubeta click modal */}
+      <Modal open={!!emptyCubetaClick} onClose={() => setEmptyCubetaClick(null)} title="Cubeta vacia">
+        {emptyCubetaClick && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 300 }}>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0, textAlign: 'center' }}>
+              {emptyCubetaClick.panel} / Col {emptyCubetaClick.col} / Fila {emptyCubetaClick.row}
+            </p>
+            <button
+              style={{ ...btnStyle('primary'), width: '100%', justifyContent: 'center' }}
+              onClick={() => {
+                if (emptyCubetaClick) {
+                  setCrearRecambio(emptyCubetaClick);
+                }
+                setEmptyCubetaClick(null);
+              }}
+            >
+              + Nuevo recambio en esta posicion
+            </button>
+            <button
+              style={{ ...btnStyle('ghost'), width: '100%', justifyContent: 'center' }}
+              onClick={() => {
+                setShowAssignModal(true);
+                setEmptyCubetaClick(null);
+              }}
+            >
+              Asignar recambio existente (escanear QR)
+            </button>
+            <button
+              style={{ ...btnStyle('ghost'), width: '100%', justifyContent: 'center', color: 'var(--text-muted)' }}
+              onClick={() => setEmptyCubetaClick(null)}
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+      </Modal>
+
+      {/* Assign existing product modal */}
+      {showAssignModal && emptyCubetaClick && (
+        <AssignProductModal
+          panel={emptyCubetaClick.panel}
+          col={emptyCubetaClick.col}
+          row={emptyCubetaClick.row}
+          onClose={() => { setShowAssignModal(false); setEmptyCubetaClick(null); }}
+          onAssigned={() => {
+            setShowAssignModal(false);
+            setEmptyCubetaClick(null);
+            queryClient.invalidateQueries({ queryKey: ['panels'] });
+          }}
+        />
+      )}
     </div>
     </>
   );

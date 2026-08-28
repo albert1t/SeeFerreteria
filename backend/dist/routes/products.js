@@ -219,4 +219,28 @@ router.post('/swap', requireRole('admin'), async (req, res, next) => {
         next(err);
     }
 });
+router.get('/unpositioned', requireRole('admin'), async (_req, res, next) => {
+    try {
+        const items = await productsService.getUnpositioned();
+        res.json(items);
+    }
+    catch (err) {
+        next(err);
+    }
+});
+router.post('/:id/assign-position', requireRole('admin'), async (req, res, next) => {
+    try {
+        const id = parseInt(String(req.params.id), 10);
+        const { panel, col, row } = req.body;
+        if (!panel || col == null || row == null) {
+            res.status(400).json({ error: 'Se requieren panel, col y row' });
+            return;
+        }
+        const product = await productsService.assignPosition(id, panel, Number(col), Number(row));
+        res.json(product);
+    }
+    catch (err) {
+        next(err);
+    }
+});
 export default router;

@@ -8,6 +8,7 @@ import type { Product, ProductFormData } from '../types';
 
 interface FormRecambioProps {
   product?: Product;
+  prefilledPosition?: { panel: string; col: number; row: number } | null;
   onSave: (r: Product) => void;
   onCancel: () => void;
 }
@@ -21,7 +22,7 @@ const labelStyle: React.CSSProperties = {
   fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4, display: 'block',
 };
 
-export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
+export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: FormRecambioProps) {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -44,9 +45,9 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
     deliveryTime: product?.deliveryTime ?? '',
     familyId: product?.familyId ?? 0,
     reorderPoint: product?.reorderPoint ?? null,
-    panel: product?.panel ?? '',
-    col: product?.col ?? null,
-    row: product?.row ?? null,
+    panel: product?.panel ?? prefilledPosition?.panel ?? '',
+    col: product?.col ?? prefilledPosition?.col ?? null,
+    row: product?.row ?? prefilledPosition?.row ?? null,
     hidden: product?.hidden ?? false,
   });
 
@@ -104,7 +105,8 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
 
   // Determinar el tamaño del panel, de A1-A9{6X15}, el resto {5X10} cubetas
   const panelLimits = (() => {
-    const match = form.panel.trim().toUpperCase().match(/^A(\d+)$/);
+    const p = form.panel ?? '';
+    const match = p.trim().toUpperCase().match(/^A(\d+)$/);
     if (match) {
       const num = parseInt(match[1], 10);
       if (num >= 1 && num <= 9) {
@@ -113,6 +115,8 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
     }
     return { cols: 5, rows: 10 };
   })();
+
+  const isPositionFixed = !!prefilledPosition;
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
@@ -152,18 +156,27 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
         <label style={labelStyle}>N° Reposición</label>
         <input style={inputStyle} type="number" min="1" value={form.reorderPoint ?? ''} onChange={(e) => { const v = e.target.value; upd('reorderPoint', v === '' ? null : parseInt(v, 10)); }} />
       </div>
-      <div>
-        <label style={labelStyle}>Panel *</label>
-        <input style={inputStyle} value={form.panel} onChange={(e) => upd('panel', e.target.value.toUpperCase())} placeholder="Ej: A1" />
-      </div>
-      <div>
-        <label style={labelStyle}>Columna * (1-{panelLimits.cols})</label>
-        <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col ?? ''} onChange={(e) => { const v = e.target.value; upd('col', v === '' ? null : parseInt(v, 10)); }} placeholder="Ej: 1" />
-      </div>
-      <div>
-        <label style={labelStyle}>Fila * (1-{panelLimits.rows})</label>
-        <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row ?? ''} onChange={(e) => { const v = e.target.value; upd('row', v === '' ? null : parseInt(v, 10)); }} placeholder="Ej: 1" />
-      </div>
+
+      {!isPositionFixed ? (
+        <>
+          <div>
+            <label style={labelStyle}>Panel</label>
+            <input style={inputStyle} value={form.panel ?? ''} onChange={(e) => upd('panel', e.target.value.toUpperCase() || null)} placeholder="Ej: A1 (opcional)" />
+          </div>
+          <div>
+            <label style={labelStyle}>Columna (1-{panelLimits.cols})</label>
+            <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col ?? ''} onChange={(e) => { const v = e.target.value; upd('col', v === '' ? null : parseInt(v, 10)); }} placeholder="Opcional" />
+          </div>
+          <div>
+            <label style={labelStyle}>Fila (1-{panelLimits.rows})</label>
+            <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row ?? ''} onChange={(e) => { const v = e.target.value; upd('row', v === '' ? null : parseInt(v, 10)); }} placeholder="Opcional" />
+          </div>
+        </>
+      ) : (
+        <div style={{ gridColumn: '1/-1', padding: '8px 12px', background: 'var(--bg-accent-faint)', borderRadius: 8, border: '1px solid var(--border-accent-soft)', fontSize: 13, color: 'var(--accent)' }}>
+          Ubicacion: {prefilledPosition.panel} / Col {prefilledPosition.col} / Fila {prefilledPosition.row}
+        </div>
+      )}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, gridColumn: '1/-1' }}>
         <input
           id="hidden-check"
@@ -240,7 +253,7 @@ export function FormRecambio({ product, onSave, onCancel }: FormRecambioProps) {
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}
-          disabled={saveMut.isPending || uploading || !form.cmhReference || !form.name || !form.panel.trim() || form.col == null || form.col < 1 || form.row == null || form.row < 1 || !form.familyId || !(form.packagingUnit ?? '').trim()}
+          disabled={saveMut.isPending || uploading || !form.cmhReference || !form.name || !form.familyId || !(form.packagingUnit ?? '').trim()}
           onClick={() => saveMut.mutate()}
         >
           {saveMut.isPending ? 'Guardando...' : product ? 'Guardar cambios' : 'Crear producto'}
