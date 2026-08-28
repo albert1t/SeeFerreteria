@@ -161,8 +161,8 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
   }, [stopCamera, assignProduct]);
 
   useEffect(() => {
-    const timer = setTimeout(() => startCamera(), 150);
-    return () => { clearTimeout(timer); stopCamera(); };
+    startCamera();
+    return () => stopCamera();
   }, [startCamera, stopCamera]);
 
   return (
@@ -219,7 +219,7 @@ export function AlmacenPage() {
   const [newFamilyName, setNuevaFamiliaNombre] = useState('');
   const [nuevaFamiliaDesc, setNuevaFamiliaDesc] = useState('');
   const [emptyCubetaClick, setEmptyCubetaClick] = useState<{ panel: string; col: number; row: number } | null>(null);
-  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<{ panel: string; col: number; row: number } | null>(null);
 
   useEffect(() => {
     if (!swapLoading) return;
@@ -1029,7 +1029,7 @@ export function AlmacenPage() {
             <button
               style={{ ...btnStyle('ghost'), width: '100%', justifyContent: 'center' }}
               onClick={() => {
-                setShowAssignModal(true);
+                setAssignTarget(emptyCubetaClick);
                 setEmptyCubetaClick(null);
               }}
             >
@@ -1046,15 +1046,14 @@ export function AlmacenPage() {
       </Modal>
 
       {/* Assign existing product modal */}
-      {showAssignModal && emptyCubetaClick && (
+      {assignTarget && (
         <AssignProductModal
-          panel={emptyCubetaClick.panel}
-          col={emptyCubetaClick.col}
-          row={emptyCubetaClick.row}
-          onClose={() => { setShowAssignModal(false); setEmptyCubetaClick(null); }}
+          panel={assignTarget.panel}
+          col={assignTarget.col}
+          row={assignTarget.row}
+          onClose={() => setAssignTarget(null)}
           onAssigned={() => {
-            setShowAssignModal(false);
-            setEmptyCubetaClick(null);
+            setAssignTarget(null);
             queryClient.invalidateQueries({ queryKey: ['panels'] });
           }}
         />
