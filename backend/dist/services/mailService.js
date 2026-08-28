@@ -119,8 +119,10 @@ function datosPedido(order) {
 }
 function asuntoPedido(order) {
     const fecha = new Date(order.requestedAt).toLocaleDateString('es-ES');
-    const tipo = order.priority ? `${order.type} - Urgente` : order.type;
-    return `${tipo} - ${fecha}`;
+    return `${order.type} - ${fecha}`;
+}
+function prefijoUrgente(order) {
+    return order.priority ? 'URGENTE! ' : '';
 }
 function envolverHtml(titulo, contenido) {
     return `
@@ -150,7 +152,7 @@ export async function notificarNuevoPedido(order) {
         return;
     if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode))
         return;
-    const subject = `Nuevo pedido #${order.id} - ${asuntoPedido(order)}`;
+    const subject = `${prefijoUrgente(order)}Nuevo pedido #${order.id} - ${asuntoPedido(order)}`;
     const html = envolverHtml(`Nuevo pedido #${order.id}`, `
       <p>Se ha creado un nuevo pedido en SeeFerreteria.</p>
       <ul>
@@ -165,7 +167,7 @@ export async function enviarAcuseSolicitante(order, emailSolicitante) {
         return;
     if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode))
         return;
-    const subject = `Confirmación de tu pedido #${order.id} - ${asuntoPedido(order)}`;
+    const subject = `${prefijoUrgente(order)}Confirmación de tu pedido #${order.id} - ${asuntoPedido(order)}`;
     const html = envolverHtml(`Hemos recibido tu pedido #${order.id}`, `
       <p>Hola,</p>
       <p>Hemos registrado tu pedido correctamente. Estos son los detalles:</p>
@@ -182,7 +184,7 @@ export async function enviarSeguimientoEstado(order, emailSolicitante, newStatus
         return;
     if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode))
         return;
-    const subject = `Actualización de tu pedido #${order.id} - ${newStatus} - ${asuntoPedido(order)}`;
+    const subject = `${prefijoUrgente(order)}Actualización de tu pedido #${order.id} - ${newStatus} - ${asuntoPedido(order)}`;
     const html = envolverHtml(`Tu pedido #${order.id} ha pasado a: ${newStatus}`, `
       <p>Hola,</p>
       <p>Tu pedido ha cambiado de estado.</p>
