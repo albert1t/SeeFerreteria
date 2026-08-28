@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { BrowserQRCodeReader } from '@zxing/browser';
+import { Html5Qrcode, type CameraDevice } from 'html5-qrcode';
 import { Modal } from './Modal';
 import { btnStyle } from '../styles/theme';
 import * as recambiosApi from '../api/products';
@@ -12,151 +12,207 @@ interface QrModalProps {
   onFound: (product: Product) => void;
 }
 
+const SCAN_COOLDOWN_MS = 2500;
+const QR_BOX_SIZE = 220;
+
 export function QrModal({ open, onClose, onFound }: QrModalProps) {
   const [manualRef, setManualRef] = useState('');
   const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const controlsRef = useRef<any>(null);
-  const readerRef = useRef<BrowserQRCodeReader | null>(null);
+  const [cameras, setCameras] = useState<CameraDevice[]>([]);
+  const [selectedCamera, setSelectedCamera] = useState<string>('environment');
+  const [torchOn, setTorchOn] = useState(false);
+  const [torchSupported, setTorchSupported] = useState(false);
+
+  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const scanCooldownRef = useRef<Map<string, number>>(new Map());
+  const processingRef = useRef(false);
   const { showToast } = useToast();
 
-  const stopCamera = useCallback(() => {
-    controlsRef.current?.stop();
-    controlsRef.current = null;
-    readerRef.current = null;
-    const stream = videoRef.current?.srcObject as MediaStream | null;
-    stream?.getTracks().forEach((t) => t.stop());
-    if (videoRef.current) videoRef.current.srcObject = null;
+  const stopCamera = useCallback(async () => {
+    try {
+      await scannerRef.current?.stop();
+    } catch {
+      // ignore stop errors
+    }
+    scannerRef.current = null;
+    setCameraState('idle');
+    setTorchSupported(false);
+    setTorchOn(false);
   }, []);
 
   const handleRef = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
-    if (!trimmed) return;
+    if (!trimmed || processingRef.current) return;
+
+    const now = Date.now();
+    const lastScan = scanCooldownRef.current.get(trimmed);
+    if (lastScan && now - lastScan < SCAN_COOLDOWN_MS) return;
+
+    processingRef.current = true;
+    scanCooldownRef.current.set(trimmed, now);
+
     try {
       const product = await recambiosApi.getRecambioByRef(trimmed);
-      stopCamera();
+      await stopCamera();
+      setManualRef('');
       onFound(product);
       onClose();
-      setManualRef('');
     } catch {
       showToast(`Referencia no encontrada: ${trimmed}`);
+    } finally {
+      processingRef.current = false;
     }
   }, [onFound, onClose, stopCamera, showToast]);
 
-  const startCamera = useCallback(async () => {
-    if (!videoRef.current) return;
+  const applyVideoConstraints = useCallback(async (constraints: MediaTrackConstraintSet) => {
+    try {
+      await scannerRef.current?.applyVideoConstraints(constraints);
+      return true;
+    } catch {
+      return false;
+    }
+  }, []);
 
-    stopCamera();
+  const startCamera = useCallback(async () => {
+    if (scannerRef.current) {
+      await stopCamera();
+    }
+
     setCameraState('loading');
     setErrorMsg('');
 
     try {
-      const reader = new BrowserQRCodeReader();
-      readerRef.current = reader;
+      const scanner = new Html5Qrcode('qr-reader');
+      scannerRef.current = scanner;
 
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode: { ideal: 'environment' },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
+      const config = {
+        fps: 10,
+        qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE },
+        aspectRatio: 1.0,
+        disableFlip: false,
       };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      if (!videoRef.current) {
-        stream.getTracks().forEach((t) => t.stop());
-        return;
-      }
+      const cameraConfig = selectedCamera === 'environment'
+        ? { facingMode: 'environment' as const }
+        : { deviceId: { exact: selectedCamera } };
 
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-
-      const controls = await reader.decodeFromVideoElement(videoRef.current, (result) => {
-        if (result) {
-          const text = result.getText();
-          if (text) {
-            handleRef(text);
+      await scanner.start(
+        cameraConfig,
+        config,
+        (decodedText) => {
+          if (decodedText) {
+            handleRef(decodedText);
           }
-        }
-      });
+        },
+        () => {
+          // ignore frame errors
+        },
+      );
 
-      controlsRef.current = controls;
       setCameraState('active');
+
+      // Try to enable continuous autofocus; ignore if unsupported
+      await applyVideoConstraints({ advanced: [{ focusMode: 'continuous' }] } as MediaTrackConstraintSet);
+
+      // Check torch support
+      const capabilities = scanner.getRunningTrackCapabilities?.() as MediaTrackCapabilities | undefined;
+      if (capabilities && 'torch' in capabilities) {
+        setTorchSupported(true);
+      }
     } catch (err: unknown) {
-      let message = 'No se pudo acceder a la camara';
+      let message = 'No se pudo acceder a la cámara';
       if (err instanceof DOMException) {
         if (err.name === 'NotAllowedError') {
-          message = 'Permiso de camara denegado. Habilita el acceso en la configuracion del navegador.';
+          message = 'Permiso de cámara denegado. Habilita el acceso en la configuración del navegador.';
         } else if (err.name === 'NotFoundError') {
-          message = 'No se encontro ninguna camara en este dispositivo.';
+          message = 'No se encontró ninguna cámara en este dispositivo.';
         } else if (err.name === 'NotReadableError') {
-          message = 'La camara esta siendo usada por otra aplicacion.';
+          message = 'La cámara está siendo usada por otra aplicación.';
         } else if (err.name === 'OverconstrainedError') {
-          message = 'La camara no soporta la resolucion solicitada.';
+          message = 'La cámara no soporta la configuración solicitada.';
         }
+      } else if (err instanceof Error) {
+        message = err.message;
       }
       setErrorMsg(message);
       setCameraState('error');
     }
-  }, [stopCamera, handleRef]);
+  }, [selectedCamera, stopCamera, handleRef, applyVideoConstraints]);
+
+  const toggleTorch = useCallback(async () => {
+    const next = !torchOn;
+    const ok = await applyVideoConstraints({ advanced: [{ torch: next }] } as MediaTrackConstraintSet);
+    if (ok) {
+      setTorchOn(next);
+    }
+  }, [torchOn, applyVideoConstraints]);
 
   useEffect(() => {
     if (!open) {
       stopCamera();
-      setCameraState('idle');
+      setManualRef('');
       setErrorMsg('');
+      scanCooldownRef.current.clear();
       return;
     }
 
-    const timer = setTimeout(() => startCamera(), 150);
+    let cancelled = false;
+
+    Html5Qrcode.getCameras()
+      .then((devices) => {
+        if (cancelled) return;
+        setCameras(devices);
+        const back = devices.find((d) => /back|rear|environment/i.test(d.label));
+        if (back) {
+          setSelectedCamera(back.id);
+        } else if (devices.length > 0) {
+          setSelectedCamera(devices[0].id);
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setCameras([]);
+      });
+
+    const timer = setTimeout(() => startCamera(), 200);
 
     return () => {
+      cancelled = true;
       clearTimeout(timer);
       stopCamera();
     };
   }, [open, startCamera, stopCamera]);
 
   return (
-    <Modal open={open} onClose={onClose} title="Busqueda por QR / Referencia">
+    <Modal open={open} onClose={onClose} title="Búsqueda por QR / Referencia">
       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 0 }}>
-        Escanea el QR con la camara o introduce la referencia manualmente:
+        Escanea el QR con la cámara o introduce la referencia manualmente:
       </p>
 
-      {/* Zona de camara */}
       <div style={{
         position: 'relative', marginBottom: '1rem', borderRadius: 8, overflow: 'hidden',
-        background: '#000', minHeight: 220,
+        background: '#000', minHeight: 240,
       }}>
-        <video
-          ref={videoRef}
-          style={{
-            width: '100%', maxHeight: 280, objectFit: 'cover', display: 'block',
-          }}
-          playsInline
-          muted
-        />
+        <div id="qr-reader" style={{ width: '100%', minHeight: 240 }} />
 
-        {/* Overlay de guia de escaneo */}
         {cameraState === 'active' && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             pointerEvents: 'none',
           }}>
             <div style={{
-              width: 180, height: 180, border: '3px solid rgba(255,255,255,0.7)', borderRadius: 12,
-              boxShadow: '0 0 0 9999px rgba(0,0,0,0.35)',
+              width: QR_BOX_SIZE, height: QR_BOX_SIZE, border: '3px solid rgba(255,255,255,0.7)', borderRadius: 12,
+              boxShadow: '0 0 0 9999px rgba(0,0,0,0.35)', position: 'relative', overflow: 'hidden',
             }}>
               <div style={{
-                position: 'absolute', top: -1, left: 20, right: 20, height: 3,
+                position: 'absolute', top: 0, left: 0, right: 0, height: 3,
                 background: 'var(--accent)', borderRadius: 2, animation: 'qr-scan-line 2s ease-in-out infinite',
               }} />
             </div>
           </div>
         )}
 
-        {/* Estado: cargando */}
         {cameraState === 'loading' && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
@@ -166,11 +222,10 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
               width: 28, height: 28, border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#fff',
               borderRadius: '50%', animation: 'spin 0.8s linear infinite',
             }} />
-            Abriendo camara...
+            Abriendo cámara...
           </div>
         )}
 
-        {/* Estado: error */}
         {cameraState === 'error' && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
@@ -187,18 +242,53 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           </div>
         )}
 
-        {/* Estado: inactivo (sin camara) */}
         {cameraState === 'idle' && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'rgba(255,255,255,0.5)', fontSize: 13,
           }}>
-            Preparando camara...
+            Preparando cámara...
           </div>
         )}
       </div>
 
-      {/* Entrada manual */}
+      {cameras.length > 1 && (
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{
+            fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase',
+            display: 'block', marginBottom: 4,
+          }}>
+            Cámara
+          </label>
+          <select
+            value={selectedCamera}
+            onChange={(e) => setSelectedCamera(e.target.value)}
+            style={{
+              width: '100%', padding: '8px 12px', background: 'var(--bg-input)',
+              border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 14,
+            }}
+          >
+            {cameras.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.label || `Cámara ${c.id}`}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {torchSupported && (
+        <div style={{ marginBottom: '1rem' }}>
+          <button
+            type="button"
+            onClick={toggleTorch}
+            style={{ ...btnStyle(torchOn ? 'primary' : 'ghost'), width: '100%', justifyContent: 'center' }}
+          >
+            {torchOn ? 'Apagar linterna' : 'Encender linterna'}
+          </button>
+        </div>
+      )}
+
       <div style={{ marginBottom: '1rem' }}>
         <label style={{
           fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase',
@@ -230,7 +320,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
       <style>{`
         @keyframes qr-scan-line {
           0%, 100% { transform: translateY(0); opacity: 1; }
-          50% { transform: translateY(174px); opacity: 0.6; }
+          50% { transform: translateY(${QR_BOX_SIZE - 3}px); opacity: 0.6; }
         }
         @keyframes spin {
           to { transform: rotate(360deg); }
