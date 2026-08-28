@@ -103,7 +103,6 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
   onClose: () => void; onAssigned: () => void;
 }) {
   const { showToast } = useToast();
-  const queryClient = useQueryClient();
   const [manualRef, setManualRef] = useState('');
   const videoRef = useRef<HTMLVideoElement>(null);
   const controlsRef = useRef<any>(null);
@@ -145,7 +144,7 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
       if (!videoRef.current) { stream.getTracks().forEach((t) => t.stop()); return; }
       videoRef.current.srcObject = stream;
       await videoRef.current.play();
-      const controls = await reader.decodeFromVideoElement(videoRef.current, (result) => {
+      const controls = await reader.decodeFromVideoElement(videoRef.current, (result: { getText(): string } | null | undefined) => {
         if (result) { const text = result.getText(); if (text) assignProduct(text); }
       });
       controlsRef.current = controls;
@@ -240,6 +239,7 @@ export function AlmacenPage() {
   const panels = useMemo(() => {
     const counts = new Map<string, number>();
     previewProducts.forEach((r) => {
+      if (!r.panel) return;
       const p = r.panel.toUpperCase();
       counts.set(p, (counts.get(p) ?? 0) + 1);
     });
@@ -302,6 +302,7 @@ export function AlmacenPage() {
   const panelPreviewMap = useMemo(() => {
     const map = new Map<string, ProductPreview[]>();
     previewProducts.forEach((product) => {
+      if (!product.panel) return;
       const panel = product.panel.toUpperCase();
       const current = map.get(panel) ?? [];
       current.push(product);

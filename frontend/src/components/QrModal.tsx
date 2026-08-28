@@ -21,14 +21,19 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
   const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
   const [cameras, setCameras] = useState<CameraDevice[]>([]);
-  const [selectedCamera, setSelectedCamera] = useState<string>('environment');
+  const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
 
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const scanCooldownRef = useRef<Map<string, number>>(new Map());
   const processingRef = useRef(false);
+  const facingModeRef = useRef(facingMode);
   const { showToast } = useToast();
+
+  useEffect(() => {
+    facingModeRef.current = facingMode;
+  }, [facingMode]);
 
   const stopCamera = useCallback(async () => {
     try {
@@ -94,9 +99,11 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
         disableFlip: false,
       };
 
-      const cameraConfig = selectedCamera === 'environment'
-        ? { facingMode: 'environment' as const }
-        : { deviceId: { exact: selectedCamera } };
+      const mode = facingModeRef.current;
+      // ideal for initial start, exact when the user explicitly toggles
+      const cameraConfig: MediaTrackConstraints = {
+        facingMode: mode === 'environment' ? { ideal: 'environment' } : { exact: 'user' },
+      };
 
       await scanner.start(
         cameraConfig,
@@ -139,7 +146,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
       setErrorMsg(message);
       setCameraState('error');
     }
-  }, [selectedCamera, stopCamera, handleRef, applyVideoConstraints]);
+  }, [stopCamera, handleRef, applyVideoConstraints]);
 
   const toggleTorch = useCallback(async () => {
     const next = !torchOn;
@@ -149,19 +156,14 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
     }
   }, [torchOn, applyVideoConstraints]);
 
-  const cycleCamera = useCallback(() => {
-    if (cameras.length < 2) return;
-    const idx = cameras.findIndex((c) => c.id === selectedCamera);
-    const next = cameras[(idx + 1) % cameras.length];
-    setSelectedCamera(next.id);
-  }, [cameras, selectedCamera]);
-
-  useEffect(() => {
-    if (open && cameraState !== 'loading') {
-      startCamera();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCamera, open]);
+  const switchFacingMode = useCallback(async () => {
+    if (cameraState === 'loading') return;
+    const next = facingModeRef.current === 'environment' ? 'user' : 'environment';
+    setFacingMode(next);
+    facingModeRef.current = next;
+    await stopCamera();
+    setTimeout(() => startCamera(), 400);
+  }, [cameraState, stopCamera, startCamera]);
 
   useEffect(() => {
     if (!open) {
@@ -178,11 +180,10 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
       .then((devices) => {
         if (cancelled) return;
         setCameras(devices);
-        const back = devices.find((d) => /back|rear|environment/i.test(d.label));
-        if (back) {
-          setSelectedCamera(back.id);
-        } else if (devices.length > 0) {
-          setSelectedCamera(devices[0].id);
+        const hasBack = devices.some((d) => /back|rear|environment/i.test(d.label));
+        if (hasBack) {
+          setFacingMode('environment');
+          facingModeRef.current = 'environment';
         }
       })
       .catch(() => {
@@ -190,7 +191,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
         setCameras([]);
       });
 
-    const timer = setTimeout(() => startCamera(), 200);
+    const timer = setTimeout(() => startCamera(), 500);
 
     return () => {
       cancelled = true;
@@ -241,6 +242,22 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           </div>
         )}
 
+        {cameraState === 'error' && (
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 10, padding: 20, textAlign: 'center',
+          }}>
+            <CameraOff size={40} color="#fff" opacity={0.6} />
+            <p style={{ color: '#fff', fontSize: 13, margin: 0, lineHeight: 1.4 }}>{errorMsg}</p>
+            <button
+              style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }}
+              onClick={startCamera}
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
         {cameraState === 'idle' && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -250,7 +267,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           </div>
         )}
 
-        {(cameraState === 'active' || cameraState === 'loading') && (
+        {(cameraState === 'active' || cameraState === 'loading') && cameras.length > 1 && (
           <div style={{
             position: 'absolute', top: 8, right: 8, display: 'flex', gap: 8, pointerEvents: 'auto', zIndex: 2,
           }}>
@@ -268,35 +285,17 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
                 {torchOn ? <FlashlightOff size={18} /> : <Flashlight size={18} />}
               </button>
             )}
-            {cameras.length > 1 && (
-              <button
-                type="button"
-                onClick={cycleCamera}
-                title="Cambiar cámara"
-                style={{
-                  width: 36, height: 36, borderRadius: '50%', border: 'none',
-                  background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
-                  alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                }}
-              >
-                <SwitchCamera size={18} />
-              </button>
-            )}
-          </div>
-        )}
-
-        {cameraState === 'error' && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 10, padding: 20, textAlign: 'center',
-          }}>
-            <CameraOff size={40} color="#fff" opacity={0.6} />
-            <p style={{ color: '#fff', fontSize: 13, margin: 0, lineHeight: 1.4 }}>{errorMsg}</p>
             <button
-              style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }}
-              onClick={startCamera}
+              type="button"
+              onClick={switchFacingMode}
+              title="Cambiar cámara"
+              style={{
+                width: 36, height: 36, borderRadius: '50%', border: 'none',
+                background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
+                alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+              }}
             >
-              Reintentar
+              <SwitchCamera size={18} />
             </button>
           </div>
         )}

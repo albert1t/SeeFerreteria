@@ -130,7 +130,7 @@ export interface ProductFormData {
   deliveryTime?: string | null;
   familyId: number;
   reorderPoint: number | null;
-  panel: string;
+  panel: string | null;
   col: number | null;
   row: number | null;
   hidden?: boolean;
