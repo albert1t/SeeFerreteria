@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Html5Qrcode, type CameraDevice } from 'html5-qrcode';
 import { SwitchCamera, Flashlight, FlashlightOff, CameraOff } from 'lucide-react';
 import { Modal } from './Modal';
 import { btnStyle } from '../styles/theme';
@@ -16,31 +15,27 @@ interface QrModalProps {
 const SCAN_COOLDOWN_MS = 2500;
 const QR_BOX_SIZE = 220;
 
+type FacingMode = 'environment' | 'user';
+
 export function QrModal({ open, onClose, onFound }: QrModalProps) {
   const [manualRef, setManualRef] = useState('');
   const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-  const [cameras, setCameras] = useState<CameraDevice[]>([]);
-  const [selectedCamera, setSelectedCamera] = useState<string>('environment');
+  const [facingMode, setFacingMode] = useState<FacingMode>('environment');
+  const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
 
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const controlsRef = useRef<any>(null);
   const scanCooldownRef = useRef<Map<string, number>>(new Map());
   const processingRef = useRef(false);
+  const facingModeRef = useRef<FacingMode>(facingMode);
   const { showToast } = useToast();
 
-  const stopCamera = useCallback(async () => {
-    try {
-      await scannerRef.current?.stop();
-    } catch {
-      // ignore stop errors
-    }
-    scannerRef.current = null;
-    setCameraState('idle');
-    setTorchSupported(false);
-    setTorchOn(false);
-  }, []);
+  useEffect(() => {
+    facingModeRef.current = facingMode;
+  }, [facingMode]);
 
   const handleRef = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
@@ -55,7 +50,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
 
     try {
       const product = await recambiosApi.getRecambioByRef(trimmed);
-      await stopCamera();
+      stopCamera();
       setManualRef('');
       onFound(product);
       onClose();
@@ -64,63 +59,78 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
     } finally {
       processingRef.current = false;
     }
-  }, [onFound, onClose, stopCamera, showToast]);
+  }, [onFound, onClose, showToast]);
 
-  const applyVideoConstraints = useCallback(async (constraints: MediaTrackConstraintSet) => {
+  const stopCamera = useCallback(() => {
     try {
-      await scannerRef.current?.applyVideoConstraints(constraints);
+      controlsRef.current?.stop();
+    } catch {
+      // ignore
+    }
+    controlsRef.current = null;
+    const stream = videoRef.current?.srcObject as MediaStream | null;
+    stream?.getTracks().forEach((t) => t.stop());
+    if (videoRef.current) videoRef.current.srcObject = null;
+    setCameraState('idle');
+    setTorchSupported(false);
+    setTorchOn(false);
+  }, []);
+
+  const applyTrackConstraints = useCallback(async (constraints: MediaTrackConstraintSet) => {
+    const stream = videoRef.current?.srcObject as MediaStream | null;
+    const track = stream?.getVideoTracks()[0];
+    if (!track) return false;
+    try {
+      await track.applyConstraints({ advanced: [constraints] });
       return true;
     } catch {
       return false;
     }
   }, []);
 
-  const startCamera = useCallback(async () => {
-    if (scannerRef.current) {
-      await stopCamera();
-    }
-
+  const startCamera = useCallback(async (mode: FacingMode = facingModeRef.current) => {
+    if (!videoRef.current) return;
+    stopCamera();
     setCameraState('loading');
     setErrorMsg('');
 
     try {
-      const scanner = new Html5Qrcode('qr-reader');
-      scannerRef.current = scanner;
-
-      const config = {
-        fps: 10,
-        qrbox: { width: QR_BOX_SIZE, height: QR_BOX_SIZE },
-        aspectRatio: 1.0,
-        disableFlip: false,
-      };
-
-      const cameraConfig = selectedCamera === 'environment'
-        ? { facingMode: 'environment' as const }
-        : { deviceId: { exact: selectedCamera } };
-
-      await scanner.start(
-        cameraConfig,
-        config,
-        (decodedText) => {
-          if (decodedText) {
-            handleRef(decodedText);
-          }
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { ideal: mode },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
         },
-        () => {
-          // ignore frame errors
-        },
-      );
+      });
 
-      setCameraState('active');
+      if (!videoRef.current) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
 
-      // Try to enable continuous autofocus; ignore if unsupported
-      await applyVideoConstraints({ advanced: [{ focusMode: 'continuous' }] } as MediaTrackConstraintSet);
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+
+      // Try continuous autofocus
+      await applyTrackConstraints({ focusMode: 'continuous' } as MediaTrackConstraintSet);
 
       // Check torch support
-      const capabilities = scanner.getRunningTrackCapabilities?.() as MediaTrackCapabilities | undefined;
+      const track = stream.getVideoTracks()[0];
+      const capabilities = track.getCapabilities?.() as MediaTrackCapabilities | undefined;
       if (capabilities && 'torch' in capabilities) {
         setTorchSupported(true);
       }
+
+      const { BrowserQRCodeReader } = await import('@zxing/browser');
+      const reader = new BrowserQRCodeReader();
+      const controls = await reader.decodeFromVideoElement(videoRef.current, (result: { getText(): string } | null | undefined) => {
+        if (result) {
+          const text = result.getText();
+          if (text) handleRef(text);
+        }
+      });
+      controlsRef.current = controls;
+      setCameraState('active');
     } catch (err: unknown) {
       let message = 'No se pudo acceder a la cámara';
       if (err instanceof DOMException) {
@@ -139,29 +149,22 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
       setErrorMsg(message);
       setCameraState('error');
     }
-  }, [selectedCamera, stopCamera, handleRef, applyVideoConstraints]);
+  }, [handleRef, stopCamera, applyTrackConstraints]);
+
+  const switchCamera = useCallback(async () => {
+    if (cameraState === 'loading') return;
+    const next = facingModeRef.current === 'environment' ? 'user' : 'environment';
+    setFacingMode(next);
+    facingModeRef.current = next;
+    stopCamera();
+    setTimeout(() => startCamera(next), 300);
+  }, [cameraState, stopCamera, startCamera]);
 
   const toggleTorch = useCallback(async () => {
     const next = !torchOn;
-    const ok = await applyVideoConstraints({ advanced: [{ torch: next }] } as MediaTrackConstraintSet);
-    if (ok) {
-      setTorchOn(next);
-    }
-  }, [torchOn, applyVideoConstraints]);
-
-  const cycleCamera = useCallback(() => {
-    if (cameras.length < 2) return;
-    const idx = cameras.findIndex((c) => c.id === selectedCamera);
-    const next = cameras[(idx + 1) % cameras.length];
-    setSelectedCamera(next.id);
-  }, [cameras, selectedCamera]);
-
-  useEffect(() => {
-    if (open && cameraState !== 'loading') {
-      startCamera();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCamera, open]);
+    const ok = await applyTrackConstraints({ torch: next } as MediaTrackConstraintSet);
+    if (ok) setTorchOn(next);
+  }, [torchOn, applyTrackConstraints]);
 
   useEffect(() => {
     if (!open) {
@@ -174,23 +177,19 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
 
     let cancelled = false;
 
-    Html5Qrcode.getCameras()
+    // Detect if there is more than one camera to show the switch button
+    navigator.mediaDevices.enumerateDevices()
       .then((devices) => {
         if (cancelled) return;
-        setCameras(devices);
-        const back = devices.find((d) => /back|rear|environment/i.test(d.label));
-        if (back) {
-          setSelectedCamera(back.id);
-        } else if (devices.length > 0) {
-          setSelectedCamera(devices[0].id);
-        }
+        const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+        setHasMultipleCameras(videoDevices.length > 1);
       })
       .catch(() => {
         if (cancelled) return;
-        setCameras([]);
+        setHasMultipleCameras(false);
       });
 
-    const timer = setTimeout(() => startCamera(), 200);
+    const timer = setTimeout(() => startCamera(), 300);
 
     return () => {
       cancelled = true;
@@ -209,7 +208,12 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
         position: 'relative', marginBottom: '1rem', borderRadius: 8, overflow: 'hidden',
         background: '#000', minHeight: 240,
       }}>
-        <div id="qr-reader" style={{ width: '100%', minHeight: 240 }} />
+        <video
+          ref={videoRef}
+          style={{ width: '100%', maxHeight: 280, objectFit: 'cover', display: 'block' }}
+          playsInline
+          muted
+        />
 
         {cameraState === 'active' && (
           <div style={{
@@ -241,6 +245,22 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
           </div>
         )}
 
+        {cameraState === 'error' && (
+          <div style={{
+            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 10, padding: 20, textAlign: 'center',
+          }}>
+            <CameraOff size={40} color="#fff" opacity={0.6} />
+            <p style={{ color: '#fff', fontSize: 13, margin: 0, lineHeight: 1.4 }}>{errorMsg}</p>
+            <button
+              style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }}
+              onClick={() => startCamera()}
+            >
+              Reintentar
+            </button>
+          </div>
+        )}
+
         {cameraState === 'idle' && (
           <div style={{
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -268,10 +288,10 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
                 {torchOn ? <FlashlightOff size={18} /> : <Flashlight size={18} />}
               </button>
             )}
-            {cameras.length > 1 && (
+            {hasMultipleCameras && (
               <button
                 type="button"
-                onClick={cycleCamera}
+                onClick={switchCamera}
                 title="Cambiar cámara"
                 style={{
                   width: 36, height: 36, borderRadius: '50%', border: 'none',
@@ -282,22 +302,6 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
                 <SwitchCamera size={18} />
               </button>
             )}
-          </div>
-        )}
-
-        {cameraState === 'error' && (
-          <div style={{
-            position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 10, padding: 20, textAlign: 'center',
-          }}>
-            <CameraOff size={40} color="#fff" opacity={0.6} />
-            <p style={{ color: '#fff', fontSize: 13, margin: 0, lineHeight: 1.4 }}>{errorMsg}</p>
-            <button
-              style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }}
-              onClick={startCamera}
-            >
-              Reintentar
-            </button>
           </div>
         )}
       </div>

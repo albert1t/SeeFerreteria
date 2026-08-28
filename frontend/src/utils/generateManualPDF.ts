@@ -18,19 +18,6 @@ function addPageIfNeeded(ctx: PdfContext, neededSpace: number) {
   }
 }
 
-function title(ctx: PdfContext, text: string) {
-  addPageIfNeeded(ctx, 20);
-  ctx.doc.setFontSize(22);
-  ctx.doc.setFont('helvetica', 'bold');
-  ctx.doc.setTextColor(30, 58, 95);
-  ctx.doc.text(text, MARGIN, ctx.y);
-  ctx.y += 10;
-  ctx.doc.setDrawColor(30, 58, 95);
-  ctx.doc.setLineWidth(0.5);
-  ctx.doc.line(MARGIN, ctx.y, PAGE_WIDTH - MARGIN, ctx.y);
-  ctx.y += 8;
-}
-
 function sectionTitle(ctx: PdfContext, text: string) {
   addPageIfNeeded(ctx, 16);
   ctx.doc.setFontSize(15);
