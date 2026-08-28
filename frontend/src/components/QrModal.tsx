@@ -15,13 +15,20 @@ interface QrModalProps {
 const SCAN_COOLDOWN_MS = 2500;
 const QR_BOX_SIZE = 220;
 
-type FacingMode = 'environment' | 'user';
+function isBackCamera(label: string): boolean {
+  const lower = label.toLowerCase();
+  return (
+    /back|rear|environment|trasera/i.test(lower) &&
+    !/front|selfie|user|facetime/i.test(lower)
+  );
+}
 
 export function QrModal({ open, onClose, onFound }: QrModalProps) {
   const [manualRef, setManualRef] = useState('');
   const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
-  const [facingMode, setFacingMode] = useState<FacingMode>('environment');
+  const [backCameras, setBackCameras] = useState<MediaDeviceInfo[]>([]);
+  const [currentCameraIndex, setCurrentCameraIndex] = useState(-1);
   const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
@@ -30,12 +37,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
   const controlsRef = useRef<any>(null);
   const scanCooldownRef = useRef<Map<string, number>>(new Map());
   const processingRef = useRef(false);
-  const facingModeRef = useRef<FacingMode>(facingMode);
   const { showToast } = useToast();
-
-  useEffect(() => {
-    facingModeRef.current = facingMode;
-  }, [facingMode]);
 
   const handleRef = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
@@ -88,20 +90,45 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
     }
   }, []);
 
-  const startCamera = useCallback(async (mode: FacingMode = facingModeRef.current) => {
+  const detectBackCameras = useCallback(async () => {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevs = devices.filter((d) => d.kind === 'videoinput');
+      const backs = videoDevs.filter((d) => isBackCamera(d.label));
+      setBackCameras(backs);
+      setHasMultipleCameras(backs.length > 1);
+      return backs;
+    } catch {
+      setBackCameras([]);
+      setHasMultipleCameras(false);
+      return [];
+    }
+  }, []);
+
+  const startCamera = useCallback(async (deviceId?: string) => {
     if (!videoRef.current) return;
     stopCamera();
     setCameraState('loading');
     setErrorMsg('');
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: mode },
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
-        },
-      });
+      const constraints: MediaStreamConstraints = deviceId
+        ? {
+            video: {
+              deviceId: { exact: deviceId },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+          }
+        : {
+            video: {
+              facingMode: { ideal: 'environment' },
+              width: { ideal: 1280 },
+              height: { ideal: 720 },
+            },
+          };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
       if (!videoRef.current) {
         stream.getTracks().forEach((t) => t.stop());
@@ -131,6 +158,13 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
       });
       controlsRef.current = controls;
       setCameraState('active');
+
+      // After permission is granted, enumerate back cameras for the switch button
+      const backs = await detectBackCameras();
+      if (backs.length > 1 && deviceId) {
+        const idx = backs.findIndex((c) => c.deviceId === deviceId);
+        setCurrentCameraIndex(idx >= 0 ? idx : 0);
+      }
     } catch (err: unknown) {
       let message = 'No se pudo acceder a la cámara';
       if (err instanceof DOMException) {
@@ -149,16 +183,15 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
       setErrorMsg(message);
       setCameraState('error');
     }
-  }, [handleRef, stopCamera, applyTrackConstraints]);
+  }, [handleRef, stopCamera, applyTrackConstraints, detectBackCameras]);
 
   const switchCamera = useCallback(async () => {
-    if (cameraState === 'loading') return;
-    const next = facingModeRef.current === 'environment' ? 'user' : 'environment';
-    setFacingMode(next);
-    facingModeRef.current = next;
+    if (cameraState === 'loading' || backCameras.length < 2) return;
+    const nextIndex = (currentCameraIndex + 1) % backCameras.length;
+    setCurrentCameraIndex(nextIndex);
     stopCamera();
-    setTimeout(() => startCamera(next), 300);
-  }, [cameraState, stopCamera, startCamera]);
+    setTimeout(() => startCamera(backCameras[nextIndex].deviceId), 300);
+  }, [cameraState, backCameras, currentCameraIndex, stopCamera, startCamera]);
 
   const toggleTorch = useCallback(async () => {
     const next = !torchOn;
@@ -171,28 +204,16 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
       stopCamera();
       setManualRef('');
       setErrorMsg('');
+      setBackCameras([]);
+      setCurrentCameraIndex(-1);
+      setHasMultipleCameras(false);
       scanCooldownRef.current.clear();
       return;
     }
 
-    let cancelled = false;
-
-    // Detect if there is more than one camera to show the switch button
-    navigator.mediaDevices.enumerateDevices()
-      .then((devices) => {
-        if (cancelled) return;
-        const videoDevices = devices.filter((d) => d.kind === 'videoinput');
-        setHasMultipleCameras(videoDevices.length > 1);
-      })
-      .catch(() => {
-        if (cancelled) return;
-        setHasMultipleCameras(false);
-      });
-
     const timer = setTimeout(() => startCamera(), 300);
 
     return () => {
-      cancelled = true;
       clearTimeout(timer);
       stopCamera();
     };
@@ -292,7 +313,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
               <button
                 type="button"
                 onClick={switchCamera}
-                title="Cambiar cámara"
+                title="Cambiar cámara trasera"
                 style={{
                   width: 36, height: 36, borderRadius: '50%', border: 'none',
                   background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
