@@ -108,6 +108,8 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
   const controlsRef = useRef<any>(null);
   const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+  const scanCooldownRef = useRef<Map<string, number>>(new Map());
+  const processingRef = useRef(false);
 
   const stopCamera = useCallback(() => {
     controlsRef.current?.stop();
@@ -119,16 +121,27 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
 
   const assignProduct = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
-    if (!trimmed) return;
+    if (!trimmed || processingRef.current) return;
+
+    const now = Date.now();
+    const lastScan = scanCooldownRef.current.get(trimmed);
+    if (lastScan && now - lastScan < 3000) return;
+    scanCooldownRef.current.set(trimmed, now);
+    processingRef.current = true;
+
     try {
       const product = await recambiosApi.getRecambioByRef(trimmed);
       await recambiosApi.assignPosition(product.id, panel, col, row);
       showToast(`${product.cmhReference} asignado a ${panel} C${col}F${row}`, 'success');
+      stopCamera();
       onAssigned();
+      onClose();
     } catch {
       showToast(`Referencia no encontrada: ${trimmed}`);
+    } finally {
+      processingRef.current = false;
     }
-  }, [panel, col, row, onAssigned, showToast]);
+  }, [panel, col, row, onAssigned, onClose, showToast, stopCamera]);
 
   const startCamera = useCallback(async () => {
     if (!videoRef.current) return;
