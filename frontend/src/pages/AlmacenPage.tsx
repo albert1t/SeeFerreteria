@@ -6,6 +6,7 @@ import { useAuth } from '../hooks/useAuth';
 import { Modal } from '../components/Modal';
 import { FichaTecnica } from '../components/FichaTecnica';
 import { useToast } from '../components/Toast';
+import { ScrewIcon } from '../components/PlaceholderImage';
 import { btnStyle } from '../styles/theme';
 import * as panelesApi from '../api/panels';
 import * as recambiosApi from '../api/products';
@@ -49,14 +50,12 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
       }}
     >
       {filled && !image && (
-        <img
-          src="/icons/screw.svg"
-          alt=""
+        <ScrewIcon
           style={{
             width: '70%',
             height: '70%',
-            objectFit: 'contain',
-            filter: 'brightness(0) invert(1) drop-shadow(0 1px 1px var(--shadow-strong))',
+            color: '#fff',
+            filter: 'drop-shadow(0 1px 1px var(--shadow-strong))',
           }}
         />
       )}
@@ -745,13 +744,11 @@ export function AlmacenPage() {
                             {r.image ? (
                               <img src={r.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', flexShrink: 0 }} />
                             ) : (
-                              <img
-                                src="/icons/screw.svg"
-                                alt=""
+                              <ScrewIcon
                                 style={{
                                   width: 90, height: 90, borderRadius: 8, flexShrink: 0,
-                                  objectFit: 'contain',
-                                  filter: 'brightness(0) invert(1) drop-shadow(0 1px 2px var(--shadow-strong))',
+                                  color: '#fff',
+                                  filter: 'drop-shadow(0 1px 2px var(--shadow-strong))',
                                 }}
                               />
                             )}
