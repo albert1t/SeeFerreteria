@@ -7,6 +7,7 @@ import { Modal } from '../components/Modal';
 import { FichaTecnica } from '../components/FichaTecnica';
 import { useToast } from '../components/Toast';
 import { ScrewIcon } from '../components/PlaceholderImage';
+import { useQrScanner } from '../hooks/useQrScanner';
 import { btnStyle } from '../styles/theme';
 import * as panelesApi from '../api/panels';
 import * as recambiosApi from '../api/products';
@@ -103,79 +104,27 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
 }) {
   const { showToast } = useToast();
   const [manualRef, setManualRef] = useState('');
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const controlsRef = useRef<any>(null);
-  const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
-  const [errorMsg, setErrorMsg] = useState('');
-  const scanCooldownRef = useRef<Map<string, number>>(new Map());
-  const processingRef = useRef(false);
-
-  const stopCamera = useCallback(() => {
-    controlsRef.current?.stop();
-    controlsRef.current = null;
-    const stream = videoRef.current?.srcObject as MediaStream | null;
-    stream?.getTracks().forEach((t) => t.stop());
-    if (videoRef.current) videoRef.current.srcObject = null;
-  }, []);
 
   const assignProduct = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
-    if (!trimmed || processingRef.current) return;
-
-    const now = Date.now();
-    const lastScan = scanCooldownRef.current.get(trimmed);
-    if (lastScan && now - lastScan < 3000) return;
-    scanCooldownRef.current.set(trimmed, now);
-    processingRef.current = true;
-
+    if (!trimmed) return;
     try {
       const product = await recambiosApi.getRecambioByRef(trimmed);
       await recambiosApi.assignPosition(product.id, panel, col, row);
       showToast(`${product.cmhReference} asignado a ${panel} C${col}F${row}`, 'success');
-      stopCamera();
       onAssigned();
       onClose();
     } catch {
       showToast(`Referencia no encontrada: ${trimmed}`);
-    } finally {
-      processingRef.current = false;
     }
-  }, [panel, col, row, onAssigned, onClose, showToast, stopCamera]);
+  }, [panel, col, row, onAssigned, onClose, showToast]);
 
-  const startCamera = useCallback(async () => {
-    if (!videoRef.current) return;
-    stopCamera();
-    setCameraState('loading');
-    setErrorMsg('');
-    try {
-      const { BrowserQRCodeReader } = await import('@zxing/browser');
-      const reader = new BrowserQRCodeReader();
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
-      });
-      if (!videoRef.current) { stream.getTracks().forEach((t) => t.stop()); return; }
-      videoRef.current.srcObject = stream;
-      await videoRef.current.play();
-      const controls = await reader.decodeFromVideoElement(videoRef.current, (result: { getText(): string } | null | undefined) => {
-        if (result) { const text = result.getText(); if (text) assignProduct(text); }
-      });
-      controlsRef.current = controls;
-      setCameraState('active');
-    } catch (err: unknown) {
-      let message = 'No se pudo acceder a la camara';
-      if (err instanceof DOMException) {
-        if (err.name === 'NotAllowedError') message = 'Permiso de camara denegado.';
-        else if (err.name === 'NotFoundError') message = 'No se encontro camara.';
-      }
-      setErrorMsg(message);
-      setCameraState('error');
-    }
-  }, [stopCamera, assignProduct]);
-
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [startCamera, stopCamera]);
+  const {
+    videoRef,
+    cameraState,
+    errorMsg,
+    startCamera,
+  } = useQrScanner({ onScan: assignProduct, cooldownMs: 3000, autoStart: true });
 
   return (
     <Modal open onClose={onClose} title={`Asignar a ${panel} C${col}F${row}`}>
@@ -189,10 +138,13 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
         {cameraState === 'loading' && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13 }}>Abriendo camara...</div>
         )}
+        {cameraState === 'idle' && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>Preparando camara...</div>
+        )}
         {cameraState === 'error' && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, textAlign: 'center' }}>
             <p style={{ color: '#fff', fontSize: 13, margin: 0 }}>{errorMsg}</p>
-            <button style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }} onClick={startCamera}>Reintentar</button>
+            <button style={{ ...btnStyle('primary'), fontSize: 12, padding: '6px 16px' }} onClick={() => startCamera()}>Reintentar</button>
           </div>
         )}
       </div>

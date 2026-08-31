@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
+import { getToken } from '../api/client';
 import { useTheme } from '../hooks/useTheme';
 import { SearchBar } from './SearchBar';
 import { QrModal } from './QrModal';
@@ -38,11 +39,15 @@ export function Layout() {
 
   const puedeTarifas = can('tarifas', 'edit');
 
+  const isAuthenticated = !!getToken();
+
   const { data: tarifaStatus } = useQuery({
     queryKey: ['imports', 'festo', 'status'],
     queryFn: () => importacionesApi.getImportStatus('festo'),
-    enabled: puedeTarifas,
+    enabled: puedeTarifas && isAuthenticated,
     refetchInterval: 30_000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   useEffect(() => {
@@ -58,7 +63,10 @@ export function Layout() {
   const { data: urgentes } = useQuery({
     queryKey: ['orders', 'urgentes'],
     queryFn: () => pedidosApi.getUrgentesCount(),
+    enabled: isAuthenticated,
     refetchInterval: 30000,
+    retry: false,
+    refetchOnWindowFocus: false,
   });
 
   function closeMenu() { setMenuOpen(false); }
