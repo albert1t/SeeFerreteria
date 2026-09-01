@@ -104,20 +104,50 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
 }) {
   const { showToast } = useToast();
   const [manualRef, setManualRef] = useState('');
+  const [confirmMove, setConfirmMove] = useState<{
+    product: Product;
+    from: { panel: string; col: number; row: number };
+    to: { panel: string; col: number; row: number };
+  } | null>(null);
+  const confirmingRef = useRef(false);
+
+  const doAssign = useCallback(async (product: Product) => {
+    await recambiosApi.assignPosition(product.id, panel, col, row);
+    showToast(`${product.cmhReference} asignado a ${panel} C${col}F${row}`, 'success');
+    onAssigned();
+    onClose();
+  }, [panel, col, row, onAssigned, onClose, showToast]);
 
   const assignProduct = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
-    if (!trimmed) return;
+    if (!trimmed || confirmingRef.current) return;
     try {
       const product = await recambiosApi.getRecambioByRef(trimmed);
-      await recambiosApi.assignPosition(product.id, panel, col, row);
-      showToast(`${product.cmhReference} asignado a ${panel} C${col}F${row}`, 'success');
-      onAssigned();
-      onClose();
+      if (product.panel && product.col != null && product.row != null) {
+        confirmingRef.current = true;
+        setConfirmMove({
+          product,
+          from: { panel: product.panel, col: product.col, row: product.row },
+          to: { panel, col, row },
+        });
+        return;
+      }
+      await doAssign(product);
     } catch {
       showToast(`Referencia no encontrada: ${trimmed}`);
     }
-  }, [panel, col, row, onAssigned, onClose, showToast]);
+  }, [panel, col, row, doAssign, showToast]);
+
+  const handleMove = useCallback(() => {
+    if (!confirmMove) return;
+    confirmingRef.current = false;
+    doAssign(confirmMove.product);
+  }, [confirmMove, doAssign]);
+
+  const handleKeep = useCallback(() => {
+    confirmingRef.current = false;
+    setConfirmMove(null);
+  }, []);
 
   const {
     videoRef,
@@ -125,6 +155,35 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
     errorMsg,
     startCamera,
   } = useQrScanner({ onScan: assignProduct, cooldownMs: 3000, autoStart: true });
+
+  if (confirmMove) {
+    return (
+      <Modal open onClose={onClose} title="El recambio ya tiene ubicación">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, fontSize: 14 }}>
+          <p>
+            <strong>{confirmMove.product.cmhReference}</strong> ya está ubicado en:
+          </p>
+          <div style={{
+            padding: '12px 16px', background: 'var(--bg-input)', borderRadius: 8,
+            border: '1px solid var(--border-strong)', fontWeight: 700, color: 'var(--accent)',
+          }}>
+            {confirmMove.from.panel} C{confirmMove.from.col}F{confirmMove.from.row}
+          </div>
+          <p>¿Quieres moverlo a la nueva ubicación?</p>
+          <div style={{
+            padding: '12px 16px', background: 'var(--bg-input)', borderRadius: 8,
+            border: '1px dashed var(--accent)', fontWeight: 700, color: 'var(--accent)',
+          }}>
+            {confirmMove.to.panel} C{confirmMove.to.col}F{confirmMove.to.row}
+          </div>
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <button style={btnStyle('primary')} onClick={handleMove}>Mover aquí</button>
+            <button style={btnStyle('ghost')} onClick={handleKeep}>Dejarlo donde está</button>
+          </div>
+        </div>
+      </Modal>
+    );
+  }
 
   return (
     <Modal open onClose={onClose} title={`Asignar a ${panel} C${col}F${row}`}>
