@@ -33,21 +33,19 @@ function LoadingOverlay({ message }: { message: string }) {
 }
 
 function CubetaMini({ filled, image, title }: { filled: boolean; image?: string | null; title?: string }) {
-  const background = image ? `url(${image})` : undefined;
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = filled && image && !imgFailed;
   return (
     <div
       title={title}
       style={{
         width: '100%', height: '100%', borderRadius: 3,
         backgroundColor: filled ? 'var(--bg-cubeta-filled-2)' : 'var(--bg-cubeta-empty)',
-        backgroundImage: background,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
         border: filled ? '1px solid var(--border-white-soft)' : '1px solid var(--border-white)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         overflow: 'hidden',
         containerType: 'size',
+        position: 'relative',
       }}
     >
       {filled && !image && (
@@ -59,8 +57,7 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
             filter: 'drop-shadow(0 1px 1px var(--shadow-strong))',
           }}
         />
-      )}
-      {!filled && (
+      ) : (
         <span style={{
           color: 'var(--text-faint)',
           fontSize: 'clamp(7px, 18cqw, 10px)',
@@ -243,6 +240,17 @@ export function AlmacenPage() {
   const [nuevaFamiliaDesc, setNuevaFamiliaDesc] = useState('');
   const [emptyCubetaClick, setEmptyCubetaClick] = useState<{ panel: string; col: number; row: number } | null>(null);
   const [assignTarget, setAssignTarget] = useState<{ panel: string; col: number; row: number } | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [mobilePage, setMobilePage] = useState(0);
+  const MOBILE_COLS_PER_PAGE = 2;
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   useEffect(() => {
     if (!swapLoading) return;
@@ -252,6 +260,11 @@ export function AlmacenPage() {
     }, 15000);
     return () => clearTimeout(t);
   }, [swapLoading]);
+
+  useEffect(() => {
+    setMobilePage(0);
+  }, [panelSeleccionado]);
+
   const panelListRef = useRef<HTMLDivElement | null>(null);
 
   const { data: previewProducts = [], isLoading: loadingPreview } = useQuery({
@@ -672,16 +685,67 @@ export function AlmacenPage() {
           const isA1toA5 = (dims.cols === 4 && dims.rows === 8);
           const isA6toA9 = (dims.cols === 5 && dims.rows === 10);
           const gridGap = isA1toA5 ? 6 : isA6toA9 ? 8 : 12;
+
+          const totalPages = Math.ceil(dims.cols / MOBILE_COLS_PER_PAGE);
+          const safeMobilePage = Math.min(mobilePage, totalPages - 1);
+          const colStart = isMobile ? safeMobilePage * MOBILE_COLS_PER_PAGE : 0;
+          const colEnd = isMobile ? Math.min(colStart + MOBILE_COLS_PER_PAGE, dims.cols) : dims.cols;
+          const visibleCols = colEnd - colStart;
+
           return (
             <div style={{ overflowY: 'auto', overflowX: 'hidden', flex: 1, minHeight: 0, paddingBottom: '1rem' }}>
+              {isMobile && totalPages > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 4px 8px', gap: 8 }}>
+                  <button
+                    onClick={() => setMobilePage((p) => Math.max(0, p - 1))}
+                    disabled={safeMobilePage === 0}
+                    style={{
+                      flex: '0 0 auto',
+                      width: 36, height: 36,
+                      borderRadius: 8,
+                      border: '1px solid var(--border-input-soft)',
+                      background: safeMobilePage === 0 ? 'var(--bg-card-soft)' : 'var(--bg-cubeta-filled-2)',
+                      color: safeMobilePage === 0 ? 'var(--text-faint)' : 'var(--accent)',
+                      fontSize: 18, fontWeight: 700,
+                      cursor: safeMobilePage === 0 ? 'default' : 'pointer',
+                      opacity: safeMobilePage === 0 ? 0.4 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    &#8249;
+                  </button>
+                  <span style={{ fontSize: 12, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>
+                    Col {colStart + 1}–{colEnd} de {dims.cols}
+                  </span>
+                  <button
+                    onClick={() => setMobilePage((p) => Math.min(totalPages - 1, p + 1))}
+                    disabled={safeMobilePage >= totalPages - 1}
+                    style={{
+                      flex: '0 0 auto',
+                      width: 36, height: 36,
+                      borderRadius: 8,
+                      border: '1px solid var(--border-input-soft)',
+                      background: safeMobilePage >= totalPages - 1 ? 'var(--bg-card-soft)' : 'var(--bg-cubeta-filled-2)',
+                      color: safeMobilePage >= totalPages - 1 ? 'var(--text-faint)' : 'var(--accent)',
+                      fontSize: 18, fontWeight: 700,
+                      cursor: safeMobilePage >= totalPages - 1 ? 'default' : 'pointer',
+                      opacity: safeMobilePage >= totalPages - 1 ? 0.4 : 1,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    &#8250;
+                  </button>
+                </div>
+              )}
               <div
                 className="panel-detail-grid"
-                style={{ display: 'grid', gridTemplateColumns: `repeat(${dims.cols}, 1fr)`, gap: gridGap, width: '100%' }}
+                style={{ display: 'grid', gridTemplateColumns: `repeat(${visibleCols}, 1fr)`, gap: gridGap, width: '100%' }}
               >
                 {Array.from({ length: dims.rows }, (_, rowIdx) =>
                   Array.from({ length: dims.cols }, (_, colIdx) => {
                     const col = colIdx + 1;
                     const row = rowIdx + 1;
+                    if (isMobile && (colIdx < colStart || colIdx >= colEnd)) return null;
                     const r = getRecambioEnCubeta(col, row);
                     return (
                       <div
@@ -790,15 +854,17 @@ export function AlmacenPage() {
                               }}>
                                 {r.name}
                               </div>
-                              <div style={{ fontSize: 10, color: 'var(--text-faint-2)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto' }}>
-                                {col}/{row}
+                              <div style={{ fontSize: 10, color: 'var(--text-faint-2)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto', textAlign: 'center', lineHeight: 1.4 }}>
+                                {isMobile ? (<>{'Fila ' + row}<br />{'Col ' + col}</>) : (<>{col}/{row}</>)}
                               </div>
                             </div>
                           </>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', flex: 1, gap: 6 }}>
                             <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-faint-2)' }}>Vacío</span>
-                            <span style={{ fontSize: 11, color: 'var(--text-faint-2)' }}>{col}/{row}</span>
+                            <span style={{ fontSize: 11, color: 'var(--text-faint-2)', textAlign: 'center', lineHeight: 1.4 }}>
+                              {isMobile ? (<>{'Fila ' + row}<br />{'Col ' + col}</>) : (<>{col}/{row}</>)}
+                            </span>
                           </div>
                         )}
                       </div>

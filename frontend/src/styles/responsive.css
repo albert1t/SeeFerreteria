@@ -125,7 +125,6 @@
 
   /* -- PANEL DETAIL GRID (vista de un panel concreto) -- */
   .panel-detail-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
     gap: 6px !important;
   }
   .panel-detail-cell {
