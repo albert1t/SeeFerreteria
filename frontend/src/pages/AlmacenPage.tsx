@@ -33,6 +33,8 @@ function LoadingOverlay({ message }: { message: string }) {
 }
 
 function CubetaMini({ filled, image, title }: { filled: boolean; image?: string | null; title?: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const showImage = filled && image && !imgFailed;
   return (
     <div
       title={title}
@@ -46,7 +48,18 @@ function CubetaMini({ filled, image, title }: { filled: boolean; image?: string 
         position: 'relative',
       }}
     >
-      {filled && !image ? (
+      {showImage ? (
+        <img
+          src={image!}
+          alt=""
+          onError={() => setImgFailed(true)}
+          style={{
+            width: '100%', height: '100%',
+            objectFit: 'cover',
+            position: 'absolute', inset: 0,
+          }}
+        />
+      ) : filled ? (
         <ScrewIcon
           style={{
             width: '70%',
