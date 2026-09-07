@@ -1,6 +1,6 @@
 <?php
 header('Content-Type: text/plain; charset=utf-8');
-echo "=== Deploy + Migracion 013 ===\n\n";
+echo "=== Deploy + Migracion 014 ===\n\n";
 
 // 1. Git pull
 echo "--- git pull ---\n";
@@ -9,8 +9,8 @@ $pull = shell_exec('git pull origin main 2>&1');
 echo $pull . "\n";
 
 // 2. Ejecutar migracion SQL
-echo "\n--- Migracion 013 ---\n";
-$sqlPath = 'database/013_import_material_ferreteria.sql';
+echo "\n--- Migracion 014 ---\n";
+$sqlPath = 'database/014_add_tornilleria_fields.sql';
 if (!file_exists($sqlPath)) {
     die("ERROR: $sqlPath no encontrado\n");
 }
@@ -53,6 +53,9 @@ try {
     $fams = $pdo->query("SELECT COUNT(*) FROM Families")->fetchColumn();
     echo "Productos en BD: $total\n";
     echo "Familias en BD: $fams\n";
+
+    $cols = $pdo->query("SHOW COLUMNS FROM Products LIKE 'cabeza'")->fetchAll();
+    echo "Columna 'cabeza' presente: " . (count($cols) > 0 ? 'SI' : 'NO') . "\n";
 } catch (PDOException $e) {
     echo "ERROR BD: " . $e->getMessage() . "\n";
 }
