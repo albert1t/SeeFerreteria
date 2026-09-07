@@ -39,6 +39,9 @@ export interface Product {
   col: number | null;
   row: number | null;
   hidden: boolean;
+  cabeza: string | null;
+  acabado: string | null;
+  iso: string | null;
 }
 
 export interface Order {
@@ -134,4 +137,7 @@ export interface ProductFormData {
   col: number | null;
   row: number | null;
   hidden?: boolean;
+  cabeza?: string | null;
+  acabado?: string | null;
+  iso?: string | null;
 }

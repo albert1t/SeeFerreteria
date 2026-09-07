@@ -28,6 +28,22 @@ export async function getRecambioByRef(ref: string): Promise<Product> {
   return product;
 }
 
+function normalizeFamilyName(name: string): string {
+  return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
+async function isTornilleria(familyId: number): Promise<boolean> {
+  const families = await catalogsRepo.getFamilies();
+  const family = families.find((f) => f.id === familyId);
+  return !!family && normalizeFamilyName(family.name).includes('tornilleria');
+}
+
+function validateTornilleriaFields(data: { cabeza?: string | null; acabado?: string | null; iso?: string | null }): void {
+  if (!data.cabeza?.trim() || !data.acabado?.trim() || !data.iso?.trim()) {
+    throw new AppError(400, 'Para la familia Tornillería debes indicar cabeza, acabado e ISO');
+  }
+}
+
 async function validateUbicacion(panel: string, col: number, row: number, excludeId?: number): Promise<void> {
   const p = panel.toUpperCase();
   const match = p.match(/^A(\d+)$/);
@@ -63,6 +79,9 @@ export async function createProduct(
   if (data.panel && data.col != null && data.row != null) {
     await validateUbicacion(data.panel, data.col, data.row);
   }
+  if (!skipDupeCheck && (await isTornilleria(data.familyId))) {
+    validateTornilleriaFields(data);
+  }
   return productsRepo.create({
     ...data,
     pvpOrientativo: data.pvpOrientativo ?? null,
@@ -87,6 +106,15 @@ export async function updateProduct(id: number, data: Partial<Product>): Promise
   if (data.cmhReference && data.cmhReference !== existing.cmhReference) {
     const dup = await productsRepo.findByReferencia(data.cmhReference);
     if (dup) throw new AppError(409, 'La referencia CMH ya existe');
+  }
+
+  const familyId = data.familyId ?? existing.familyId;
+  if (await isTornilleria(familyId)) {
+    validateTornilleriaFields({
+      cabeza: data.cabeza !== undefined ? data.cabeza : existing.cabeza,
+      acabado: data.acabado !== undefined ? data.acabado : existing.acabado,
+      iso: data.iso !== undefined ? data.iso : existing.iso,
+    });
   }
 
   const updated = await productsRepo.update(id, data);
@@ -233,6 +261,9 @@ export async function importFromExcel(buffer: Buffer): Promise<{ total: number, 
           panel: sheetName,
           col: isNaN(colRaw) ? 1 : colRaw,
           row: isNaN(rowNumRaw) ? 1 : rowNumRaw,
+          cabeza: getVal(['Cabeza']) ? String(getVal(['Cabeza'])) : null,
+          acabado: getVal(['Acabado']) ? String(getVal(['Acabado'])) : null,
+          iso: getVal(['ISO', 'Iso']) ? String(getVal(['ISO', 'Iso'])) : null,
         };
 
         await createProduct(newRecambio, true);

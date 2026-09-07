@@ -22,6 +22,10 @@ const labelStyle: React.CSSProperties = {
   fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4, display: 'block',
 };
 
+function normalizeFamilyName(name: string): string {
+  return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+
 export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: FormRecambioProps) {
   const { showToast } = useToast();
   const queryClient = useQueryClient();
@@ -49,7 +53,28 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
     col: product?.col ?? prefilledPosition?.col ?? null,
     row: product?.row ?? prefilledPosition?.row ?? null,
     hidden: product?.hidden ?? false,
+    cabeza: product?.cabeza ?? '',
+    acabado: product?.acabado ?? '',
+    iso: product?.iso ?? '',
   });
+
+  const [showNewFamily, setShowNewFamily] = useState(false);
+  const [newFamilyName, setNewFamilyName] = useState('');
+
+  const createFamiliaMut = useMutation({
+    mutationFn: () => catalogosApi.createFamilia(newFamilyName.trim()),
+    onSuccess: (created) => {
+      queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] });
+      upd('familyId', created.id);
+      setShowNewFamily(false);
+      setNewFamilyName('');
+      showToast('Familia creada', 'success');
+    },
+    onError: (err: Error) => showToast(err.message),
+  });
+
+  const selectedFamily = families.find((f) => f.id === form.familyId);
+  const isTornilleria = !!selectedFamily && normalizeFamilyName(selectedFamily.name).includes('tornilleria');
 
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(form.image || null);
@@ -120,6 +145,60 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.9rem' }}>
+      <div style={{ gridColumn: '1/-1', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-soft)' }}>
+        <label style={labelStyle}>Paso 1 · Familia *</label>
+        {!showNewFamily ? (
+          <select
+            style={inputStyle}
+            value={form.familyId}
+            onChange={(e) => {
+              if (e.target.value === '__new__') { setShowNewFamily(true); return; }
+              upd('familyId', parseInt(e.target.value, 10));
+            }}
+          >
+            <option value={0} disabled>-- Seleccionar familia --</option>
+            {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+            <option value="__new__">+ Nueva familia</option>
+          </select>
+        ) : (
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              style={inputStyle}
+              value={newFamilyName}
+              onChange={(e) => setNewFamilyName(e.target.value)}
+              placeholder="Nombre de la nueva familia"
+              autoFocus
+            />
+            <button
+              type="button"
+              style={{ ...btnStyle('primary'), fontSize: 13, padding: '8px 16px', whiteSpace: 'nowrap' }}
+              disabled={!newFamilyName.trim() || createFamiliaMut.isPending}
+              onClick={() => createFamiliaMut.mutate()}
+            >
+              {createFamiliaMut.isPending ? '...' : 'Crear'}
+            </button>
+            <button
+              type="button"
+              style={{ ...btnStyle('ghost'), fontSize: 13, padding: '8px 16px' }}
+              onClick={() => { setShowNewFamily(false); setNewFamilyName(''); }}
+            >
+              Cancelar
+            </button>
+          </div>
+        )}
+      </div>
+
+      {isTornilleria && (
+        <div style={{ gridColumn: '1/-1', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.9rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-soft)' }}>
+          {([['cabeza', 'Cabeza *'], ['acabado', 'Acabado *'], ['iso', 'ISO *']] as const).map(([k, lbl]) => (
+            <div key={k}>
+              <label style={labelStyle}>{lbl}</label>
+              <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} />
+            </div>
+          ))}
+        </div>
+      )}
+
       {([['cmhReference', 'Ref. CMH *'], ['customerReference', 'Ref. Cliente'], ['code', 'Código'], ['name', 'Nombre *'], ['brand', 'Marca']] as const).map(([k, lbl]) => (
         <div key={k}>
           <label style={labelStyle}>{lbl}</label>
@@ -141,17 +220,6 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
         </div>
       ))}
 
-      <div>
-        <label style={labelStyle}>Family *</label>
-        <select
-          style={inputStyle}
-          value={form.familyId}
-          onChange={(e) => upd('familyId', parseInt(e.target.value, 10))}
-        >
-          <option value={0} disabled>-- Seleccionar --</option>
-          {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-        </select>
-      </div>
       <div>
         <label style={labelStyle}>N° Reposición</label>
         <input style={inputStyle} type="number" min="1" value={form.reorderPoint ?? ''} onChange={(e) => { const v = e.target.value; upd('reorderPoint', v === '' ? null : parseInt(v, 10)); }} />
@@ -253,7 +321,11 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}
-          disabled={saveMut.isPending || uploading || !form.cmhReference || !form.name || !form.familyId || !(form.packagingUnit ?? '').trim()}
+          disabled={
+            saveMut.isPending || uploading || !form.cmhReference || !form.name || !form.familyId ||
+            !(form.packagingUnit ?? '').trim() ||
+            (isTornilleria && (!(form.cabeza ?? '').trim() || !(form.acabado ?? '').trim() || !(form.iso ?? '').trim()))
+          }
           onClick={() => saveMut.mutate()}
         >
           {saveMut.isPending ? 'Guardando...' : product ? 'Guardar cambios' : 'Crear producto'}

@@ -11,13 +11,14 @@ export async function getFamilies(): Promise<FamilyWithSubs[]> {
   }));
 }
 
-export async function createFamilia(name: string, description?: string | null): Promise<boolean> {
+export async function createFamilia(name: string, description?: string | null): Promise<FamilyWithSubs | null> {
   const pool = await getPool();
   const [exists] = await pool.query('SELECT 1 AS existsUser FROM Families WHERE name = ? LIMIT 1', [name]);
-  if ((exists as any[]).length > 0) return false;
+  if ((exists as any[]).length > 0) return null;
 
-  await pool.query('INSERT INTO Families (name, description) VALUES (?, ?)', [name, description ?? null]);
-  return true;
+  const [result] = await pool.query('INSERT INTO Families (name, description) VALUES (?, ?)', [name, description ?? null]);
+  const id = (result as any).insertId;
+  return { id, name, description: description ?? null };
 }
 
 export async function updateFamilia(id: number, name: string, description?: string | null): Promise<boolean> {

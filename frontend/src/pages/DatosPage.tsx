@@ -21,7 +21,7 @@ const FIELDS: { key: keyof Product; label: string; width?: number }[] = [
   { key: 'metric', label: 'Métrica', width: 80 },
   { key: 'packagingUnit', label: 'Ud. Embalaje', width: 100 },
   { key: 'pvpOrientativo', label: 'Precio', width: 90 },
-  { key: 'familyName', label: 'Family', width: 120 },
+  { key: 'familyName', label: 'Familia', width: 120 },
   { key: 'reorderPoint', label: 'Nº Repos.', width: 80 },
   { key: 'panel', label: 'Panel', width: 60 },
   { key: 'col', label: 'Col', width: 40 },
@@ -93,7 +93,7 @@ function FilterDropdown({ value, onChange, onClose, field, families, sortDir, on
         ) : field === 'familyName' ? (
           <select value={value} onChange={(e) => onChange(e.target.value)}
             style={{ width: '100%', padding: '4px 6px', fontSize: 12, background: 'var(--bg-input-dark-2)', color: 'var(--text)', border: '1px solid var(--border-input-strong)', borderRadius: 3, outline: 'none' }} autoFocus>
-            <option value="">Todas las families</option>
+            <option value="">Todas las familias</option>
             {families.map((f) => <option key={f.id} value={f.name}>{f.name}</option>)}
           </select>
         ) : field === 'hidden' ? (

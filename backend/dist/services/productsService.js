@@ -20,6 +20,19 @@ export async function getRecambioByRef(ref) {
         throw new AppError(404, 'Referencia no encontrada');
     return product;
 }
+function normalizeFamilyName(name) {
+    return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+}
+async function isTornilleria(familyId) {
+    const families = await catalogsRepo.getFamilies();
+    const family = families.find((f) => f.id === familyId);
+    return !!family && normalizeFamilyName(family.name).includes('tornilleria');
+}
+function validateTornilleriaFields(data) {
+    if (!data.cabeza?.trim() || !data.acabado?.trim() || !data.iso?.trim()) {
+        throw new AppError(400, 'Para la familia Tornillería debes indicar cabeza, acabado e ISO');
+    }
+}
 async function validateUbicacion(panel, col, row, excludeId) {
     const p = panel.toUpperCase();
     const match = p.match(/^A(\d+)$/);
@@ -51,6 +64,9 @@ export async function createProduct(data, skipDupeCheck = false) {
     if (data.panel && data.col != null && data.row != null) {
         await validateUbicacion(data.panel, data.col, data.row);
     }
+    if (!skipDupeCheck && (await isTornilleria(data.familyId))) {
+        validateTornilleriaFields(data);
+    }
     return productsRepo.create({
         ...data,
         pvpOrientativo: data.pvpOrientativo ?? null,
@@ -73,6 +89,14 @@ export async function updateProduct(id, data) {
         const dup = await productsRepo.findByReferencia(data.cmhReference);
         if (dup)
             throw new AppError(409, 'La referencia CMH ya existe');
+    }
+    const familyId = data.familyId ?? existing.familyId;
+    if (await isTornilleria(familyId)) {
+        validateTornilleriaFields({
+            cabeza: data.cabeza !== undefined ? data.cabeza : existing.cabeza,
+            acabado: data.acabado !== undefined ? data.acabado : existing.acabado,
+            iso: data.iso !== undefined ? data.iso : existing.iso,
+        });
     }
     const updated = await productsRepo.update(id, data);
     if (!updated)
@@ -218,6 +242,9 @@ export async function importFromExcel(buffer) {
                 panel: sheetName,
                 col: isNaN(colRaw) ? 1 : colRaw,
                 row: isNaN(rowNumRaw) ? 1 : rowNumRaw,
+                cabeza: getVal(['Cabeza']) ? String(getVal(['Cabeza'])) : null,
+                acabado: getVal(['Acabado']) ? String(getVal(['Acabado'])) : null,
+                iso: getVal(['ISO', 'Iso']) ? String(getVal(['ISO', 'Iso'])) : null,
             };
             await createProduct(newRecambio, true);
             insertados++;

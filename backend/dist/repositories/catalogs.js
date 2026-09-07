@@ -12,9 +12,10 @@ export async function createFamilia(name, description) {
     const pool = await getPool();
     const [exists] = await pool.query('SELECT 1 AS existsUser FROM Families WHERE name = ? LIMIT 1', [name]);
     if (exists.length > 0)
-        return false;
-    await pool.query('INSERT INTO Families (name, description) VALUES (?, ?)', [name, description ?? null]);
-    return true;
+        return null;
+    const [result] = await pool.query('INSERT INTO Families (name, description) VALUES (?, ?)', [name, description ?? null]);
+    const id = result.insertId;
+    return { id, name, description: description ?? null };
 }
 export async function updateFamilia(id, name, description) {
     const pool = await getPool();

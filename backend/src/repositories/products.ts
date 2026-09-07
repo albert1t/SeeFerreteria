@@ -23,6 +23,9 @@ function mapRecambio(row: Record<string, unknown>): Product {
     col: row.col as number | null,
     row: row.row as number | null,
     hidden: Boolean(row.hidden),
+    cabeza: row.cabeza as string | null,
+    acabado: row.acabado as string | null,
+    iso: row.iso as string | null,
     createdAt: row.createdAt ? (row.createdAt as Date).toISOString() : undefined,
     updatedAt: row.updatedAt ? (row.updatedAt as Date).toISOString() : undefined,
   };
@@ -128,11 +131,13 @@ export async function create(data: Omit<Product, 'id' | 'familyName' | 'createdA
   const pool = await getPool();
   const [result] = await pool.query(
     `INSERT INTO Products (cmhReference, customerReference, code, name, brand, description,
-      metric, packagingUnit, image, deliveryTime, familyId, reorderPoint, panel, col, row, hidden)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      metric, packagingUnit, image, deliveryTime, familyId, reorderPoint, panel, col, row, hidden,
+      cabeza, acabado, iso)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     [data.cmhReference, data.customerReference, data.code, data.name, data.brand,
      data.description, data.metric, data.packagingUnit, data.image, data.deliveryTime,
-     data.familyId, data.reorderPoint, data.panel, data.col, data.row, data.hidden]
+     data.familyId, data.reorderPoint, data.panel, data.col, data.row, data.hidden,
+     data.cabeza ?? null, data.acabado ?? null, data.iso ?? null]
   );
   const id = (result as any).insertId;
   const created = await findById(id);
@@ -152,6 +157,7 @@ export async function update(id: number, data: Partial<Product>): Promise<Produc
       packagingUnit = ?, image = ?, deliveryTime = ?,
       familyId = ?, reorderPoint = ?,
       panel = ?, col = ?, row = ?, hidden = ?,
+      cabeza = ?, acabado = ?, iso = ?,
       updatedAt = UTC_TIMESTAMP(6)
     WHERE id = ?`,
     [data.cmhReference ?? existing.cmhReference, data.customerReference ?? existing.customerReference,
@@ -161,7 +167,8 @@ export async function update(id: number, data: Partial<Product>): Promise<Produc
      data.image ?? existing.image, data.deliveryTime ?? existing.deliveryTime,
      data.familyId ?? existing.familyId, data.reorderPoint ?? existing.reorderPoint,
      data.panel ?? existing.panel, data.col ?? existing.col,
-     data.row ?? existing.row, data.hidden ?? existing.hidden, id]
+     data.row ?? existing.row, data.hidden ?? existing.hidden,
+     data.cabeza ?? existing.cabeza, data.acabado ?? existing.acabado, data.iso ?? existing.iso, id]
   );
 
   return findById(id);

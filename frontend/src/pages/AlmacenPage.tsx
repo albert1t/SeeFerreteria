@@ -311,19 +311,19 @@ export function AlmacenPage() {
 
   const createFamiliaMut = useMutation({
     mutationFn: ({ name, description }: { name: string; description?: string | null }) => catalogosApi.createFamilia(name, description),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Family creada', 'success'); setNuevaFamiliaNombre(''); setNuevaFamiliaDesc(''); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Familia creada', 'success'); setNuevaFamiliaNombre(''); setNuevaFamiliaDesc(''); },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const updateFamiliaMut = useMutation({
     mutationFn: ({ id, name, description }: { id: number; name: string; description?: string | null }) => catalogosApi.updateFamilia(id, name, description),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Family actualizada', 'success'); setEditandoFamilia(null); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Familia actualizada', 'success'); setEditandoFamilia(null); },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const deleteFamiliaMut = useMutation({
     mutationFn: (id: number) => catalogosApi.deleteFamilia(id),
-    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Family eliminada', 'success'); },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['catalogs', 'families'] }); showToast('Familia eliminada', 'success'); },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
@@ -369,7 +369,7 @@ export function AlmacenPage() {
     if (!items.length) return 'Vacío';
 
     const grouped = items.reduce<Record<string, number>>((acc, item) => {
-      const label = item.familyName || 'Sin family';
+      const label = item.familyName || 'Sin familia';
       acc[label] = (acc[label] || 0) + 1;
       return acc;
     }, {});
@@ -495,7 +495,7 @@ export function AlmacenPage() {
             )}
             {!panelSeleccionado && can('families', 'edit') && (
               <button type="button" style={{ ...btnStyle('ghost'), fontSize: 13, padding: '6px 12px', marginLeft: 8 }} onClick={() => setShowFamiliasModal(true)}>
-                Gestionar families
+                Gestionar familias
               </button>
             )}
           </h2>
@@ -617,7 +617,7 @@ export function AlmacenPage() {
                               background: 'var(--bg-input)', color: 'var(--text-bright)', fontSize: 12,
                             }}
                           >
-                            <option value="">-- Seleccionar family --</option>
+                            <option value="">-- Seleccionar familia --</option>
                             {titleOptions.map((option) => (
                               <option key={`${option.kind}-${option.id}`} value={JSON.stringify(option)}>
                                 {option.label}

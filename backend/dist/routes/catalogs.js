@@ -17,13 +17,13 @@ router.post('/families', requirePermission('families', 'create'), async (req, re
     try {
         const { name, description } = req.body;
         if (!name || typeof name !== 'string' || !name.trim()) {
-            throw new AppError(400, 'El name de la family es obligatorio');
+            throw new AppError(400, 'El nombre de la familia es obligatorio');
         }
         const created = await catalogsRepo.createFamilia(name.trim(), description?.trim() || null);
         if (!created) {
-            throw new AppError(409, 'La family ya existe');
+            throw new AppError(409, 'La familia ya existe');
         }
-        res.status(201).json({ ok: true });
+        res.status(201).json(created);
     }
     catch (err) {
         next(err);
@@ -36,11 +36,11 @@ router.patch('/families/:id', requirePermission('families', 'edit'), async (req,
             throw new AppError(400, 'ID inválido');
         const { name, description } = req.body;
         if (!name || typeof name !== 'string' || !name.trim()) {
-            throw new AppError(400, 'El name de la family es obligatorio');
+            throw new AppError(400, 'El nombre de la familia es obligatorio');
         }
         const updated = await catalogsRepo.updateFamilia(id, name.trim(), description?.trim() || null);
         if (!updated) {
-            throw new AppError(404, 'Family no encontrada');
+            throw new AppError(404, 'Familia no encontrada');
         }
         res.json({ ok: true });
     }
@@ -55,7 +55,7 @@ router.delete('/families/:id', requirePermission('families', 'delete'), async (r
             throw new AppError(400, 'ID inválido');
         const deleted = await catalogsRepo.deleteFamilia(id);
         if (!deleted) {
-            throw new AppError(404, 'Family no encontrada');
+            throw new AppError(404, 'Familia no encontrada');
         }
         res.json({ ok: true });
     }

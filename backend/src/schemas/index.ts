@@ -32,6 +32,9 @@ const baseRecambioSchema = z.object({
   col: z.number().int().min(1).max(6).optional().nullable(),
   row: z.number().int().min(1).max(15).optional().nullable(),
   hidden: z.boolean().optional(),
+  cabeza: z.string().max(100).optional().nullable(),
+  acabado: z.string().max(100).optional().nullable(),
+  iso: z.string().max(100).optional().nullable(),
 });
 
 function refineUbicacion(data: { panel?: string | null; col?: number | null; row?: number | null }, ctx: z.RefinementCtx) {

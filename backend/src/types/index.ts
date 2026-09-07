@@ -43,6 +43,9 @@ export interface Product {
   col: number | null;
   row: number | null;
   hidden: boolean;
+  cabeza: string | null;
+  acabado: string | null;
+  iso: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

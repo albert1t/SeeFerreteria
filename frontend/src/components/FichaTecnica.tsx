@@ -190,10 +190,15 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
               ['Métrica', r.metric ?? '—'],
               ['Unidad de embalaje', r.packagingUnit ?? '—'],
               ['Plazo de entrega', r.deliveryTime ?? '—'],
-              ['Family', r.familyName ?? '—'],
+              ['Familia', r.familyName ?? '—'],
               ['N° Reposición', r.reorderPoint ?? '—'],
               ['PVP orientativo', r.pvpOrientativo != null ? fmtPrecio(r.pvpOrientativo) : '—'],
               ['Ubicación', `${r.panel} - Col ${r.col} Fila ${r.row}`],
+              ...(r.cabeza || r.acabado || r.iso ? [
+                ['Cabeza', r.cabeza ?? '—'],
+                ['Acabado', r.acabado ?? '—'],
+                ['ISO', r.iso ?? '—'],
+              ] as [string, string][] : []),
             ].map(([k, v]) => (
               <div key={k as string}>
                 <div style={labelStyle}>{k}</div>

@@ -6,7 +6,7 @@ export function getFamilies() {
 }
 
 export function createFamilia(name: string, description?: string | null) {
-  return apiFetch<{ ok: boolean }>('/api/catalogs/families', {
+  return apiFetch<FamilyWithSubs>('/api/catalogs/families', {
     method: 'POST',
     body: JSON.stringify({ name, description }),
   });
