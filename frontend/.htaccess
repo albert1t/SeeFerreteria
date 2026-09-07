@@ -1,12 +1,20 @@
 DirectoryIndex dist/index.html
 Options -Indexes
 
-RewriteEngine On
+<IfModule mod_rewrite.c>
+    RewriteEngine On
 
-# Skip all dist/ assets
-RewriteRule ^dist/ - [L]
+    # Servir assets estáticos del build cuando el docroot es frontend/
+    RewriteRule ^assets/(.*)$ dist/assets/$1 [L]
+    RewriteRule ^icons/(.*)$ dist/icons/$1 [L]
+    RewriteRule ^favicon\.png$ dist/favicon.png [L]
+    RewriteRule ^favicon\.svg$ dist/favicon.svg [L]
 
-# Route everything else to the SPA
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ dist/index.html [L]
+    # Raíz del dominio
+    RewriteRule ^$ dist/index.html [L]
+
+    # Fallback SPA
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^(.*)$ dist/index.html [L]
+</IfModule>

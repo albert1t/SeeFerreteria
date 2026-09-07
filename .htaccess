@@ -1,15 +1,23 @@
 DirectoryIndex frontend/dist/index.html
+Options -Indexes
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
-    
-    # Skip /api requests (handled by cPanel Node.js Selector)
+
+    # API va al backend (cPanel Node.js Selector)
     RewriteRule ^api/ - [L]
-    
-    # Skip existing files and directories
+
+    # Servir assets estáticos del build desde la ruta raíz
+    RewriteRule ^assets/(.*)$ frontend/dist/assets/$1 [L]
+    RewriteRule ^icons/(.*)$ frontend/dist/icons/$1 [L]
+    RewriteRule ^favicon\.png$ frontend/dist/favicon.png [L]
+    RewriteRule ^favicon\.svg$ frontend/dist/favicon.svg [L]
+
+    # Raíz del dominio cuando apunta al repo
+    RewriteRule ^$ frontend/dist/index.html [L]
+
+    # Fallback SPA: cualquier otra ruta no existente va al index.html del build
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    
-    # Route all other requests to the SPA
     RewriteRule ^(.*)$ frontend/dist/index.html [L]
 </IfModule>
