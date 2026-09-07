@@ -1,0 +1,4853 @@
+﻿[
+    {
+        "id":  512,
+        "ref":  "32-270-4-50",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  768,
+        "ref":  "232015X55",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  257,
+        "ref":  "32-210-1-4",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  769,
+        "ref":  "232015X60",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  258,
+        "ref":  "32-210-1-6",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  514,
+        "ref":  "32-270-5-10",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  770,
+        "ref":  "232015X65",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  259,
+        "ref":  "32-210-1-8",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  515,
+        "ref":  "32-270-5-12",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  771,
+        "ref":  "232015X70",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  260,
+        "ref":  "32-210-1-10",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  516,
+        "ref":  "32-270-5-14",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  772,
+        "ref":  "232015X80",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  261,
+        "ref":  "32-210-1-12",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  517,
+        "ref":  "32-270-5-16",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  773,
+        "ref":  "232016X10",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  262,
+        "ref":  "32-210-2-6",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  518,
+        "ref":  "32-270-5-18",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  774,
+        "ref":  "232016X12",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  263,
+        "ref":  "32-210-2-8",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  519,
+        "ref":  "32-270-5-20",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  775,
+        "ref":  "232016X14",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  264,
+        "ref":  "32-210-2-10",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  520,
+        "ref":  "32-270-5-22",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  776,
+        "ref":  "232016X16",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  265,
+        "ref":  "32-210-2-12",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  521,
+        "ref":  "32-270-5-24",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  777,
+        "ref":  "232016X20",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  266,
+        "ref":  "32-210-2-14",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  522,
+        "ref":  "32-270-5-26",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  778,
+        "ref":  "232016X25",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  267,
+        "ref":  "32-210-2-16",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  523,
+        "ref":  "32-270-5-28",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  779,
+        "ref":  "232016X30",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  268,
+        "ref":  "32-210-2-18",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  524,
+        "ref":  "32-270-5-30",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  780,
+        "ref":  "232016X35",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  269,
+        "ref":  "32-210-2-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  525,
+        "ref":  "32-270-5-35",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  781,
+        "ref":  "232016X40",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  270,
+        "ref":  "32-210-2-22",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  526,
+        "ref":  "32-270-5-40",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  782,
+        "ref":  "232016X45",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  271,
+        "ref":  "32-210-2-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  527,
+        "ref":  "32-270-5-45",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  783,
+        "ref":  "232016X50",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  272,
+        "ref":  "32-210-2-26",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  528,
+        "ref":  "32-270-5-50",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  784,
+        "ref":  "232016X55",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  273,
+        "ref":  "32-210-2-28",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  529,
+        "ref":  "32-270-5-55",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  785,
+        "ref":  "232016X60",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  274,
+        "ref":  "32-210-2-30",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  530,
+        "ref":  "32-270-5-60",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  786,
+        "ref":  "232016X65",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  275,
+        "ref":  "32-210-2-32",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  787,
+        "ref":  "232016X70",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  276,
+        "ref":  "32-210-2-36",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  532,
+        "ref":  "32-270-6-100",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  788,
+        "ref":  "232016X80",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  277,
+        "ref":  "32-210-2-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  789,
+        "ref":  "232016X90",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  278,
+        "ref":  "32-210-3-6",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  790,
+        "ref":  "232016X100",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  279,
+        "ref":  "32-210-3-8",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  791,
+        "ref":  "232016X110",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  280,
+        "ref":  "32-210-3-10",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  792,
+        "ref":  "232016X120",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  281,
+        "ref":  "32-210-3-12",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  793,
+        "ref":  "232018X10",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  282,
+        "ref":  "32-210-3-14",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  794,
+        "ref":  "232018X12",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  283,
+        "ref":  "32-210-3-16",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  795,
+        "ref":  "232018X16",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  284,
+        "ref":  "32-210-3-18",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  796,
+        "ref":  "232018X20",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  285,
+        "ref":  "32-210-3-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  541,
+        "ref":  "32-270-6-28",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  797,
+        "ref":  "232018X25",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  286,
+        "ref":  "32-210-3-22",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  542,
+        "ref":  "32-270-6-30",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  798,
+        "ref":  "232018X30",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  287,
+        "ref":  "32-210-3-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  543,
+        "ref":  "32-270-6-35",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  799,
+        "ref":  "232018X35",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  288,
+        "ref":  "32-210-3-26",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  544,
+        "ref":  "32-270-6-40",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  800,
+        "ref":  "232018X40",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  289,
+        "ref":  "32-210-3-28",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  545,
+        "ref":  "32-270-6-45",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  801,
+        "ref":  "232018X45",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  290,
+        "ref":  "32-210-3-30",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  546,
+        "ref":  "32-270-6-50",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  802,
+        "ref":  "232018X50",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  291,
+        "ref":  "32-210-3-32",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  547,
+        "ref":  "32-270-6-55",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  803,
+        "ref":  "232018X55",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  292,
+        "ref":  "32-210-3-36",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  548,
+        "ref":  "32-270-6-60",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  804,
+        "ref":  "232018X60",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  293,
+        "ref":  "32-210-3-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  549,
+        "ref":  "32-270-6-65",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  805,
+        "ref":  "232018X65",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  294,
+        "ref":  "32-210-3-45",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  550,
+        "ref":  "32-270-6-70",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  806,
+        "ref":  "232018X70",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  295,
+        "ref":  "32-210-3-50",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  551,
+        "ref":  "32-270-6-75",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  807,
+        "ref":  "232018X75",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  296,
+        "ref":  "32-210-3-60",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  552,
+        "ref":  "32-270-8-100",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  808,
+        "ref":  "232018X80",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  297,
+        "ref":  "32-210-4-6",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  809,
+        "ref":  "232018X85",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  298,
+        "ref":  "32-210-4-10",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  810,
+        "ref":  "232018X90",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  299,
+        "ref":  "32-210-4-12",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  811,
+        "ref":  "232018X100",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  300,
+        "ref":  "32-210-4-14",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  812,
+        "ref":  "232018X110",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  301,
+        "ref":  "32-210-4-16",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  813,
+        "ref":  "232018X120",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  302,
+        "ref":  "32-210-4-18",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  814,
+        "ref":  "2320110X12",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  303,
+        "ref":  "32-210-4-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  815,
+        "ref":  "2320110X16",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  304,
+        "ref":  "32-210-4-22",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  816,
+        "ref":  "2320110X20",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  305,
+        "ref":  "32-210-4-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  817,
+        "ref":  "2320110X25",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  306,
+        "ref":  "32-210-4-26",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  562,
+        "ref":  "32-270-8-40",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  818,
+        "ref":  "2320110X30",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  307,
+        "ref":  "32-210-4-28",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  563,
+        "ref":  "32-270-8-45",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  819,
+        "ref":  "2320110X35",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  308,
+        "ref":  "32-210-4-30",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  564,
+        "ref":  "32-270-8-50",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  820,
+        "ref":  "2320110X40",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  309,
+        "ref":  "32-210-4-32",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  565,
+        "ref":  "32-270-8-60",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  821,
+        "ref":  "2320110X45",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  310,
+        "ref":  "32-210-4-36",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  566,
+        "ref":  "32-270-8-65",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  822,
+        "ref":  "2320110X50",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  311,
+        "ref":  "32-210-4-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  567,
+        "ref":  "32-270-8-70",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  823,
+        "ref":  "2320110X55",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  312,
+        "ref":  "32-210-4-45",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  568,
+        "ref":  "32-270-8-75",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  824,
+        "ref":  "2320110X60",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  313,
+        "ref":  "32-210-4-50",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  569,
+        "ref":  "32-270-8-80",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  825,
+        "ref":  "2320110X65",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  314,
+        "ref":  "32-210-4-55",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  570,
+        "ref":  "32-270-8-90",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  826,
+        "ref":  "2320110X70",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  315,
+        "ref":  "32-210-4-60",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  827,
+        "ref":  "2320110X75",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  316,
+        "ref":  "32-210-5-8",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  828,
+        "ref":  "2320110X80",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  317,
+        "ref":  "32-210-5-10",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  829,
+        "ref":  "2320110X90",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  318,
+        "ref":  "32-210-5-12",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  830,
+        "ref":  "2320110X100",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  319,
+        "ref":  "32-210-5-14",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  831,
+        "ref":  "2320110X110",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  320,
+        "ref":  "32-210-5-16",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  832,
+        "ref":  "2320110X120",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  321,
+        "ref":  "32-210-5-18",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  833,
+        "ref":  "2320110X130",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  322,
+        "ref":  "32-210-5-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  834,
+        "ref":  "2320110X140",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  323,
+        "ref":  "32-210-5-22",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  835,
+        "ref":  "2320110X150",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  324,
+        "ref":  "32-210-5-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  580,
+        "ref":  "32-270-12-50",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  836,
+        "ref":  "2320112X20",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  325,
+        "ref":  "32-210-5-26",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  581,
+        "ref":  "32-270-12-55",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  837,
+        "ref":  "2320112X25",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  326,
+        "ref":  "32-210-5-28",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  582,
+        "ref":  "32-270-12-60",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  838,
+        "ref":  "2320112X30",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  327,
+        "ref":  "32-210-5-30",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  583,
+        "ref":  "32-270-12-65",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  839,
+        "ref":  "2320112X35",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  328,
+        "ref":  "32-210-5-32",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  584,
+        "ref":  "32-270-12-70",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  840,
+        "ref":  "2320112X40",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  329,
+        "ref":  "32-210-5-36",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  585,
+        "ref":  "32-270-12-75",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  841,
+        "ref":  "2320112X45",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  330,
+        "ref":  "32-210-5-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  586,
+        "ref":  "32-270-12-80",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  842,
+        "ref":  "2320112X50",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  331,
+        "ref":  "32-210-5-45",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  843,
+        "ref":  "2320112X55",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  332,
+        "ref":  "32-210-5-50",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  844,
+        "ref":  "2320112X60",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  333,
+        "ref":  "32-210-5-55",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  845,
+        "ref":  "2320112X70",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  334,
+        "ref":  "32-210-5-60",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  846,
+        "ref":  "2320112X80",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  335,
+        "ref":  "32-210-6-10",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  847,
+        "ref":  "2320112X90",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  336,
+        "ref":  "32-210-6-12",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  337,
+        "ref":  "32-210-6-14",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  338,
+        "ref":  "32-210-6-16",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  339,
+        "ref":  "32-210-6-18",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  340,
+        "ref":  "32-210-6-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  341,
+        "ref":  "32-210-6-22",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  853,
+        "ref":  "243014X10",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  342,
+        "ref":  "32-210-6-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  854,
+        "ref":  "243014X12",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  343,
+        "ref":  "32-210-6-26",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  855,
+        "ref":  "243014X16",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  344,
+        "ref":  "32-210-6-28",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  856,
+        "ref":  "243014X20",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  345,
+        "ref":  "32-210-6-30",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  857,
+        "ref":  "243014X25",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  346,
+        "ref":  "32-210-6-32",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  858,
+        "ref":  "243014X30",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  347,
+        "ref":  "32-210-6-36",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  859,
+        "ref":  "243014X40",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  348,
+        "ref":  "32-210-6-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  860,
+        "ref":  "243015X8",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  349,
+        "ref":  "32-210-6-45",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  605,
+        "ref":  "32-230-5-36",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  861,
+        "ref":  "243015X10",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  350,
+        "ref":  "32-210-6-50",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  606,
+        "ref":  "32-230-5-40",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  862,
+        "ref":  "243015X12",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  351,
+        "ref":  "32-210-6-55",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  607,
+        "ref":  "32-230-5-45",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  863,
+        "ref":  "243015X12",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  352,
+        "ref":  "32-210-6-60",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  608,
+        "ref":  "32-230-5-45",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  864,
+        "ref":  "243015X16",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  353,
+        "ref":  "32-210-6-70",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  609,
+        "ref":  "32-230-5-50",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  865,
+        "ref":  "243015X20",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  354,
+        "ref":  "32-210-6-80",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  610,
+        "ref":  "32-230-6-12",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  866,
+        "ref":  "243015X25",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  355,
+        "ref":  "32-210-6-90",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  611,
+        "ref":  "32-230-6-14",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  867,
+        "ref":  "243015X30",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  356,
+        "ref":  "32-210-6-100",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  612,
+        "ref":  "32-230-6-16",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  868,
+        "ref":  "243015X35",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  613,
+        "ref":  "32-230-6-18",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  869,
+        "ref":  "243015X40",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  614,
+        "ref":  "32-230-6-20",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  870,
+        "ref":  "243015X50",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  615,
+        "ref":  "32-230-6-24",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  871,
+        "ref":  "243016X10",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  616,
+        "ref":  "32-230-6-28",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  872,
+        "ref":  "243016X12",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  617,
+        "ref":  "32-230-6-30",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  873,
+        "ref":  "243016X16",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  618,
+        "ref":  "32-230-6-32",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  874,
+        "ref":  "243016X20",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  363,
+        "ref":  "32-210-8-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  619,
+        "ref":  "32-230-6-36",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  875,
+        "ref":  "243016X25",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  364,
+        "ref":  "32-210-8-26",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  620,
+        "ref":  "32-230-6-40",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  876,
+        "ref":  "243016X30",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  365,
+        "ref":  "32-210-8-28",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  621,
+        "ref":  "32-230-6-45",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  877,
+        "ref":  "243016X35",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  366,
+        "ref":  "32-210-8-30",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  622,
+        "ref":  "32-230-6-50",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  878,
+        "ref":  "243016X40",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  367,
+        "ref":  "32-210-8-32",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  623,
+        "ref":  "32-230-6-55",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  879,
+        "ref":  "243016X45",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  368,
+        "ref":  "32-210-8-36",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  624,
+        "ref":  "32-230-6-60",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  880,
+        "ref":  "243016X50",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  369,
+        "ref":  "32-210-8-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  625,
+        "ref":  "32-230-8-100",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  881,
+        "ref":  "243016X60",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  370,
+        "ref":  "32-210-8-45",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  882,
+        "ref":  "243016X70",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  371,
+        "ref":  "32-210-8-50",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  883,
+        "ref":  "243018X12",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  372,
+        "ref":  "32-210-8-55",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  884,
+        "ref":  "243018X16",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  885,
+        "ref":  "243018X20",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  374,
+        "ref":  "32-210-8-70",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  886,
+        "ref":  "243018X30",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  887,
+        "ref":  "243018X35",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  888,
+        "ref":  "243018X40",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  889,
+        "ref":  "243018X45",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  378,
+        "ref":  "32-210-8-120",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  890,
+        "ref":  "243018X50",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  891,
+        "ref":  "243018X60",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  380,
+        "ref":  "32-210-10-30",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  636,
+        "ref":  "32-230-8-55",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  892,
+        "ref":  "243008X70",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  381,
+        "ref":  "32-210-10-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  637,
+        "ref":  "32-230-8-60",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  893,
+        "ref":  "243008X80",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  382,
+        "ref":  "32-210-12-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  638,
+        "ref":  "32-230-8-70",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  894,
+        "ref":  "2430010X20",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  383,
+        "ref":  "32-210-12-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  639,
+        "ref":  "32-230-8-80",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  895,
+        "ref":  "2430110X25",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  384,
+        "ref":  "32-210-12-36",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  640,
+        "ref":  "32-230-8-90",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  896,
+        "ref":  "2430110X30",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  385,
+        "ref":  "32-210-12-40",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  641,
+        "ref":  "32-011-3",
+        "name":  "Tornillo de presión con bola",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  897,
+        "ref":  "2430110X35",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  386,
+        "ref":  "32-210-12-45",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  642,
+        "ref":  "32-011-4",
+        "name":  "Tornillo de presión con bola",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  898,
+        "ref":  "2430110X40",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  387,
+        "ref":  "32-210-12-50",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  643,
+        "ref":  "32-011-5",
+        "name":  "Tornillo de presión con bola",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  899,
+        "ref":  "2430110X50",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  388,
+        "ref":  "E2 - 2,90x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  644,
+        "ref":  "32-011-6",
+        "name":  "Tornillo de presión con bola",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  900,
+        "ref":  "2430110X60",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  389,
+        "ref":  "E2 - 3,68x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  645,
+        "ref":  "32-011-8",
+        "name":  "Tornillo de presión con bola",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  901,
+        "ref":  "2430112X20",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  390,
+        "ref":  "E2 - 4,48x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  646,
+        "ref":  "32-011-10",
+        "name":  "Tornillo de presión con bola",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  902,
+        "ref":  "2430112X25",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  391,
+        "ref":  "E2 - 5,28x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  647,
+        "ref":  "32-011-12",
+        "name":  "Tornillo de presión con bola",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  903,
+        "ref":  "2430112X30",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  392,
+        "ref":  "E2 - 6,07x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  648,
+        "ref":  "32-012-4",
+        "name":  "Tornillo de presión con tetón",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  904,
+        "ref":  "2430112X35",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  393,
+        "ref":  "E2 - 7,66x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  649,
+        "ref":  "32-012-5",
+        "name":  "Tornillo de presión con tetón",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  905,
+        "ref":  "2430112X40",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  394,
+        "ref":  "E2 - 9,25x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  650,
+        "ref":  "32-012-6",
+        "name":  "Tornillo de presión con tetón",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  906,
+        "ref":  "2430112X50",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  395,
+        "ref":  "E2 - 10,82x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  651,
+        "ref":  "32-012-8",
+        "name":  "Tornillo de presión con tetón",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  907,
+        "ref":  "2430112X70",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  396,
+        "ref":  "E2 - 12,42x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  652,
+        "ref":  "32-012-10",
+        "name":  "Tornillo de presión con tetón",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  397,
+        "ref":  "E2 - 14,00x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  653,
+        "ref":  "32-012-12",
+        "name":  "Tornillo de presión con tetón",
+        "brand":  null,
+        "family":  "Posicionador"
+    },
+    {
+        "id":  398,
+        "ref":  "E2 - 15,60x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  654,
+        "ref":  "437003",
+        "name":  "Varilla roscada 1 metro DIN976 4.8",
+        "brand":  null,
+        "family":  "Varilla Roscada"
+    },
+    {
+        "id":  399,
+        "ref":  "E2 - 17,16x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  655,
+        "ref":  "439414",
+        "name":  "Varilla roscada 1 metro DIN976 8.8 Cincado",
+        "brand":  null,
+        "family":  "Varilla Roscada"
+    },
+    {
+        "id":  400,
+        "ref":  "E2 - 18,77x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  656,
+        "ref":  "439415",
+        "name":  "Varilla roscada 1 metro DIN976 8.8 Cincado",
+        "brand":  null,
+        "family":  "Varilla Roscada"
+    },
+    {
+        "id":  401,
+        "ref":  "E2 - 9,19x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  657,
+        "ref":  "439416",
+        "name":  "Varilla roscada 1 metro DIN976 8.8 Cincado",
+        "brand":  null,
+        "family":  "Varilla Roscada"
+    },
+    {
+        "id":  913,
+        "ref":  "7020110",
+        "name":  "Arrandela Plana Normal ISO7089 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Normales"
+    },
+    {
+        "id":  402,
+        "ref":  "E2 - 10,78x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  658,
+        "ref":  "439418",
+        "name":  "Varilla roscada 1 metro DIN976 8.8 Cincado",
+        "brand":  null,
+        "family":  "Varilla Roscada"
+    },
+    {
+        "id":  914,
+        "ref":  "7020112",
+        "name":  "Arrandela Plana Normal ISO7089 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Normales"
+    },
+    {
+        "id":  403,
+        "ref":  "E2 - 12,37x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  659,
+        "ref":  "4394112",
+        "name":  "Varilla roscada 1 metro DIN976 8.8 Cincado",
+        "brand":  null,
+        "family":  "Varilla Roscada"
+    },
+    {
+        "id":  404,
+        "ref":  "E2 - 13,95x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  660,
+        "ref":  "F3-04-5",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  916,
+        "ref":  "702714",
+        "name":  "Arrandela Plana Ancha ISO7093 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Anchas"
+    },
+    {
+        "id":  405,
+        "ref":  "E2 - 15,54x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  661,
+        "ref":  "F3-04-6",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  406,
+        "ref":  "E2 - 17,13x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  662,
+        "ref":  "F3-04-7",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  407,
+        "ref":  "E2 - 18,72x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  663,
+        "ref":  "F3-04-8",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  919,
+        "ref":  "702718",
+        "name":  "Arrandela Plana Ancha ISO7093 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Anchas"
+    },
+    {
+        "id":  408,
+        "ref":  "E2 - 20,29x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  664,
+        "ref":  "F3-04-9",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  920,
+        "ref":  "7027110",
+        "name":  "Arrandela Plana Ancha ISO7093 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Anchas"
+    },
+    {
+        "id":  409,
+        "ref":  "E2 - 21,89x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  665,
+        "ref":  "F3-04-10",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  921,
+        "ref":  "7027112",
+        "name":  "Arrandela Plana Ancha ISO7093 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Anchas"
+    },
+    {
+        "id":  410,
+        "ref":  "E2 - 23,47x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  666,
+        "ref":  "F3-04-11",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  922,
+        "ref":  "220112",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  411,
+        "ref":  "E2 - 18,64x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  667,
+        "ref":  "F3-04-12",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  923,
+        "ref":  "220112.5",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  412,
+        "ref":  "E2 - 20,22x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  668,
+        "ref":  "F3-04-13",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  413,
+        "ref":  "E2 - 21,82x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  669,
+        "ref":  "F3-04-14",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  414,
+        "ref":  "E2 - 23,40x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  670,
+        "ref":  "F3-04-15",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  415,
+        "ref":  "E2 - 24,99x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  671,
+        "ref":  "F3-04-16",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  416,
+        "ref":  "E2 - 26,58x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  672,
+        "ref":  "F3-04-17",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  928,
+        "ref":  "220117",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  417,
+        "ref":  "E2 - 28,17x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  673,
+        "ref":  "F3-04-18",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  418,
+        "ref":  "E2 - 20,35x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  674,
+        "ref":  "F3-04-19",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  930,
+        "ref":  "2201110",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  419,
+        "ref":  "E2 - 21,95x1,78",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  675,
+        "ref":  "F3-04-20",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  931,
+        "ref":  "2201112",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  420,
+        "ref":  "E2 - 25,07x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  676,
+        "ref":  "F3-04-21",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  932,
+        "ref":  "438012.5",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  421,
+        "ref":  "E2 - 26,64x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  677,
+        "ref":  "F3-04-22",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  422,
+        "ref":  "E2 - 28,25x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  678,
+        "ref":  "F3-04-23",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  934,
+        "ref":  "438014",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  423,
+        "ref":  "E2 - 29,82x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  679,
+        "ref":  "F3-04-24",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  424,
+        "ref":  "E2 - 31,42x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  680,
+        "ref":  "F3-04-25",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  425,
+        "ref":  "E2 - 33,00x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  681,
+        "ref":  "F3-04-26",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  937,
+        "ref":  "438017",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  426,
+        "ref":  "E2 - 34,59x2,62",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  682,
+        "ref":  "F3-04-27",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  938,
+        "ref":  "438018",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  427,
+        "ref":  "E2 - 29,75x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  683,
+        "ref":  "F3-04-28",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  939,
+        "ref":  "4380110",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  428,
+        "ref":  "E2 - 31,34x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  684,
+        "ref":  "F3-04-29",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  940,
+        "ref":  "4380112",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  429,
+        "ref":  "E2 - 32,92x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  685,
+        "ref":  "F3-04-30",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  430,
+        "ref":  "E2 - 34,52x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  686,
+        "ref":  "F3-04-31",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  431,
+        "ref":  "E2 - 36,10x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  687,
+        "ref":  "F3-04-32",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  432,
+        "ref":  "E2 - 37,69x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  688,
+        "ref":  "F3-04-33",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  433,
+        "ref":  "E2 - 40,87x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  689,
+        "ref":  "F3-04-34",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  945,
+        "ref":  "71001W7",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  434,
+        "ref":  "E2 - 44,04x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  690,
+        "ref":  "F3-04-35",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  435,
+        "ref":  "E2 - 47,22x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  691,
+        "ref":  "F3-04-36",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  947,
+        "ref":  "71001W10",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  436,
+        "ref":  "E2 - 50,50x3,53",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  692,
+        "ref":  "F3-04-37",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  948,
+        "ref":  "71001W12",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  437,
+        "ref":  "E2 - 37,47x5,33",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  693,
+        "ref":  "F3-04-38",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  438,
+        "ref":  "E2 - 40,65x5,33",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  694,
+        "ref":  "F3-04-39",
+        "name":  "Circlips Exterior DIN 471",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  439,
+        "ref":  "E2 - 43,82x5,33",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  695,
+        "ref":  "F3-05-8",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  440,
+        "ref":  "E2 - 47,00x5,33",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  696,
+        "ref":  "F3-05-9",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  441,
+        "ref":  "E2 - 50,16x5,33",
+        "name":  "Junta tórica NBR70º Shore A",
+        "brand":  null,
+        "family":  "Tóricas"
+    },
+    {
+        "id":  697,
+        "ref":  "F3-05-10",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  442,
+        "ref":  "31-970-3-8",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  698,
+        "ref":  "F3-05-11",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  443,
+        "ref":  "31-970-3-12",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  699,
+        "ref":  "F3-05-12",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  444,
+        "ref":  "31-970-3-16",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  700,
+        "ref":  "F3-05-13",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  445,
+        "ref":  "31-970-3-20",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  701,
+        "ref":  "F3-05-14",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  446,
+        "ref":  "31-970-3-30",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  702,
+        "ref":  "F3-05-15",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  447,
+        "ref":  "31-970-4-8",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  703,
+        "ref":  "F3-05-16",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  448,
+        "ref":  "31-970-4-12",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  704,
+        "ref":  "F3-05-17",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  449,
+        "ref":  "31-970-4-16",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  705,
+        "ref":  "F3-05-18",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  450,
+        "ref":  "31-970-4-20",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  706,
+        "ref":  "F3-05-19",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  451,
+        "ref":  "31-970-4-30",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  707,
+        "ref":  "F3-05-20",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  452,
+        "ref":  "31-970-5-8",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  708,
+        "ref":  "F3-05-21",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  453,
+        "ref":  "31-970-5-12",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  709,
+        "ref":  "F3-05-22",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  454,
+        "ref":  "31-970-5-16",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  710,
+        "ref":  "F3-05-23",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  455,
+        "ref":  "31-970-5-20",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  711,
+        "ref":  "F3-05-24",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  456,
+        "ref":  "31-970-5-32",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  712,
+        "ref":  "F3-05-25",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  457,
+        "ref":  "31-970-6-8",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  713,
+        "ref":  "F3-05-26",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  458,
+        "ref":  "31-970-6-12",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  714,
+        "ref":  "F3-05-27",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  459,
+        "ref":  "31-970-6-16",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  715,
+        "ref":  "F3-05-28",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  460,
+        "ref":  "31-970-6-20",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  716,
+        "ref":  "F3-05-29",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  461,
+        "ref":  "31-970-6-32",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  717,
+        "ref":  "F3-05-30",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  462,
+        "ref":  "31-970-8-12",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  718,
+        "ref":  "F3-05-31",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  463,
+        "ref":  "31-970-8-16",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  719,
+        "ref":  "F3-05-32",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  464,
+        "ref":  "31-970-8-20",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  720,
+        "ref":  "F3-05-33",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  465,
+        "ref":  "31-970-8-30",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  721,
+        "ref":  "F3-05-35",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  466,
+        "ref":  "31-970-8-40",
+        "name":  "Chaveta DIN 6885A",
+        "brand":  null,
+        "family":  "Chaveta"
+    },
+    {
+        "id":  722,
+        "ref":  "F3-05-36",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  723,
+        "ref":  "F3-05-37",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  724,
+        "ref":  "F3-05-38",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  469,
+        "ref":  "32-270-2-14",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  725,
+        "ref":  "F3-05-40",
+        "name":  "Circlips Interior DIN 472",
+        "brand":  null,
+        "family":  "Circlips"
+    },
+    {
+        "id":  470,
+        "ref":  "32-270-2-16",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  471,
+        "ref":  "32-270-2-18",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  727,
+        "ref":  "796804",
+        "name":  "Inserto autorroscante Cincado",
+        "brand":  null,
+        "family":  "Insertos"
+    },
+    {
+        "id":  472,
+        "ref":  "32-270-2-20",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  473,
+        "ref":  "32-270-2-22",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  474,
+        "ref":  "32-270-2-24",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  730,
+        "ref":  "796808",
+        "name":  "Inserto autorroscante Cincado",
+        "brand":  null,
+        "family":  "Insertos"
+    },
+    {
+        "id":  475,
+        "ref":  "32-270-2-26",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  476,
+        "ref":  "32-270-2-28",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  477,
+        "ref":  "32-270-2-30",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  481,
+        "ref":  "32-270-2-8",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  737,
+        "ref":  "232013X25",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  738,
+        "ref":  "232013X30",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  739,
+        "ref":  "232013X35",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  484,
+        "ref":  "32-270-3-14",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  740,
+        "ref":  "232013X40",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  485,
+        "ref":  "32-270-3-16",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  486,
+        "ref":  "32-270-3-18",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  487,
+        "ref":  "32-270-3-20",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  488,
+        "ref":  "32-270-3-22",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  489,
+        "ref":  "32-270-3-24",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  490,
+        "ref":  "32-270-3-26",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  491,
+        "ref":  "32-270-3-28",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  492,
+        "ref":  "32-270-3-30",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  748,
+        "ref":  "232014X30",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  493,
+        "ref":  "32-270-3-35",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  749,
+        "ref":  "232014X35",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  494,
+        "ref":  "32-270-3-40",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  750,
+        "ref":  "232014X40",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  751,
+        "ref":  "232014X45",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  752,
+        "ref":  "232014X50",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  753,
+        "ref":  "232014X60",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  754,
+        "ref":  "2320014X70",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  755,
+        "ref":  "232015X6",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  756,
+        "ref":  "232015X8",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  757,
+        "ref":  "232015X10",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  502,
+        "ref":  "32-270-4-18",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  758,
+        "ref":  "232015X12",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  503,
+        "ref":  "32-270-4-20",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  759,
+        "ref":  "232015X14",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  504,
+        "ref":  "32-270-4-22",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  760,
+        "ref":  "232015X16",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  505,
+        "ref":  "32-270-4-24",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  761,
+        "ref":  "232015X18",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  506,
+        "ref":  "32-270-4-26",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  762,
+        "ref":  "232015X20",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  507,
+        "ref":  "32-270-4-28",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  763,
+        "ref":  "232015X25",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  508,
+        "ref":  "32-270-4-30",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  764,
+        "ref":  "232015X30",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  509,
+        "ref":  "32-270-4-35",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  765,
+        "ref":  "232015X35",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  510,
+        "ref":  "32-270-4-40",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  766,
+        "ref":  "232015X40",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  511,
+        "ref":  "32-270-4-45",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  767,
+        "ref":  "232015X50",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  941,
+        "ref":  "71001W3",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  908,
+        "ref":  "702013",
+        "name":  "Arrandela Plana Normal ISO7089 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Normales"
+    },
+    {
+        "id":  924,
+        "ref":  "220113",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  731,
+        "ref":  "232013X6",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  732,
+        "ref":  "232013X8",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  733,
+        "ref":  "232013X10",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  734,
+        "ref":  "232013X12",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  735,
+        "ref":  "232013X16",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  736,
+        "ref":  "232013X20",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  726,
+        "ref":  "796803",
+        "name":  "Inserto autorroscante Cincado",
+        "brand":  null,
+        "family":  "Insertos"
+    },
+    {
+        "id":  915,
+        "ref":  "702713",
+        "name":  "Arrandela Plana Ancha ISO7093 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Anchas"
+    },
+    {
+        "id":  933,
+        "ref":  "438013",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  848,
+        "ref":  "243013X6",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  849,
+        "ref":  "243013X8",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  850,
+        "ref":  "243013X10",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  851,
+        "ref":  "243013X12",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  852,
+        "ref":  "243013X16",
+        "name":  "Tornillo cabeza cónica Allen ISO10642/DIN7991 10.9 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN7991"
+    },
+    {
+        "id":  942,
+        "ref":  "71001W4",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  909,
+        "ref":  "702014",
+        "name":  "Arrandela Plana Normal ISO7089 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Normales"
+    },
+    {
+        "id":  925,
+        "ref":  "220114",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  741,
+        "ref":  "232014X6",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  742,
+        "ref":  "232014X8",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  743,
+        "ref":  "232014X10",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  744,
+        "ref":  "232014X12",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  745,
+        "ref":  "232014X16",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  746,
+        "ref":  "232014X20",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  747,
+        "ref":  "232014X25",
+        "name":  "Tornillo cabeza cilindrica Allen ISO4762/DIN912 8.8 Cincado",
+        "brand":  null,
+        "family":  "Tornillo DIN912"
+    },
+    {
+        "id":  943,
+        "ref":  "71001W5",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  910,
+        "ref":  "702015",
+        "name":  "Arrandela Plana Normal ISO7089 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Normales"
+    },
+    {
+        "id":  926,
+        "ref":  "220115",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  728,
+        "ref":  "796805",
+        "name":  "Inserto autorroscante Cincado",
+        "brand":  null,
+        "family":  "Insertos"
+    },
+    {
+        "id":  917,
+        "ref":  "702715",
+        "name":  "Arrandela Plana Ancha ISO7093 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Anchas"
+    },
+    {
+        "id":  935,
+        "ref":  "438015",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  944,
+        "ref":  "71001W6",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  911,
+        "ref":  "702016",
+        "name":  "Arrandela Plana Normal ISO7089 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Normales"
+    },
+    {
+        "id":  927,
+        "ref":  "220116",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  729,
+        "ref":  "796806B9",
+        "name":  "Inserto autorroscante Cincado",
+        "brand":  null,
+        "family":  "Insertos"
+    },
+    {
+        "id":  918,
+        "ref":  "702716",
+        "name":  "Arrandela Plana Ancha ISO7093 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Anchas"
+    },
+    {
+        "id":  936,
+        "ref":  "438016",
+        "name":  "Tuerca Freno DIN985 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Freno"
+    },
+    {
+        "id":  946,
+        "ref":  "71001W8",
+        "name":  "Arrandela GROWER W DIN127A Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Grower"
+    },
+    {
+        "id":  912,
+        "ref":  "702018",
+        "name":  "Arrandela Plana Normal ISO7089 200HV Cincado",
+        "brand":  null,
+        "family":  "Arrandelas Normales"
+    },
+    {
+        "id":  929,
+        "ref":  "220118",
+        "name":  "Tuerca Hexagonal ISO4032.8 Cincado",
+        "brand":  null,
+        "family":  "Tuerca Hexagonal"
+    },
+    {
+        "id":  357,
+        "ref":  "32-210-8-14",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  358,
+        "ref":  "32-210-8-16",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  359,
+        "ref":  "32-210-8-18",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  360,
+        "ref":  "32-210-8-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  361,
+        "ref":  "32-210-8-22",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  362,
+        "ref":  "32-210-8-24",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  373,
+        "ref":  "32-210-8-60",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  375,
+        "ref":  "32-210-8-80",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  376,
+        "ref":  "32-210-8-90",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  377,
+        "ref":  "32-210-8-100",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  379,
+        "ref":  "32-210-10-20",
+        "name":  "Pasador cilíndrico DIN 6325",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  478,
+        "ref":  "32-270-2-4",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  479,
+        "ref":  "32-270-2-5",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  480,
+        "ref":  "32-270-2-6",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  467,
+        "ref":  "32-270-2-10",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  468,
+        "ref":  "32-270-2-12",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  495,
+        "ref":  "32-270-3-5",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  496,
+        "ref":  "32-270-3-6",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  497,
+        "ref":  "32-270-3-8",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  482,
+        "ref":  "32-270-3-10",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  483,
+        "ref":  "32-270-3-12",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  513,
+        "ref":  "32-270-4-8",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  498,
+        "ref":  "32-270-4-10",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  499,
+        "ref":  "32-270-4-12",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  500,
+        "ref":  "32-270-4-14",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  501,
+        "ref":  "32-270-4-16",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  531,
+        "ref":  "32-270-6-10",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  533,
+        "ref":  "32-270-6-12",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  534,
+        "ref":  "32-270-6-14",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  535,
+        "ref":  "32-270-6-16",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  536,
+        "ref":  "32-270-6-18",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  537,
+        "ref":  "32-270-6-20",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  538,
+        "ref":  "32-270-6-22",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  539,
+        "ref":  "32-270-6-24",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  540,
+        "ref":  "32-270-6-26",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  553,
+        "ref":  "32-270-8-16",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  554,
+        "ref":  "32-270-8-18",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  555,
+        "ref":  "32-270-8-20",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  556,
+        "ref":  "32-270-8-22",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  557,
+        "ref":  "32-270-8-24",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  558,
+        "ref":  "32-270-8-26",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  559,
+        "ref":  "32-270-8-28",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  560,
+        "ref":  "32-270-8-30",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  561,
+        "ref":  "32-270-8-35",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  571,
+        "ref":  "32-270-10-20",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  572,
+        "ref":  "32-270-10-26",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  573,
+        "ref":  "32-270-10-30",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  574,
+        "ref":  "32-270-10-35",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  575,
+        "ref":  "32-270-10-40",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  576,
+        "ref":  "32-270-10-45",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  577,
+        "ref":  "32-270-10-50",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  578,
+        "ref":  "32-270-12-24",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  579,
+        "ref":  "32-270-12-45",
+        "name":  "Pasador elástico ISO 8752",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  587,
+        "ref":  "32-230-4-10",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  588,
+        "ref":  "32-230-4-12",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  589,
+        "ref":  "32-230-4-14",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  590,
+        "ref":  "32-230-4-16",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  591,
+        "ref":  "32-230-4-20",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  592,
+        "ref":  "32-230-4-24",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  593,
+        "ref":  "32-230-4-30",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  594,
+        "ref":  "32-230-4-36",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  595,
+        "ref":  "32-230-4-40",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  596,
+        "ref":  "32-230-5-10",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  597,
+        "ref":  "32-230-5-12",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  598,
+        "ref":  "32-230-5-16",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  599,
+        "ref":  "32-230-5-18",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  600,
+        "ref":  "32-230-5-20",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  601,
+        "ref":  "32-230-5-24",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  602,
+        "ref":  "32-230-5-28",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  603,
+        "ref":  "32-230-5-30",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  604,
+        "ref":  "32-230-5-32",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  626,
+        "ref":  "32-230-8-16",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  627,
+        "ref":  "32-230-8-20",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  628,
+        "ref":  "32-230-8-24",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  629,
+        "ref":  "32-230-8-28",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  630,
+        "ref":  "32-230-8-30",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  631,
+        "ref":  "32-230-8-32",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  632,
+        "ref":  "32-230-8-36",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  633,
+        "ref":  "32-230-8-40",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  634,
+        "ref":  "32-230-8-45",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  635,
+        "ref":  "32-230-8-50",
+        "name":  "Pasador extraible DIN 7979",
+        "brand":  null,
+        "family":  "Pasadores"
+    },
+    {
+        "id":  194,
+        "ref":  "KQ2H\r\n\r\n16",
+        "name":  "Racord Instantaneo",
+        "brand":  "SMC",
+        "family":  "Neumatica"
+    }
+]

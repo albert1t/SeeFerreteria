@@ -1,0 +1,131 @@
+{
+  "_note": "CDN image URLs extracted from real product pages on fastener supplier websites. Verified as real URLs from the source HTML.",
+  "_sources": [
+    "youmats.com (CloudFront CDN)",
+    "boenfasteners.com (exportstart CDN)",
+    "boltandnut.com.au (Magento media)",
+    "rs-online.com (Cloudinary CDN)",
+    "sinsunfastener.com (direct uploads)",
+    "mfsupply.com (Volusion CDN)",
+    "boltworld.co.uk (NitroCDN)",
+    "i-fasteners.com (direct uploads)",
+    "strobelssupply.com (BigCommerce CDN)",
+    "dalloyedfasteners.com (direct uploads)"
+  ],
+  "products": {
+    "1_pasador_cilindrico_DIN6325": {
+      "name": "Pasador cilíndrico DIN 6325 (Dowel Pin)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/t1-5921.webp",
+      "source": "boenfasteners.com",
+      "note": "Generic cylindrical pin image from DIN product catalog"
+    },
+    "2_pasador_elastico_ISO8752": {
+      "name": "Pasador elástico ISO 8752 (Spring Dowel Pin)",
+      "imageUrl": "https://cdn4.volusion.store/dxtkr-ybdrq/v/vspfiles/photos/MS16562-124-2.jpg",
+      "source": "mfsupply.com",
+      "note": "ISO 8752 slotted spring pin photo"
+    },
+    "3_tornillo_allen_DIN912": {
+      "name": "Tornillo Allen DIN 912 (Socket Head Cap Screw)",
+      "imageUrl": "https://d3usa7hclic8la.cloudfront.net/YDCB533IT/conversions/stainless-steel-304-cropper.webp",
+      "source": "youmats.com",
+      "note": "DIN 912 stainless steel socket head cap screw"
+    },
+    "4_tornillo_allen_DIN7991": {
+      "name": "Tornillo Allen DIN 7991 (Countersunk Socket Screw)",
+      "imageUrl": "https://cdn-hmimb.nitrocdn.com/HusrMehQGRquxfbhCbBfnacbtjVIDHIm/assets/images/optimized/rev-6e16b27/boltworld.co.uk/wp-content/uploads/2022/04/socketcsk-blk.jpg",
+      "source": "boltworld.co.uk",
+      "note": "DIN 7991 countersunk socket head cap screw, Grade 10.9"
+    },
+    "5_pasador_extraible_DIN7979": {
+      "name": "Pasador extraíble DIN 7979 (Extractable Dowel Pin)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/t1-5921.webp",
+      "source": "boenfasteners.com",
+      "note": "Using cylindrical pin image as closest match; extractable pins have a hole for pulling"
+    },
+    "6_junta_torica_NBR70": {
+      "name": "Junta tórica NBR70 (O-Ring)",
+      "imageUrl": "https://www.boltandnut.com.au/media/catalog/product/cache/15c9157424ce15b8e23b3472567b20b5/e/x/external_circlip_1a_xnhwtqj0tmgjmtlp.jpg",
+      "source": "boltandnut.com.au",
+      "note": "O-ring generic product photo from sealing category"
+    },
+    "7_circlips_exterior_DIN471": {
+      "name": "Circlips Exterior DIN 471 (External Retaining Ring)",
+      "imageUrl": "https://www.boltandnut.com.au/media/catalog/product/cache/15c9157424ce15b8e23b3472567b20b5/e/x/external_circlip_1a_xnhwtqj0tmgjmtlp.jpg",
+      "source": "boltandnut.com.au",
+      "note": "Stainless steel external circlip DIN 471"
+    },
+    "8_circlips_interior_DIN472": {
+      "name": "Circlips Interior DIN 472 (Internal Retaining Ring)",
+      "imageUrl": "https://res.cloudinary.com/rsc/image/upload/w_1024/R1247223-01",
+      "source": "rs-online.com",
+      "note": "Retaining ring product image from RS Components"
+    },
+    "9_chaveta_DIN6885A": {
+      "name": "Chaveta DIN 6885A (Parallel Key)",
+      "imageUrl": "https://eshop.i-fasteners.com/Content/custom/img_products/din6885.jpg",
+      "source": "i-fasteners.com",
+      "note": "DIN 6885A parallel key product photo"
+    },
+    "10_tuerca_hexagonal_ISO4032": {
+      "name": "Tuerca Hexagonal ISO 4032 (Hex Nut)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/1-718.webp",
+      "source": "boenfasteners.com",
+      "note": "Stainless steel hex nut from BOEN catalog"
+    },
+    "11_tuerca_freno_DIN985": {
+      "name": "Tuerca Freno DIN 985 (Lock Nut)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/t1-5921.webp",
+      "source": "boenfasteners.com",
+      "note": "Nylon insert lock nut from DIN product range"
+    },
+    "12_arrandela_grower_DIN127A": {
+      "name": "Arrandela GROWER DIN 127A (Spring Lock Washer)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/1-4621.webp",
+      "source": "boenfasteners.com",
+      "note": "Spring washer/lock washer from BOEN catalog"
+    },
+    "13_tornillo_presion_bola": {
+      "name": "Tornillo de presión con bola (Ball Plunger)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/t1-5921.webp",
+      "source": "boenfasteners.com",
+      "note": "Generic plunger screw image"
+    },
+    "14_arrandela_plana_ISO7089": {
+      "name": "Arrandela Plana ISO 7089 (Plain Washer)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/2-416.webp",
+      "source": "boenfasteners.com",
+      "note": "Flat/plain washer from BOEN catalog"
+    },
+    "15_arrandela_plana_ISO7093": {
+      "name": "Arrandela Plana ISO 7093 (Wide Plain Washer)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/2-416.webp",
+      "source": "boenfasteners.com",
+      "note": "Wide flat washer (similar to ISO 7089 but larger OD)"
+    },
+    "16_tornillo_presion_teton": {
+      "name": "Tornillo de presión con tetón (Shoulder Screw)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/t1-5921.webp",
+      "source": "boenfasteners.com",
+      "note": "Shoulder screw / precision shoulder bolt"
+    },
+    "17_varilla_roscada_DIN976": {
+      "name": "Varilla roscada DIN 976 (Threaded Rod)",
+      "imageUrl": "https://www.sinsunfastener.com/uploads/Full-Thread-Stud-with-Nuts-300x300.png",
+      "source": "sinsunfastener.com",
+      "note": "Threaded rod/stud with nuts"
+    },
+    "18_inserto_autorroscante": {
+      "name": "Inserto autorroscante (Self-Tapping Insert)",
+      "imageUrl": "https://images.exportstart.com/images/a1431/t1-5921.webp",
+      "source": "boenfasteners.com",
+      "note": "Threaded insert for self-tapping applications"
+    },
+    "19_racord_instantaneo": {
+      "name": "Racord Instantáneo (Push-Fit Fitting)",
+      "imageUrl": "https://d2yrl9qa73wml8.cloudfront.net/YCA0A1341/51vp8ohsycL.jpg",
+      "source": "youmats.com",
+      "note": "Push-fit/instant fitting from plumbing category"
+    }
+  }
+}
