@@ -1,0 +1,9 @@
+DirectoryIndex index.html
+Options -Indexes
+
+RewriteEngine On
+
+# Serve real files/directories as-is; route everything else to the SPA
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.html [L]
