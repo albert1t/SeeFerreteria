@@ -65,7 +65,8 @@ export async function findAll(filters: {
 }
 
 const SELECT_PREVIEW = `
-  SELECT r.id, r.panel, r.col, r.row, r.image, r.cmhReference, f.name AS familyName
+  SELECT r.id, r.panel, r.col, r.row, r.image, r.cmhReference, f.name AS familyName,
+         r.cabeza, r.acabado, r.iso
   FROM Products r
   INNER JOIN Families f ON f.id = r.familyId
 `;
@@ -79,6 +80,9 @@ function mapPreview(row: Record<string, unknown>): ProductPreview {
     image: row.image as string | null,
     cmhReference: row.cmhReference as string,
     familyName: row.familyName as string | undefined,
+    cabeza: row.cabeza as string | null,
+    acabado: row.acabado as string | null,
+    iso: row.iso as string | null,
   };
 }
 

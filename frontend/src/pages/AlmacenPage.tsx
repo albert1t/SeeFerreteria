@@ -32,6 +32,14 @@ function LoadingOverlay({ message }: { message: string }) {
   );
 }
 
+function extraPreview(p: { cabeza?: string | null; acabado?: string | null; iso?: string | null }): string {
+  const parts: string[] = [];
+  if (p.cabeza) parts.push(`Cabeza: ${p.cabeza}`);
+  if (p.acabado) parts.push(`Acabado: ${p.acabado}`);
+  if (p.iso) parts.push(`ISO: ${p.iso}`);
+  return parts.join(' · ');
+}
+
 function CubetaMini({ filled, image, title }: { filled: boolean; image?: string | null; title?: string }) {
   const [imgFailed, setImgFailed] = useState(false);
   const showImage = filled && image && !imgFailed;
@@ -677,7 +685,7 @@ export function AlmacenPage() {
                             key={i}
                             filled={Boolean(product)}
                             image={product?.image}
-                            title={product ? `${product.cmhReference} · C${col}F${row}` : `Vacío C${col}F${row}`}
+                            title={product ? `${product.cmhReference} · C${col}F${row}${product.cabeza || product.acabado || product.iso ? '\n' + extraPreview(product) : ''}` : `Vacío C${col}F${row}`}
                           />
                         );
                       })}
@@ -865,6 +873,11 @@ export function AlmacenPage() {
                               }}>
                                 {r.name}
                               </div>
+                              {(r.cabeza || r.acabado || r.iso) && (
+                                <div style={{ fontSize: 10, color: 'var(--text-bright)', background: 'var(--bg-input)', padding: '2px 6px', borderRadius: 4, textAlign: 'center', lineHeight: 1.3, marginTop: 2 }}>
+                                  {extraPreview(r)}
+                                </div>
+                              )}
                               <div style={{ fontSize: 10, color: 'var(--text-faint-2)', padding: '2px 6px', borderRadius: 4, marginTop: 'auto', textAlign: 'center', lineHeight: 1.4 }}>
                                 {isMobile ? (<>{'Fila ' + row}<br />{'Col ' + col}</>) : (<>{col}/{row}</>)}
                               </div>

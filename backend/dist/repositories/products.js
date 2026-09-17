@@ -54,7 +54,8 @@ export async function findAll(filters) {
     return rows.map(mapRecambio);
 }
 const SELECT_PREVIEW = `
-  SELECT r.id, r.panel, r.col, r.row, r.image, r.cmhReference, f.name AS familyName
+  SELECT r.id, r.panel, r.col, r.row, r.image, r.cmhReference, f.name AS familyName,
+         r.cabeza, r.acabado, r.iso
   FROM Products r
   INNER JOIN Families f ON f.id = r.familyId
 `;
@@ -67,6 +68,9 @@ function mapPreview(row) {
         image: row.image,
         cmhReference: row.cmhReference,
         familyName: row.familyName,
+        cabeza: row.cabeza,
+        acabado: row.acabado,
+        iso: row.iso,
     };
 }
 export async function findPreview(incluirOcultos = false) {

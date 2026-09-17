@@ -83,6 +83,9 @@ export interface ProductPreview {
   image: string | null;
   cmhReference: string;
   familyName: string | undefined;
+  cabeza: string | null;
+  acabado: string | null;
+  iso: string | null;
 }
 
 export interface PanelSummary {
