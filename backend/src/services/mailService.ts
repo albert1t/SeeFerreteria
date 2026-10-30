@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { env } from '../config/env.js';
 import * as settingsService from './settingsService.js';
 import type { Order, OrderStatus } from '../types/index.js';
+import type { EmailOrdersMode } from './settingsService.js';
 
 const emailSchema = z.string().email();
 
@@ -132,20 +133,38 @@ export async function enviarCorreoDePrueba(to: string): Promise<{ messageId?: st
 }
 
 function datosPedido(order: Order): string {
+  const unidadesPorPaquete = parseUnidadesPorPaquete(order.productPackaging);
+  const totalUnidades = order.quantity * unidadesPorPaquete;
   return `
     <li><strong>Referencia:</strong> ${order.productRef ?? 'N/A'}</li>
     <li><strong>Producto:</strong> ${order.productName ?? 'N/A'}</li>
-    <li><strong>Cantidad:</strong> ${order.quantity} paquete(s)</li>
+    <li><strong>Unidades por paquete:</strong> ${unidadesPorPaquete}${order.productPackaging ? ` (${order.productPackaging})` : ''}</li>
+    <li><strong>Número de paquetes:</strong> ${order.quantity}</li>
+    <li><strong>Total de unidades:</strong> ${totalUnidades}</li>
     <li><strong>Tipo:</strong> ${order.type}</li>
     <li><strong>Plazo deseado:</strong> ${order.desiredDeadline ?? 'No indicado'}</li>
     <li><strong>Observaciones:</strong> ${order.notes ?? 'Ninguna'}</li>
     <li><strong>Solicitante:</strong> ${order.requesterName ?? 'N/A'}</li>
-    <li><strong>Fecha:</strong> ${new Date(order.requestedAt).toLocaleString('es-ES')}</li>
+    <li><strong>Fecha:</strong> ${formatDateTime(order.requestedAt)}</li>
   `;
 }
 
+function parseUnidadesPorPaquete(packaging: string | null | undefined): number {
+  const match = packaging?.match(/(\d+(?:[.,]\d+)?)/);
+  const value = match ? Number(match[1].replace(',', '.')) : 1;
+  return Number.isFinite(value) && value > 0 ? value : 1;
+}
+
+function formatDateTime(value: string): string {
+  return new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'Europe/Madrid',
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(new Date(value));
+}
+
 function asuntoPedido(order: Order): string {
-  const fecha = new Date(order.requestedAt).toLocaleDateString('es-ES');
+  const fecha = new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid' }).format(new Date(order.requestedAt));
   return `${order.type} - ${fecha}`;
 }
 
@@ -195,10 +214,10 @@ export async function notificarNuevoPedido(order: Order): Promise<void> {
   await enviarCorreo({ to: settings.notifyEmail, subject, html });
 }
 
-export async function enviarAcuseSolicitante(order: Order, emailSolicitante: string): Promise<void> {
+export async function enviarAcuseSolicitante(order: Order, emailSolicitante: string, emailMode: EmailOrdersMode): Promise<void> {
   const settings = await settingsService.getNotificationSettings().catch(() => null);
   if (!settings || !settings.mailEnabled) return;
-  if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
+  if (!settingsService.shouldSendOrderEmail(order, emailMode)) return;
 
   const subject = `${prefijoUrgente(order)}Confirmación de tu pedido #${order.id} - ${asuntoPedido(order)}`;
   const html = envolverHtml(
@@ -220,10 +239,11 @@ export async function enviarSeguimientoEstado(
   order: Order,
   emailSolicitante: string,
   newStatus: OrderStatus,
+  emailMode: EmailOrdersMode,
 ): Promise<void> {
   const settings = await settingsService.getNotificationSettings().catch(() => null);
   if (!settings || !settings.mailEnabled) return;
-  if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode)) return;
+  if (!settingsService.shouldSendOrderEmail(order, emailMode)) return;
 
   const subject = `${prefijoUrgente(order)}Actualización de tu pedido #${order.id} - ${newStatus} - ${asuntoPedido(order)}`;
   const html = envolverHtml(
@@ -239,6 +259,21 @@ export async function enviarSeguimientoEstado(
     `
   );
 
+  await enviarCorreo({ to: emailSolicitante, subject, html });
+}
+
+export async function enviarActualizacionPedido(order: Order, emailSolicitante: string, emailMode: EmailOrdersMode): Promise<void> {
+  const settings = await settingsService.getNotificationSettings().catch(() => null);
+  if (!settings || !settings.mailEnabled || !settingsService.shouldSendOrderEmail(order, emailMode)) return;
+
+  const subject = `${prefijoUrgente(order)}Pedido #${order.id} actualizado - ${asuntoPedido(order)}`;
+  const html = envolverHtml(
+    `Tu pedido #${order.id} ha sido actualizado`,
+    `
+      <p>Se han actualizado los datos de tu pedido. Este es el desglose actual:</p>
+      <ul>${datosPedido(order)}</ul>
+    `
+  );
   await enviarCorreo({ to: emailSolicitante, subject, html });
 }
 

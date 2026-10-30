@@ -99,6 +99,7 @@ export const productsQuerySchema = z.object({
 export const ordersQuerySchema = z.object({
     busqueda: z.string().optional(),
     type: z.enum(['Reposición', 'Solicitud', 'Solicitud Express']).optional(),
+    familyId: z.coerce.number().int().positive().optional(),
     fecha: z.string().optional(),
     orden: z.enum(['reciente', 'antiguo']).optional(),
     incluirFinalizados: z.enum(['true', 'false']).optional(),
@@ -108,7 +109,7 @@ export const userIdSchema = z.object({
     id: z.coerce.number().int().positive(),
 });
 export const updateRoleSchema = z.object({
-    role: z.enum(['admin', 'user', 'viewer', 'operario']),
+    role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
 });
 export const updateActiveSchema = z.object({
     isActive: z.boolean(),
@@ -117,14 +118,14 @@ export const createUserSchema = z.object({
     username: z.string().min(1, 'Usuario requerido'),
     password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
     name: z.string().min(1, 'Nombre requerido'),
-    role: z.enum(['admin', 'user', 'viewer', 'operario']),
+    role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
 });
 export const allowedEmailSchema = z.object({
     email: z.string().email(),
-    role: z.enum(['admin', 'user', 'viewer', 'operario']),
+    role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
 });
 export const allowedEmailUpdateSchema = z.object({
-    role: z.enum(['admin', 'user', 'viewer', 'operario']),
+    role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
     isActive: z.boolean(),
 });
 export const importBrandSchema = z.object({
@@ -135,4 +136,7 @@ export const notificationSettingsSchema = z.object({
     notifyEmail: z.string().email().optional(),
     notifyAdminOnRegister: z.boolean().optional(),
     emailOrdersMode: z.enum(['all', 'urgent_only', 'none']).optional(),
+});
+export const userNotificationSettingsSchema = z.object({
+    emailOrdersMode: z.enum(['all', 'urgent_only', 'none']),
 });

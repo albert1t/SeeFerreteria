@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
-import type { JwtPayload, UserRole } from '../types/index.js';
+import { normalizeUserRole, type JwtPayload, type UserRole } from '../types/index.js';
 import { AppError } from './errorHandler.js';
 
 // Mapa interno de permisos por rol. Se mantiene solo para no reescribir requirePermission.
@@ -45,7 +45,7 @@ export function authMiddleware(req: Request, _res: Response, next: NextFunction)
   }
   try {
     const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
-    req.user = decoded;
+    req.user = { ...decoded, role: normalizeUserRole(String(decoded.role)) };
     next();
   } catch {
     next(new AppError(401, 'Token inválido o expirado'));
@@ -92,7 +92,7 @@ function getDefaultPermissions(role: UserRole): Permissions {
     families: { create: true, view: true, edit: true, delete: true },
     tarifas: { create: true, view: true, edit: true, delete: true },
   };
-  const user: Permissions = {
+  const compras: Permissions = {
     admin: false,
     orders: { create: true, view: true, edit: true, delete: false },
     products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
@@ -106,7 +106,7 @@ function getDefaultPermissions(role: UserRole): Permissions {
     families: { create: false, view: false, edit: false, delete: false },
     tarifas: { create: false, view: false, edit: false, delete: false },
   };
-  const operario: Permissions = {
+  const almacen: Permissions = {
     admin: false,
     orders: { create: true, view: true, edit: true, delete: false },
     products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
@@ -116,9 +116,9 @@ function getDefaultPermissions(role: UserRole): Permissions {
 
   switch (role) {
     case 'admin': return full;
-    case 'operario': return operario;
+    case 'almacen': return almacen;
     case 'viewer': return viewer;
-    default: return user;
+    default: return compras;
   }
 }
 

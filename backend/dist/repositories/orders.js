@@ -1,4 +1,5 @@
 import { getPool } from '../config/db.js';
+import { madridDateUtcRange } from '../utils/dateTime.js';
 function mapPedido(row) {
     return {
         id: row.id,
@@ -18,13 +19,15 @@ function mapPedido(row) {
         productImage: row.productImage,
         productPrice: row.productPrice,
         productPackaging: row.productPackaging,
+        familyName: row.familyName,
         requesterName: row.requesterName,
     };
 }
 const SELECT_BASE = `
-  SELECT p.*, r.cmhReference AS productRef, r.name AS productName, r.image AS productImage, r.pvpOrientativo AS productPrice, r.packagingUnit AS productPackaging, u.name AS requesterName
+  SELECT p.*, r.cmhReference AS productRef, r.name AS productName, r.image AS productImage, r.pvpOrientativo AS productPrice, r.packagingUnit AS productPackaging, f.name AS familyName, u.name AS requesterName
   FROM Orders p
   INNER JOIN Products r ON r.id = p.productId
+  INNER JOIN Families f ON f.id = r.familyId
   INNER JOIN Users u ON u.id = p.requesterId
 `;
 export async function findAll(filters) {
@@ -41,9 +44,14 @@ export async function findAll(filters) {
         conditions.push('p.type = ?');
         params.push(filters.type);
     }
+    if (filters.familyId) {
+        conditions.push('r.familyId = ?');
+        params.push(filters.familyId);
+    }
     if (filters.fecha) {
-        conditions.push('DATE(p.requestedAt) = ?');
-        params.push(filters.fecha);
+        const [from, until] = madridDateUtcRange(filters.fecha);
+        conditions.push('p.requestedAt >= ? AND p.requestedAt < ?');
+        params.push(from, until);
     }
     if (filters.busqueda) {
         conditions.push('(r.name LIKE ? OR r.cmhReference LIKE ? OR u.name LIKE ?)');
@@ -73,11 +81,11 @@ export async function countUrgentes() {
 }
 export async function create(data) {
     const pool = await getPool();
-    const [result] = await pool.query(`INSERT INTO Orders (productId, requesterId, type, quantity, desiredDeadline, priority, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?)`, [data.productId, data.requesterId, data.type, data.quantity, data.desiredDeadline, data.priority, data.notes]);
+    const [result] = await pool.query(`INSERT INTO Orders (productId, requesterId, type, quantity, desiredDeadline, priority, notes, requestedAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?, ?, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))`, [data.productId, data.requesterId, data.type, data.quantity, data.desiredDeadline, data.priority, data.notes]);
     const id = result.insertId;
-    await pool.query(`INSERT INTO OrderStatusHistory (orderId, userId, previousStatus, newStatus)
-    VALUES (?, ?, NULL, ?)`, [id, data.requesterId, 'Solicitado']);
+    await pool.query(`INSERT INTO OrderStatusHistory (orderId, userId, previousStatus, newStatus, createdAt)
+    VALUES (?, ?, NULL, ?, UTC_TIMESTAMP(6))`, [id, data.requesterId, 'Solicitado']);
     const order = await findById(id);
     if (!order)
         throw new Error('Failed to create order');
@@ -89,8 +97,8 @@ export async function updateStatus(id, newStatus, userId) {
     if (!existing)
         return null;
     await pool.query('UPDATE Orders SET status = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [newStatus, id]);
-    await pool.query(`INSERT INTO OrderStatusHistory (orderId, userId, previousStatus, newStatus)
-    VALUES (?, ?, ?, ?)`, [id, userId, existing.status, newStatus]);
+    await pool.query(`INSERT INTO OrderStatusHistory (orderId, userId, previousStatus, newStatus, createdAt)
+    VALUES (?, ?, ?, ?, UTC_TIMESTAMP(6))`, [id, userId, existing.status, newStatus]);
     return findById(id);
 }
 export async function getHistorial(orderId) {

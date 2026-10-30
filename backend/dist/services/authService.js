@@ -36,7 +36,7 @@ export async function register(username, name, password) {
         throw new AppError(409, 'El usuario ya existe');
     }
     const passwordHash = await bcrypt.hash(password, 10);
-    const role = 'user';
+    const role = 'compras';
     const created = await usersRepo.createUser(username, passwordHash, name, role, true);
     if (!created) {
         throw new AppError(409, 'El usuario ya existe');

@@ -4,6 +4,7 @@ import type { Order, OrderStatus, OrderHistory, OrderType } from '../types';
 export interface OrdersFilters {
   busqueda?: string;
   type?: OrderType | 'Todos';
+  familyId?: number | 'Todos';
   fecha?: string;
   orden?: 'reciente' | 'antiguo';
   incluirFinalizados?: boolean;
@@ -14,6 +15,7 @@ export function getOrders(filters: OrdersFilters = {}) {
   const params = new URLSearchParams();
   if (filters.busqueda) params.set('busqueda', filters.busqueda);
   if (filters.type && filters.type !== 'Todos') params.set('type', filters.type);
+  if (filters.familyId && filters.familyId !== 'Todos') params.set('familyId', String(filters.familyId));
   if (filters.fecha) params.set('fecha', filters.fecha);
   if (filters.orden) params.set('orden', filters.orden);
   if (filters.incluirFinalizados) params.set('incluirFinalizados', 'true');

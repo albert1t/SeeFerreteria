@@ -10,8 +10,8 @@ import { ApiError } from '../api/client';
 
 const ROLE_LABELS: Record<UserRole, string> = {
   admin: 'Administrador',
-  operario: 'Operario',
-  user: 'Usuario',
+  almacen: 'Almacén',
+  compras: 'Compras',
   viewer: 'Solo lectura',
 };
 
@@ -21,10 +21,10 @@ export function UsersPage() {
   const queryClient = useQueryClient();
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [newEmail, setNewEmail] = useState('');
-  const [newEmailRole, setNewEmailRole] = useState<UserRole>('user');
+  const [newEmailRole, setNewEmailRole] = useState<UserRole>('compras');
   const [deletingUser, setDeletingUser] = useState<User | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState({ username: '', password: '', name: '', role: 'user' as UserRole });
+  const [createForm, setCreateForm] = useState({ username: '', password: '', name: '', role: 'compras' as UserRole });
   const [createError, setCreateError] = useState('');
 
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -60,7 +60,7 @@ export function UsersPage() {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       showToast('Usuario creado (inactivo). Actívalo para que pueda acceder.', 'success');
       setShowCreate(false);
-      setCreateForm({ username: '', password: '', name: '', role: 'user' });
+      setCreateForm({ username: '', password: '', name: '', role: 'compras' });
       setCreateError('');
     },
     onError: (err: ApiError) => {
@@ -220,9 +220,8 @@ export function UsersPage() {
             <select value={createForm.role} onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as UserRole })}
               style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}>
               <option value="admin">Administrador</option>
-              <option value="operario">Operario</option>
-              <option value="user">Usuario</option>
-              <option value="viewer">Solo lectura</option>
+              <option value="almacen">Almacén</option>
+              <option value="compras">Compras</option>
             </select>
           </div>
           {createError && <div style={{ color: 'var(--danger-text)', fontSize: 13, textAlign: 'center' }}>{createError}</div>}
@@ -265,9 +264,9 @@ export function UsersPage() {
               style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
             >
               <option value="admin">Administrador</option>
-              <option value="operario">Operario</option>
-              <option value="user">Usuario</option>
-              <option value="viewer">Solo lectura</option>
+              <option value="almacen">Almacén</option>
+              <option value="compras">Compras</option>
+              {editingUser.role === 'viewer' && <option value="viewer">Solo lectura (legado)</option>}
             </select>
           </div>
           <div style={{ display: 'flex', gap: 8 }}>
@@ -309,9 +308,8 @@ export function UsersPage() {
           style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
         >
           <option value="admin">Administrador</option>
-          <option value="operario">Operario</option>
-          <option value="user">Usuario</option>
-          <option value="viewer">Solo lectura</option>
+          <option value="almacen">Almacén</option>
+          <option value="compras">Compras</option>
         </select>
         <button
           type="button"

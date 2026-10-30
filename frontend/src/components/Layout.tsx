@@ -38,6 +38,7 @@ export function Layout() {
   const [tarifaAlertDescartada, setTarifaAlertDescartada] = useState(false);
 
   const puedeTarifas = can('tarifas', 'edit');
+  const puedeVerAlmacen = user?.role === 'admin' || user?.role === 'almacen';
 
   const isAuthenticated = !!getToken();
 
@@ -124,9 +125,9 @@ export function Layout() {
         }} onClick={() => setQrOpen(true)} title="Buscar por QR">QR</button>
 
         <nav className="desktop-only" style={{ display: 'flex', gap: 6 }}>
-          <NavLink to="/" end onClick={() => setPanelSeleccionado(null)} style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
+          {puedeVerAlmacen && <NavLink to="/almacen" end onClick={() => setPanelSeleccionado(null)} style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
             Almacén
-          </NavLink>
+          </NavLink>}
           <NavLink to="/orders" style={({ isActive }) => ({ ...navBtn, position: 'relative', ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
             Pedidos
             {(urgentes?.count ?? 0) > 0 && (
@@ -154,6 +155,9 @@ export function Layout() {
               Datos
             </NavLink>
           )}
+          <NavLink to="/mis-ajustes" style={({ isActive }) => ({ ...navBtn, ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}) })}>
+            Mis avisos
+          </NavLink>
         </nav>
 
         <div className="desktop-only" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -209,12 +213,12 @@ export function Layout() {
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 8 }}>
           <button onClick={closeMenu} style={{ background: 'none', border: 'none', color: 'var(--text-nav)', fontSize: 24, cursor: 'pointer', padding: 4 }}>✕</button>
         </div>
-        <NavLink to="/" end onClick={() => { setPanelSeleccionado(null); closeMenu(); }} style={({ isActive }) => ({
+        {puedeVerAlmacen && <NavLink to="/almacen" end onClick={() => { setPanelSeleccionado(null); closeMenu(); }} style={({ isActive }) => ({
           ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
           ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
         })}>
           Almacén
-        </NavLink>
+        </NavLink>}
         <NavLink to="/orders" onClick={closeMenu} style={({ isActive }) => ({
           ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14, position: 'relative',
           ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
@@ -245,6 +249,12 @@ export function Layout() {
             Datos
           </NavLink>
         )}
+        <NavLink to="/mis-ajustes" onClick={closeMenu} style={({ isActive }) => ({
+          ...navBtn, justifyContent: 'center', padding: '12px 18px', fontSize: 14,
+          ...(isActive ? { background: 'var(--bg-hover-strong)', borderColor: 'var(--accent)', color: 'var(--accent)' } : {}),
+        })}>
+          Mis avisos
+        </NavLink>
         <div style={{ marginTop: 'auto', borderTop: '1px solid var(--border-soft)', paddingTop: 12 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-light)' }}>{user?.name}</div>
           <div style={{ fontSize: 11, color: 'var(--text-dim)', textTransform: 'uppercase', marginBottom: 8 }}>{user?.role}</div>

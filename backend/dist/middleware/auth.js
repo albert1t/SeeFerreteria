@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
+import { normalizeUserRole } from '../types/index.js';
 import { AppError } from './errorHandler.js';
 const COOKIE_NAME = 'see_token';
 export function getTokenFromRequest(req) {
@@ -22,7 +23,7 @@ export function authMiddleware(req, _res, next) {
     }
     try {
         const decoded = jwt.verify(token, env.JWT_SECRET);
-        req.user = decoded;
+        req.user = { ...decoded, role: normalizeUserRole(String(decoded.role)) };
         next();
     }
     catch {
@@ -64,7 +65,7 @@ function getDefaultPermissions(role) {
         families: { create: true, view: true, edit: true, delete: true },
         tarifas: { create: true, view: true, edit: true, delete: true },
     };
-    const user = {
+    const compras = {
         admin: false,
         orders: { create: true, view: true, edit: true, delete: false },
         products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
@@ -78,7 +79,7 @@ function getDefaultPermissions(role) {
         families: { create: false, view: false, edit: false, delete: false },
         tarifas: { create: false, view: false, edit: false, delete: false },
     };
-    const operario = {
+    const almacen = {
         admin: false,
         orders: { create: true, view: true, edit: true, delete: false },
         products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
@@ -87,9 +88,9 @@ function getDefaultPermissions(role) {
     };
     switch (role) {
         case 'admin': return full;
-        case 'operario': return operario;
+        case 'almacen': return almacen;
         case 'viewer': return viewer;
-        default: return user;
+        default: return compras;
     }
 }
 export { COOKIE_NAME };

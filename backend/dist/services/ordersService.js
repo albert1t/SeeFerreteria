@@ -2,7 +2,7 @@ import * as ordersRepo from '../repositories/orders.js';
 import * as productsRepo from '../repositories/products.js';
 import * as usersRepo from '../repositories/users.js';
 import { AppError } from '../middleware/errorHandler.js';
-import { enviarAcuseSolicitante, enviarSeguimientoEstado, esEmailValido, notificarNuevoPedido, } from './mailService.js';
+import { enviarAcuseSolicitante, enviarActualizacionPedido, enviarSeguimientoEstado, esEmailValido, notificarNuevoPedido, } from './mailService.js';
 const ESTADO_ORDEN = ['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado'];
 export async function listOrders(filters) {
     return ordersRepo.findAll(filters);
@@ -60,8 +60,9 @@ export async function createOrder(data, requesterId) {
     (async () => {
         try {
             const requester = await usersRepo.findById(requesterId);
+            const emailMode = await usersRepo.getEmailOrdersMode(requesterId);
             if (requester && esEmailValido(requester.username)) {
-                await enviarAcuseSolicitante(order, requester.username);
+                await enviarAcuseSolicitante(order, requester.username, emailMode);
             }
             await notificarNuevoPedido(order);
         }
@@ -71,7 +72,10 @@ export async function createOrder(data, requesterId) {
     })();
     return order;
 }
-export async function advanceStatus(id, newStatus, userId) {
+export async function advanceStatus(id, newStatus, userId, role) {
+    if (newStatus === 'Pedido recibido' && role !== 'admin' && role !== 'almacen') {
+        throw new AppError(403, 'Solo Almacén o un administrador pueden marcar un pedido como recibido');
+    }
     const order = await ordersRepo.findById(id);
     if (!order)
         throw new AppError(404, 'Order no encontrado');
@@ -88,7 +92,8 @@ export async function advanceStatus(id, newStatus, userId) {
         try {
             const requester = await usersRepo.findById(updated.requesterId);
             if (requester && esEmailValido(requester.username)) {
-                await enviarSeguimientoEstado(updated, requester.username, newStatus);
+                const emailMode = await usersRepo.getEmailOrdersMode(updated.requesterId);
+                await enviarSeguimientoEstado(updated, requester.username, newStatus, emailMode);
             }
         }
         catch (err) {
@@ -113,6 +118,18 @@ export async function updatePedido(id, data) {
     const updated = await ordersRepo.updatePedido(id, data);
     if (!updated)
         throw new AppError(404, 'Order no encontrado');
+    (async () => {
+        try {
+            const requester = await usersRepo.findById(updated.requesterId);
+            if (requester && esEmailValido(requester.username)) {
+                const emailMode = await usersRepo.getEmailOrdersMode(updated.requesterId);
+                await enviarActualizacionPedido(updated, requester.username, emailMode);
+            }
+        }
+        catch (err) {
+            console.error('[ordersService] Error en notificaciones de updatePedido:', err);
+        }
+    })();
     return updated;
 }
 export async function deletePedido(id) {

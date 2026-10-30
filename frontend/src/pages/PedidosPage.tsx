@@ -7,6 +7,8 @@ import { useToast } from '../components/Toast';
 import { badgeStyle, btnStyle, fmtDate } from '../styles/theme';
 import * as pedidosApi from '../api/orders';
 import type { Order, OrderStatus, OrderType } from '../types';
+import * as catalogsApi from '../api/catalogs';
+import { packageBreakdown } from '../utils/packaging';
 
 const TIPOS: (OrderType | 'Todos')[] = ['Todos', 'Reposición', 'Solicitud', 'Solicitud Express'];
 const ESTADOS: OrderStatus[] = ['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado'];
@@ -101,7 +103,7 @@ function EstadoSteps({ current, onAdvance, disabled }: { current: OrderStatus; o
 }
 
 function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }) {
-  const { can } = useAuth();
+  const { can, user } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [confirmStatus, setConfirmStatus] = useState<OrderStatus | null>(null);
@@ -169,7 +171,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
   }
 
   const next = SIGUIENTE_ESTADO[detail.status];
-  const puedeAvanzar = !!(next && can('orders', 'edit'));
+  const puedeAvanzar = !!(next && can('orders', 'edit') && !(next === 'Pedido recibido' && user?.role === 'compras'));
   const editablePorEstado = detail.status === 'Solicitado';
   const puedeEditar = can('orders', 'edit') && editablePorEstado;
   const puedeEliminar = can('orders', 'delete') && editablePorEstado;
@@ -178,15 +180,8 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
     fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 2, display: 'block',
   };
 
-  function parseEmbalaje(embalaje: string | null | undefined): number {
-    if (!embalaje) return 1;
-    const match = embalaje.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : 1;
-  }
-
-  const embalaje = parseEmbalaje(detail.productPackaging);
-  const paquetes = detail.quantity;
-  const totalUnidades = paquetes * embalaje;
+  const desglose = packageBreakdown(detail.productPackaging, detail.quantity);
+  const paquetes = desglose.packages;
   const precioTotal = detail.productPrice != null ? paquetes * detail.productPrice : null;
 
   return (
@@ -232,7 +227,10 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
         {[
           ['Producto', detail.productName],
           ['Referencia CMH', detail.productRef],
-          ['Cantidad', `${detail.quantity} paquete${detail.quantity === 1 ? '' : 's'}${detail.productPackaging ? ` × ${embalaje} uds = ${totalUnidades} uds` : ''}`],
+          ['Familia', detail.familyName ?? '—'],
+          ['Unidades por paquete', `${desglose.units}${detail.productPackaging ? ` (${detail.productPackaging})` : ''}`],
+          ['Número de paquetes', String(desglose.packages)],
+          ['Total de unidades', String(desglose.total)],
           ['Plazo deseado', detail.desiredDeadline ?? '—'],
           ['Requester', detail.requesterName],
           ['Fecha solicitud', fmtDate(detail.requestedAt)],
@@ -373,6 +371,7 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
 export function PedidosPage() {
   const [busqueda, setBusqueda] = useState('');
   const [filtroTipo, setFiltroTipo] = useState<OrderType | 'Todos'>('Todos');
+  const [filtroFamilia, setFiltroFamilia] = useState<number | 'Todos'>('Todos');
   const [filtroFecha, setFiltroFecha] = useState('');
   const [orden, setOrden] = useState<'reciente' | 'antiguo'>('reciente');
   const [mostrarFinalizados, setMostrarFinalizados] = useState(false);
@@ -380,11 +379,17 @@ export function PedidosPage() {
   const [pedidoDetalle, setPedidoDetalle] = useState<Order | null>(null);
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
+  const { data: familias = [] } = useQuery({
+    queryKey: ['catalogs', 'families'],
+    queryFn: catalogsApi.getFamilies,
+  });
+
   const { data: orders = [], isLoading } = useQuery({
-    queryKey: ['orders', busqueda, filtroTipo, filtroFecha, orden, mostrarFinalizados, mostrarOcultos],
+    queryKey: ['orders', busqueda, filtroTipo, filtroFamilia, filtroFecha, orden, mostrarFinalizados, mostrarOcultos],
     queryFn: () => pedidosApi.getOrders({
       busqueda: busqueda || undefined,
       type: filtroTipo,
+      familyId: filtroFamilia,
       fecha: filtroFecha || undefined,
       orden,
       incluirFinalizados: mostrarFinalizados,
@@ -402,27 +407,33 @@ export function PedidosPage() {
       'Tipo': o.type,
       'Producto': o.productName ?? '',
       'Ref. CMH': o.productRef ?? '',
-      'Cantidad': o.quantity,
+      'Familia': o.familyName ?? '',
+      'Unidades por paquete': packageBreakdown(o.productPackaging, 1).units,
+      'Formato de paquete': o.productPackaging ?? '',
+      'Número de paquetes': o.quantity,
+      'Total de unidades': packageBreakdown(o.productPackaging, o.quantity).total,
       'Estado': o.status,
       'Urgente': o.priority ? 'Si' : 'No',
       'Solicitante': o.requesterName ?? '',
-      'Fecha solicitud': o.requestedAt ? new Date(o.requestedAt).toLocaleDateString('es-ES') : '',
+      'Fecha solicitud': o.requestedAt ? new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid' }).format(new Date(o.requestedAt)) : '',
       'Plazo deseado': o.desiredDeadline ?? '',
       'Observaciones': o.notes ?? '',
     }));
 
     const ws = XLSX.utils.json_to_sheet(rows);
     ws['!cols'] = [
-      { wch: 6 }, { wch: 18 }, { wch: 25 }, { wch: 14 },
-      { wch: 10 }, { wch: 18 }, { wch: 10 }, { wch: 20 },
-      { wch: 16 }, { wch: 16 }, { wch: 30 },
+      { wch: 6 }, { wch: 18 }, { wch: 25 }, { wch: 14 }, { wch: 20 },
+      { wch: 20 }, { wch: 24 }, { wch: 20 }, { wch: 18 }, { wch: 10 },
+      { wch: 20 }, { wch: 20 }, { wch: 16 }, { wch: 16 }, { wch: 30 },
     ];
 
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Pedidos activos');
 
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`;
+    const dateParts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).formatToParts(new Date()).map((part) => [part.type, part.value]));
+    const dateStr = `${dateParts.year}${dateParts.month}${dateParts.day}`;
     XLSX.writeFile(wb, `Ferreteria_Pedidos_${dateStr}.xlsx`);
   }
 
@@ -476,6 +487,10 @@ export function PedidosPage() {
         <div className="filters-collapsible" data-expanded={mostrarFiltros} style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <select style={{ ...inputStyle, width: 'auto' }} value={filtroTipo} onChange={(e) => setFiltroTipo(e.target.value as OrderType | 'Todos')}>
             {TIPOS.map((t) => <option key={t} value={t}>{t === 'Todos' ? 'Todos los tipos' : t}</option>)}
+          </select>
+          <select style={{ ...inputStyle, width: 'auto' }} value={filtroFamilia} onChange={(e) => setFiltroFamilia(e.target.value === 'Todos' ? 'Todos' : Number(e.target.value))}>
+            <option value="Todos">Todas las familias</option>
+            {familias.map((familia) => <option key={familia.id} value={familia.id}>{familia.name}</option>)}
           </select>
           <input type="date" style={{ ...inputStyle, width: 'auto' }} value={filtroFecha} onChange={(e) => setFiltroFecha(e.target.value)} />
           <select style={{ ...inputStyle, width: 'auto' }} value={orden} onChange={(e) => setOrden(e.target.value as 'reciente' | 'antiguo')}>
@@ -533,7 +548,7 @@ export function PedidosPage() {
                 <div className="order-card-info" style={{ flex: 1, minWidth: 140 }}>
                   <div style={{ fontWeight: 600, fontSize: 14, marginBottom: 2 }}>{p.productName}</div>
                   <div className="order-card-meta" style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                    {p.productRef} · {p.requesterName} · Qty: {p.quantity} paq
+                    {p.productRef} · {p.requesterName} · {(() => { const b = packageBreakdown(p.productPackaging, p.quantity); return `${b.units} uds/paquete × ${b.packages} paquetes = ${b.total} uds`; })()}
                   </div>
                   {p.productPrice != null && (
                     <div style={{ fontSize: 12, fontWeight: 700, color: 'var(--success-text)' }}>

@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'user' | 'viewer' | 'operario';
+export type UserRole = 'admin' | 'almacen' | 'compras' | 'viewer';
 
 export interface User {
   id: number;
@@ -62,6 +62,7 @@ export interface Order {
   productImage?: string;
   productPrice?: number | null;
   productPackaging?: string | null;
+  familyName?: string;
   requesterName?: string;
 }
 

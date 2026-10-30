@@ -9,6 +9,21 @@ export interface NotificationSettings {
   emailOrdersMode: EmailOrdersMode;
 }
 
+export interface UserNotificationSettings {
+  emailOrdersMode: EmailOrdersMode;
+}
+
+export function getMyNotificationSettings() {
+  return apiFetch<UserNotificationSettings>('/api/settings/my-notifications');
+}
+
+export function updateMyNotificationSettings(settings: UserNotificationSettings) {
+  return apiFetch<UserNotificationSettings>('/api/settings/my-notifications', {
+    method: 'PUT',
+    body: JSON.stringify(settings),
+  });
+}
+
 export function getNotificationSettings() {
   return apiFetch<NotificationSettings>('/api/settings/notifications');
 }

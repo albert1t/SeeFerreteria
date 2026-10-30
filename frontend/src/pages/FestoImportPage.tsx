@@ -119,7 +119,7 @@ export function FestoImportPage() {
           <div style={{ fontSize: 13, color: obsoleto ? 'var(--danger-text)' : colors.textMuted }}>
             Última importación: {dias === 0 ? 'hoy' : `hace ${dias} días`}
             {status?.lastImport && (
-              <span style={{ marginLeft: 8, opacity: 0.7 }}>({new Date(status.lastImport).toLocaleDateString('es-ES')})</span>
+              <span style={{ marginLeft: 8, opacity: 0.7 }}>({new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid' }).format(new Date(status.lastImport))})</span>
             )}
           </div>
         )}

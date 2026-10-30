@@ -71,8 +71,9 @@ export function btnStyle(variant: 'primary' | 'danger' | 'success' | 'ghost' | '
 
 export function fmtDate(iso: string): string {
   const d = new Date(iso);
-  return d.toLocaleDateString('es-ES', {
+  return new Intl.DateTimeFormat('es-ES', {
+    timeZone: 'Europe/Madrid',
     day: '2-digit', month: '2-digit', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
-  });
+  }).format(d);
 }

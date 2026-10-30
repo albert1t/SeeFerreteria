@@ -1,12 +1,12 @@
 import { getPool, sql } from '../config/db.js';
-import type { User, UserWithHash, AllowedEmail, UserRole } from '../types/index.js';
+import { normalizeUserRole, type User, type UserWithHash, type AllowedEmail, type UserRole } from '../types/index.js';
 
 function mapUser(record: Record<string, unknown>): User {
   return {
     id: record.id as number,
     username: record.username as string,
     name: record.name as string,
-    role: record.role as UserRole,
+    role: normalizeUserRole(String(record.role)),
     isActive: Boolean(record.isActive),
   };
 }
@@ -111,6 +111,18 @@ export async function updateActive(id: number, isActive: boolean): Promise<boole
   return (result as any).affectedRows > 0;
 }
 
+export async function getEmailOrdersMode(id: number): Promise<'all' | 'urgent_only' | 'none'> {
+  const pool = await getPool();
+  const [rows] = await pool.query('SELECT emailOrdersMode FROM Users WHERE id = ?', [id]);
+  const value = (rows as any[])[0]?.emailOrdersMode;
+  return value === 'urgent_only' || value === 'none' ? value : 'all';
+}
+
+export async function updateEmailOrdersMode(id: number, mode: 'all' | 'urgent_only' | 'none'): Promise<void> {
+  const pool = await getPool();
+  await pool.query('UPDATE Users SET emailOrdersMode = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [mode, id]);
+}
+
 export async function deleteUser(id: number, reassignToId: number): Promise<boolean> {
   const pool = await getPool();
   const connection = await pool.getConnection();
@@ -136,7 +148,7 @@ export async function findAllowedEmails(): Promise<AllowedEmail[]> {
   return (rows as any[]).map((row: any) => ({
     id: row.id as number,
     email: row.email as string,
-    role: row.role as UserRole,
+    role: normalizeUserRole(String(row.role)),
     isActive: Boolean(row.isActive),
   }));
 }
@@ -152,14 +164,14 @@ export async function findAllowedEmailByEmail(email: string): Promise<AllowedEma
   return {
     id: row.id as number,
     email: row.email as string,
-    role: row.role as UserRole,
+    role: normalizeUserRole(String(row.role)),
     isActive: Boolean(row.isActive),
   };
 }
 
 export async function createAllowedEmail(
   email: string,
-  role: UserRole = 'user',
+  role: UserRole = 'compras',
 ): Promise<boolean> {
   const pool = await getPool();
   const [rows] = await pool.query('SELECT 1 AS existsEmail FROM AllowedEmails WHERE email = ? LIMIT 1', [email]);

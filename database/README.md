@@ -1,5 +1,7 @@
 # Base de datos — Azure SQL
 
+> La producción actual funciona con MySQL. Antes de desplegar la versión que introduce los roles `almacen`/`compras` y las preferencias individuales de correo, ejecuta una vez `015_roles_personal_notifications_utc.sql` en la base MySQL de OVH. Esta migración no está escrita para SQL Server.
+
 ## Requisitos
 
 - Instancia de Azure SQL Database creada

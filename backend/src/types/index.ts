@@ -1,4 +1,11 @@
-export type UserRole = 'admin' | 'user' | 'viewer' | 'operario';
+export type UserRole = 'admin' | 'almacen' | 'compras' | 'viewer';
+
+/** Compatibilidad temporal con usuarios y JWT creados antes de los roles actuales. */
+export function normalizeUserRole(role: string): UserRole {
+  if (role === 'admin' || role === 'almacen' || role === 'compras' || role === 'viewer') return role;
+  if (role === 'operario') return 'almacen';
+  return 'compras';
+}
 
 export interface User {
   id: number;
@@ -68,6 +75,7 @@ export interface Order {
   productImage?: string;
   productPrice?: number | null;
   productPackaging?: string | null;
+  familyName?: string;
   requesterName?: string;
 }
 

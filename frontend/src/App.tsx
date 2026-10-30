@@ -10,6 +10,7 @@ import { UsersPage } from './pages/UsersPage';
 import { DatosPage } from './pages/DatosPage';
 import { FestoImportPage } from './pages/FestoImportPage';
 import { AdminSettingsPage } from './pages/AdminSettingsPage';
+import { MySettingsPage } from './pages/MySettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +59,27 @@ function EditPermRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function HomeRedirect() {
+  const { user } = useAuth();
+  return <Navigate to={user?.role === 'admin' || user?.role === 'almacen' ? '/almacen' : '/orders'} replace />;
+}
+
+function WarehouseRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+  if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (user.role === 'compras' || user.role === 'viewer') return <Navigate to="/orders" replace />;
+  return <>{children}</>;
+}
+
+function DataRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading, can } = useAuth();
+  if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando...</div>;
+  if (!user) return <Navigate to="/login" replace />;
+  if (!can('products', 'viewDataPage')) return <Navigate to="/orders" replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -75,11 +97,13 @@ export default function App() {
                   </ProtectedRoute>
                 }
               >
-                <Route index element={<AlmacenPage />} />
+                <Route index element={<HomeRedirect />} />
+                <Route path="almacen" element={<WarehouseRoute><AlmacenPage /></WarehouseRoute>} />
                 <Route path="orders" element={<PedidosPage />} />
+                <Route path="mis-ajustes" element={<MySettingsPage />} />
                 <Route path="usuarios" element={<AdminRoute><UsersPage /></AdminRoute>} />
                 <Route path="admin/ajustes" element={<AdminRoute><AdminSettingsPage /></AdminRoute>} />
-                <Route path="datos" element={<DatosPage />} />
+                <Route path="datos" element={<DataRoute><DatosPage /></DataRoute>} />
                 <Route
                   path="admin/importar-tarifas-festo"
                   element={<EditPermRoute><FestoImportPage /></EditPermRoute>}

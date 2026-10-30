@@ -1,8 +1,8 @@
 import { Router } from 'express';
 import * as productsService from '../services/productsService.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { authMiddleware, requireRole } from '../middleware/auth.js';
 const router = Router();
-router.use(authMiddleware);
+router.use(authMiddleware, requireRole('admin', 'almacen'));
 router.get('/', async (_req, res, next) => {
     try {
         const panels = await productsService.getPanels();

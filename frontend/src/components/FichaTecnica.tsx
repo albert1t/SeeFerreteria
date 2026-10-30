@@ -9,6 +9,7 @@ import { NoImageSlot } from './PlaceholderImage';
 import * as recambiosApi from '../api/products';
 import * as pedidosApi from '../api/orders';
 import type { OrderType, Product } from '../types';
+import { packageBreakdown } from '../utils/packaging';
 
 interface FichaTecnicaProps {
   product: Product;
@@ -28,12 +29,6 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
   const [editando, setEditando] = useState(false);
   const [confirmacion, setConfirmacion] = useState<{ type: OrderType; quantity?: number; desiredDeadline?: string; notes?: string } | null>(null);
   const fechaRef = useRef<HTMLInputElement>(null);
-
-  function parseEmbalaje(embalaje: string | null | undefined): number {
-    if (!embalaje) return 1;
-    const match = embalaje.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : 1;
-  }
 
   function fmtPrecio(v: number | null | undefined): string | null {
     if (v == null) return null;
@@ -173,7 +168,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
                     <span style={badgeStyle(p.status)}>{p.status}</span>
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                    {fmtDate(p.requestedAt)} · {p.requesterName} · Qty: {p.quantity}
+                    {fmtDate(p.requestedAt)} · {p.requesterName} · {(() => { const b = packageBreakdown(r.packagingUnit, p.quantity); return `${b.units} uds/paquete × ${b.packages} paquetes = ${b.total} uds`; })()}
                   </div>
                 </div>
               ))}
@@ -236,7 +231,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
                     <span style={badgeStyle(p.status)}>{p.status}</span>
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-                    {fmtDate(p.requestedAt)} · {p.requesterName} · Qty: {p.quantity}
+                    {fmtDate(p.requestedAt)} · {p.requesterName} · {(() => { const b = packageBreakdown(r.packagingUnit, p.quantity); return `${b.units} uds/paquete × ${b.packages} paquetes = ${b.total} uds`; })()}
                   </div>
                 </div>
               ))}
@@ -261,7 +256,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
                 </div>
               )}
               {([
-                { type: 'Reposición' as OrderType, label: 'Automático', desc: `${(() => { if (r.reorderPoint == null) return 'Número de reposición no configurado'; const paq = r.reorderPoint; const emb = parseEmbalaje(r.packagingUnit); const total = paq * emb; return emb > 1 ? `${paq} paquetes × ${r.packagingUnit} = ${total} uds` : `${paq} uds`; })()}`, color: 'var(--accent)', bgCard: 'var(--bg-elevated)', borderColor: 'var(--border-strong)' },
+                { type: 'Reposición' as OrderType, label: 'Automático', desc: `${(() => { if (r.reorderPoint == null) return 'Número de reposición no configurado'; const b = packageBreakdown(r.packagingUnit, r.reorderPoint); return `${b.units} uds/paquete × ${b.packages} paquetes = ${b.total} uds`; })()}`, color: 'var(--accent)', bgCard: 'var(--bg-elevated)', borderColor: 'var(--border-strong)' },
                 { type: 'Solicitud' as OrderType, label: 'Personalizado', desc: 'Cantidad y plazo a definir', color: 'var(--success-text)', bgCard: 'var(--bg-success-card)', borderColor: 'var(--success-border)' },
                 { type: 'Solicitud Express' as OrderType, label: 'Urgente', desc: 'Prioritario · entrega inmediata', color: 'var(--danger-text)', bgCard: 'var(--bg-danger-card)', borderColor: 'var(--danger-border)' },
               ]).map((opt) => (
@@ -327,14 +322,12 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
                     placeholder="Ej: 5"
                     style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
                   />
-                  {r.packagingUnit && quantity && !isNaN(parseInt(quantity, 10)) && (
-                    <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
-                      {parseInt(quantity, 10)} × {r.packagingUnit} = <strong style={{ color: 'var(--accent)' }}>{parseInt(quantity, 10) * parseEmbalaje(r.packagingUnit)} uds</strong> total
-                      {r.pvpOrientativo != null && (
-                        <> · Total: <strong style={{ color: 'var(--success-text)' }}>{fmtPrecio(parseInt(quantity, 10) * r.pvpOrientativo)}</strong></>
-                      )}
-                    </div>
-                  )}
+                  <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                    {(() => { const b = packageBreakdown(r.packagingUnit, parseInt(quantity, 10) || 0); return <>Unidades por paquete: <strong>{b.units}{r.packagingUnit ? ` (${r.packagingUnit})` : ''}</strong> · Número de paquetes: <strong>{b.packages}</strong> · Total de unidades: <strong style={{ color: 'var(--accent)' }}>{b.total}</strong></>; })()}
+                    {r.pvpOrientativo != null && (
+                      <> · Total: <strong style={{ color: 'var(--success-text)' }}>{fmtPrecio((parseInt(quantity, 10) || 0) * r.pvpOrientativo)}</strong></>
+                    )}
+                  </div>
                 </div>
               )}
               {orderType === 'Solicitud' && (
@@ -397,13 +390,7 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
             <div style={{ marginBottom: '1rem' }}>
               <div style={labelStyle}>Cantidad (paquetes)</div>
               <div style={{ fontSize: 16, fontWeight: 700, color: 'var(--text-bright)' }}>
-                {(() => {
-                  const emb = parseEmbalaje(r.packagingUnit);
-                  const paquetes = confirmacion.quantity ?? r.reorderPoint ?? 1;
-                  const total = paquetes * emb;
-                  if (emb <= 1) return `${paquetes} paquete${paquetes === 1 ? '' : 's'}`;
-                  return `${paquetes} paquete${paquetes === 1 ? '' : 's'} × ${emb} uds = ${total} uds`;
-                })()}
+                  {(() => { const b = packageBreakdown(r.packagingUnit, paquetesPedido()); return `Unidades por paquete: ${b.units}${r.packagingUnit ? ` (${r.packagingUnit})` : ''} · Número de paquetes: ${b.packages} · Total de unidades: ${b.total}`; })()}
               </div>
               {r.pvpOrientativo != null && (
                 <div style={{ fontSize: 13, color: 'var(--success-text)', fontWeight: 700, marginTop: 4 }}>

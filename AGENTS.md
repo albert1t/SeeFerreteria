@@ -71,6 +71,7 @@
 │   ├── 004_permissions.sql
 │   ├── 005_orders_oculto.sql
 │   ├── 006_imports_catalogo.sql
+│   ├── 015_roles_personal_notifications_utc.sql
 │   └── full_schema_ovh.sql  # Esquema completo idempotente
 ├── .cpanel.yml              # Tareas de deploy de cPanel Git
 ├── .htaccess                # Reglas Apache: SPA frontend + /api al backend
@@ -204,8 +205,8 @@ Main tables:
 - Registro público: `POST /api/auth/register`.
 - Login Microsoft: `POST /api/auth/msal-login` (requiere que el email esté en `AllowedEmails`).
 - El token JWT se devuelve en la respuesta y se puede enviar como cookie `see_token` o header `Authorization: Bearer <token>`.
-- Roles: `admin`, `operario`, `user`, `viewer`.
-- Permisos se almacenan como JSON en `Users.permissions`; `getDefaultPermissions(role)` da permisos por defecto.
+- Roles actuales: `admin`, `almacen`, `compras`. `operario` y `user` son alias heredados (`almacen` y `compras`); `viewer` se conserva para compatibilidad.
+- Permisos por rol se definen en backend (`getDefaultPermissions`) y frontend (`ROLE_PERMISSIONS`). `compras` no puede abrir `/almacen` ni marcar pedidos como recibidos; esa acción corresponde a `almacen` y `admin`.
 
 ### English
 - Local login: `POST /api/auth/login` with `username` and `password`.
@@ -227,7 +228,7 @@ Implementadas en `backend/src/services/mailService.ts`.
   - Envía acuse al solicitante **solo si su `username` tiene formato de email válido**.
   - Notifica siempre a `NOTIFY_EMAIL`.
 - `advanceStatus`:
-  - Envía seguimiento al solicitante si su `username` es un email válido.
+  - Envía seguimiento al solicitante si su `username` es un email válido y su preferencia individual lo permite.
 - `register` en `backend/src/services/authService.ts`:
   - Notifica a `NOTIFY_EMAIL` cuando se registra un nuevo usuario, si `NOTIFY_ADMIN_ON_REGISTER=true`.
 
@@ -401,7 +402,8 @@ npm run dev:all
 | POST | `/api/orders/test-email` | Probar SMTP |
 | PATCH | `/api/orders/:id/status` | Avanzar estado (dispara email) |
 | GET | `/api/users` | Gestión de usuarios |
-| GET/PUT | `/api/settings/notifications` | Ajustes de notificaciones (admin) |
+| GET/PUT | `/api/settings/notifications` | Ajustes globales de notificaciones (admin) |
+| GET/PUT | `/api/settings/my-notifications` | Preferencias personales de correo |
 | GET/POST | `/api/catalogs` | Catálogos |
 | GET/POST | `/api/imports` | Importaciones masivas |
 
@@ -518,4 +520,3 @@ npm run dev:all
 
 > **Nota de seguridad:** Las contraseñas, tokens y el SAS de Azure solo deben vivir en las variables de entorno de cPanel o en `.env` locales nunca en el repo.
 > **Security note:** Passwords, tokens, and the Azure SAS should only live in cPanel environment variables or local `.env` files, never in the repo.
-

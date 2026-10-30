@@ -23,7 +23,7 @@ router.post('/test-email', async (req, res, next) => {
   }
 });
 
-router.get('/urgentes/count', async (_req, res, next) => {
+router.get('/urgentes/count', requirePermission('orders', 'view'), async (_req, res, next) => {
   try {
     const count = await ordersService.countUrgentes();
     res.json({ count });
@@ -32,11 +32,12 @@ router.get('/urgentes/count', async (_req, res, next) => {
   }
 });
 
-router.get('/', validateQuery(ordersQuerySchema), async (req, res, next) => {
+router.get('/', requirePermission('orders', 'view'), validateQuery(ordersQuerySchema), async (req, res, next) => {
   try {
     const q = req.query as {
       busqueda?: string;
       type?: 'Reposición' | 'Solicitud' | 'Solicitud Express';
+      familyId?: number;
       fecha?: string;
       orden?: 'reciente' | 'antiguo';
       incluirFinalizados?: string;
@@ -45,6 +46,7 @@ router.get('/', validateQuery(ordersQuerySchema), async (req, res, next) => {
     const orders = await ordersService.listOrders({
       busqueda: q.busqueda,
       type: q.type,
+      familyId: q.familyId,
       fecha: q.fecha,
       orden: q.orden,
       incluirFinalizados: q.incluirFinalizados === 'true',
@@ -56,7 +58,7 @@ router.get('/', validateQuery(ordersQuerySchema), async (req, res, next) => {
   }
 });
 
-router.get('/:id', async (req, res, next) => {
+router.get('/:id', requirePermission('orders', 'view'), async (req, res, next) => {
   try {
     const id = parseInt(String(req.params.id), 10);
     const order = await ordersService.getPedido(id);
@@ -66,7 +68,7 @@ router.get('/:id', async (req, res, next) => {
   }
 });
 
-router.post('/', validateBody(orderCreateSchema), async (req, res, next) => {
+router.post('/', requirePermission('orders', 'create'), validateBody(orderCreateSchema), async (req, res, next) => {
   try {
     const order = await ordersService.createOrder(req.body, req.user!.userId);
     res.status(201).json(order);
@@ -75,10 +77,10 @@ router.post('/', validateBody(orderCreateSchema), async (req, res, next) => {
   }
 });
 
-router.patch('/:id/status', validateBody(orderStatusSchema), async (req, res, next) => {
+router.patch('/:id/status', requirePermission('orders', 'edit'), validateBody(orderStatusSchema), async (req, res, next) => {
   try {
     const id = parseInt(String(req.params.id), 10);
-    const order = await ordersService.advanceStatus(id, req.body.status, req.user!.userId);
+    const order = await ordersService.advanceStatus(id, req.body.status, req.user!.userId, req.user!.role);
     res.json(order);
   } catch (err) {
     next(err);

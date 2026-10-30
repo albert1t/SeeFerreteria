@@ -16,13 +16,13 @@ const ROLE_PERMISSIONS: Record<UserRole, PermissionsMap> = {
     families: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
     tarifas: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
   },
-  operario: {
+  almacen: {
     orders: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
     products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
     families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
     tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
   },
-  user: {
+  compras: {
     orders: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
     products: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
     families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
@@ -35,6 +35,12 @@ const ROLE_PERMISSIONS: Record<UserRole, PermissionsMap> = {
     tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
   },
 };
+
+function normalizeRole(role: string): UserRole {
+  if (role === 'admin' || role === 'almacen' || role === 'compras' || role === 'viewer') return role;
+  if (role === 'operario') return 'almacen';
+  return 'compras';
+}
 
 interface AuthContextValue {
   user: User | null;
@@ -63,8 +69,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       try {
         const { user: u } = await authApi.getMe();
-        setUser(u);
-        return u;
+        const normalized = { ...u, role: normalizeRole(u.role) };
+        setUser(normalized);
+        return normalized;
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           clearToken();
@@ -81,22 +88,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (username: string, password: string) => {
     const { user: u, token } = await authApi.login(username, password);
     setToken(token);
-    setUser(u);
-    queryClient.setQueryData(['auth', 'me'], u);
+    const normalized = { ...u, role: normalizeRole(u.role) };
+    setUser(normalized);
+    queryClient.setQueryData(['auth', 'me'], normalized);
   }, [queryClient]);
 
   const register = useCallback(async (username: string, name: string, password: string) => {
     const { user: u, token } = await authApi.register(username, name, password);
     setToken(token);
-    setUser(u);
-    queryClient.setQueryData(['auth', 'me'], u);
+    const normalized = { ...u, role: normalizeRole(u.role) };
+    setUser(normalized);
+    queryClient.setQueryData(['auth', 'me'], normalized);
   }, [queryClient]);
 
   const loginMicrosoft = useCallback(async (idToken: string) => {
     const { user: u, token } = await authApi.loginMicrosoft(idToken);
     setToken(token);
-    setUser(u);
-    queryClient.setQueryData(['auth', 'me'], u);
+    const normalized = { ...u, role: normalizeRole(u.role) };
+    setUser(normalized);
+    queryClient.setQueryData(['auth', 'me'], normalized);
   }, [queryClient]);
 
   const logout = useCallback(async () => {

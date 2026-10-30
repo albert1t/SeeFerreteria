@@ -238,16 +238,17 @@ export function generateManualPDF() {
   // 13. Roles y permisos
   sectionTitle(ctx, '13. Roles y permisos');
   table(ctx,
-    ['Funcionalidad', 'admin', 'operario', 'user', 'viewer'],
-    [
-      ['Ver almacen', 'Si', 'Si', 'Si', 'Si'],
-      ['Crear pedidos', 'Si', 'Si', 'Si', 'No'],
-      ['Editar pedidos', 'Si', 'Si', 'Si', 'No'],
-      ['Eliminar pedidos', 'Si', 'No', 'No', 'No'],
-      ['Crear productos', 'Si', 'No', 'No', 'No'],
-      ['Editar productos', 'Si', 'No', 'No', 'No'],
-      ['Gestionar usuarios', 'Si', 'No', 'No', 'No'],
-      ['Importar tarifas', 'Si', 'No', 'No', 'No'],
+     ['Funcionalidad', 'admin', 'almacen', 'compras'],
+     [
+       ['Ver almacen', 'Si', 'Si', 'No'],
+       ['Crear pedidos', 'Si', 'Si', 'Si'],
+       ['Editar pedidos', 'Si', 'Si', 'Si'],
+       ['Marcar pedido recibido', 'Si', 'Si', 'No'],
+       ['Eliminar pedidos', 'Si', 'No', 'No'],
+       ['Crear productos', 'Si', 'No', 'No'],
+       ['Editar productos', 'Si', 'No', 'No'],
+       ['Gestionar usuarios', 'Si', 'No', 'No'],
+       ['Importar tarifas', 'Si', 'No', 'No'],
     ]
   );
 

@@ -18,6 +18,10 @@ let pool: mysql.Pool | null = null;
 export async function getPool(): Promise<mysql.Pool> {
   if (!pool) {
     pool = mysql.createPool(config);
+    // Los DATETIME se guardan y se leen como UTC, independientemente de la zona del servidor.
+    pool.on('connection', (connection) => {
+      connection.query("SET time_zone = '+00:00'");
+    });
   }
   return pool;
 }
