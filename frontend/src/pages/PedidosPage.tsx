@@ -172,9 +172,11 @@ function DetallePedido({ order, onClose }: { order: Order; onClose: () => void }
 
   const next = SIGUIENTE_ESTADO[detail.status];
   const puedeAvanzar = !!(next && can('orders', 'edit') && !(next === 'Pedido recibido' && user?.role === 'compras'));
-  const editablePorEstado = detail.status === 'Solicitado';
-  const puedeEditar = can('orders', 'edit') && editablePorEstado;
-  const puedeEliminar = can('orders', 'delete') && editablePorEstado;
+  // Almacén solo modifica los pedidos que ellos mismos solicitaron, y solo en estado "Solicitado".
+  // Admin y compras gestionan cualquier pedido sin esa restricción.
+  const modificable = user?.role !== 'almacen' || (detail.requesterId === user?.id && detail.status === 'Solicitado');
+  const puedeEditar = can('orders', 'edit') && modificable;
+  const puedeEliminar = can('orders', 'delete') && modificable;
   const puedeOcultar = can('orders', 'edit');
   const labelStyle: React.CSSProperties = {
     fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 2, display: 'block',

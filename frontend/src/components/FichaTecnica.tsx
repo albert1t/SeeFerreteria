@@ -18,7 +18,7 @@ interface FichaTecnicaProps {
 }
 
 export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps) {
-  const { isAdmin } = useAuth();
+  const { can } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<'info' | 'orders' | 'nuevo'>('info');
@@ -202,17 +202,21 @@ export function FichaTecnica({ product, onClose, onUpdated }: FichaTecnicaProps)
             ))}
           </div>
 
-          {isAdmin && (
+          {(can('products', 'edit') || can('products', 'delete')) && (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border-soft)' }}>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button style={btnStyle('ghost')} onClick={() => setEditando(true)}>Editar</button>
-                <button style={btnStyle('danger')} onClick={() => { if (confirm('¿Eliminar producto?')) deleteMut.mutate(); }}>
-                  Eliminar
-                </button>
+                {can('products', 'edit') && <button style={btnStyle('ghost')} onClick={() => setEditando(true)}>Editar</button>}
+                {can('products', 'delete') && (
+                  <button style={btnStyle('danger')} onClick={() => { if (confirm('¿Eliminar producto?')) deleteMut.mutate(); }}>
+                    Eliminar
+                  </button>
+                )}
               </div>
-              <button style={{ ...btnStyle('ghost'), marginLeft: 'auto' }} onClick={() => toggleOcultoMut.mutate()}>
-                {r.hidden ? 'Mostrar' : 'Ocultar'}
-              </button>
+              {can('products', 'edit') && (
+                <button style={{ ...btnStyle('ghost'), marginLeft: 'auto' }} onClick={() => toggleOcultoMut.mutate()}>
+                  {r.hidden ? 'Mostrar' : 'Ocultar'}
+                </button>
+              )}
             </div>
           )}
         </div>

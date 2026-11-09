@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { btnStyle } from '../styles/theme';
+import { useAuth } from '../hooks/useAuth';
 import { useToast } from './Toast';
 import * as recambiosApi from '../api/products';
 import * as catalogosApi from '../api/catalogs';
@@ -27,6 +28,9 @@ function normalizeFamilyName(name: string): string {
 }
 
 export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: FormRecambioProps) {
+  const { can } = useAuth();
+  // Compras solo edita ficha/precio; familia, reposición y ubicación son cosa de almacén.
+  const canEditWarehouse = can('products', 'create');
   const { showToast } = useToast();
   const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -151,6 +155,7 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
           <select
             style={inputStyle}
             value={form.familyId}
+            disabled={!canEditWarehouse}
             onChange={(e) => {
               if (e.target.value === '__new__') { setShowNewFamily(true); return; }
               upd('familyId', parseInt(e.target.value, 10));
@@ -158,7 +163,7 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
           >
             <option value={0} disabled>-- Seleccionar familia --</option>
             {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-            <option value="__new__">+ Nueva familia</option>
+            {canEditWarehouse && <option value="__new__">+ Nueva familia</option>}
           </select>
         ) : (
           <div style={{ display: 'flex', gap: 8 }}>
@@ -222,22 +227,22 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
 
       <div>
         <label style={labelStyle}>N° Reposición</label>
-        <input style={inputStyle} type="number" min="1" value={form.reorderPoint ?? ''} onChange={(e) => { const v = e.target.value; upd('reorderPoint', v === '' ? null : parseInt(v, 10)); }} />
+        <input style={inputStyle} type="number" min="1" disabled={!canEditWarehouse} value={form.reorderPoint ?? ''} onChange={(e) => { const v = e.target.value; upd('reorderPoint', v === '' ? null : parseInt(v, 10)); }} />
       </div>
 
       {!isPositionFixed ? (
         <>
           <div>
             <label style={labelStyle}>Panel</label>
-            <input style={inputStyle} value={form.panel ?? ''} onChange={(e) => upd('panel', e.target.value.toUpperCase() || null)} placeholder="Ej: A1 (opcional)" />
+            <input style={inputStyle} disabled={!canEditWarehouse} value={form.panel ?? ''} onChange={(e) => upd('panel', e.target.value.toUpperCase() || null)} placeholder="Ej: A1 (opcional)" />
           </div>
           <div>
             <label style={labelStyle}>Columna (1-{panelLimits.cols})</label>
-            <input style={inputStyle} type="number" min="1" max={panelLimits.cols} value={form.col ?? ''} onChange={(e) => { const v = e.target.value; upd('col', v === '' ? null : parseInt(v, 10)); }} placeholder="Opcional" />
+            <input style={inputStyle} type="number" min="1" max={panelLimits.cols} disabled={!canEditWarehouse} value={form.col ?? ''} onChange={(e) => { const v = e.target.value; upd('col', v === '' ? null : parseInt(v, 10)); }} placeholder="Opcional" />
           </div>
           <div>
             <label style={labelStyle}>Fila (1-{panelLimits.rows})</label>
-            <input style={inputStyle} type="number" min="1" max={panelLimits.rows} value={form.row ?? ''} onChange={(e) => { const v = e.target.value; upd('row', v === '' ? null : parseInt(v, 10)); }} placeholder="Opcional" />
+            <input style={inputStyle} type="number" min="1" max={panelLimits.rows} disabled={!canEditWarehouse} value={form.row ?? ''} onChange={(e) => { const v = e.target.value; upd('row', v === '' ? null : parseInt(v, 10)); }} placeholder="Opcional" />
           </div>
         </>
       ) : (
@@ -250,6 +255,7 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
           id="hidden-check"
           type="checkbox"
           checked={form.hidden}
+          disabled={!canEditWarehouse}
           onChange={(e) => upd('hidden', e.target.checked)}
           style={{ width: 18, height: 18, accentColor: 'var(--accent)' }}
         />

@@ -68,7 +68,7 @@ function WarehouseRoute({ children }: { children: React.ReactNode }) {
   const { user, isLoading } = useAuth();
   if (isLoading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Cargando...</div>;
   if (!user) return <Navigate to="/login" replace />;
-  if (user.role === 'compras' || user.role === 'viewer') return <Navigate to="/orders" replace />;
+  if (user.role === 'compras') return <Navigate to="/orders" replace />;
   return <>{children}</>;
 }
 

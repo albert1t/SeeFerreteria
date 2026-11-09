@@ -2,45 +2,10 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import * as authApi from '../api/auth';
 import { ApiError, clearToken, setToken, getToken } from '../api/client';
-import type { User, UserRole } from '../types';
+import type { User } from '../types';
 
 type Resource = 'orders' | 'products' | 'families' | 'tarifas';
 type Action = 'create' | 'view' | 'edit' | 'delete' | 'viewDataPage';
-
-type PermissionsMap = Record<Resource, Record<Action, boolean>>;
-
-const ROLE_PERMISSIONS: Record<UserRole, PermissionsMap> = {
-  admin: {
-    orders: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    products: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    families: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    tarifas: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-  },
-  almacen: {
-    orders: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
-    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-    tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-  },
-  compras: {
-    orders: { create: true, view: true, edit: true, delete: false, viewDataPage: false },
-    products: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-    families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-    tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-  },
-  viewer: {
-    orders: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    families: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-    tarifas: { create: false, view: false, edit: false, delete: false, viewDataPage: false },
-  },
-};
-
-function normalizeRole(role: string): UserRole {
-  if (role === 'admin' || role === 'almacen' || role === 'compras' || role === 'viewer') return role;
-  if (role === 'operario') return 'almacen';
-  return 'compras';
-}
 
 interface AuthContextValue {
   user: User | null;
@@ -69,9 +34,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
       try {
         const { user: u } = await authApi.getMe();
-        const normalized = { ...u, role: normalizeRole(u.role) };
-        setUser(normalized);
-        return normalized;
+        setUser(u);
+        return u;
       } catch (err) {
         if (err instanceof ApiError && err.status === 401) {
           clearToken();
@@ -88,25 +52,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = useCallback(async (username: string, password: string) => {
     const { user: u, token } = await authApi.login(username, password);
     setToken(token);
-    const normalized = { ...u, role: normalizeRole(u.role) };
-    setUser(normalized);
-    queryClient.setQueryData(['auth', 'me'], normalized);
+    setUser(u);
+    queryClient.setQueryData(['auth', 'me'], u);
   }, [queryClient]);
 
   const register = useCallback(async (username: string, name: string, password: string) => {
     const { user: u, token } = await authApi.register(username, name, password);
     setToken(token);
-    const normalized = { ...u, role: normalizeRole(u.role) };
-    setUser(normalized);
-    queryClient.setQueryData(['auth', 'me'], normalized);
+    setUser(u);
+    queryClient.setQueryData(['auth', 'me'], u);
   }, [queryClient]);
 
   const loginMicrosoft = useCallback(async (idToken: string) => {
     const { user: u, token } = await authApi.loginMicrosoft(idToken);
     setToken(token);
-    const normalized = { ...u, role: normalizeRole(u.role) };
-    setUser(normalized);
-    queryClient.setQueryData(['auth', 'me'], normalized);
+    setUser(u);
+    queryClient.setQueryData(['auth', 'me'], u);
   }, [queryClient]);
 
   const logout = useCallback(async () => {
@@ -116,9 +77,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     queryClient.clear();
   }, [queryClient]);
 
+  // Los permisos los calcula el backend a partir de la tabla Roles (ver GET /api/auth/me);
+  // aquí solo se lee lo que ya llegó en user.permissions, sin copia local de la matriz.
   const can = useCallback((resource: Resource, action: Action) => {
     if (!user) return false;
-    return Boolean(ROLE_PERMISSIONS[user.role][resource][action]);
+    const perms = user.permissions[resource] as unknown as Record<string, boolean>;
+    return Boolean(perms[action]);
   }, [user]);
 
   return (

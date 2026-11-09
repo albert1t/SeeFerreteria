@@ -3,7 +3,7 @@ import https from 'https';
 import multer from 'multer';
 import * as productsService from '../services/productsService.js';
 import * as ordersService from '../services/ordersService.js';
-import { authMiddleware, requireRole } from '../middleware/auth.js';
+import { authMiddleware, requirePermission, requireRole } from '../middleware/auth.js';
 import { validateBody, validateQuery } from '../middleware/validate.js';
 import { productCreateSchema, productUpdateSchema, productsQuerySchema } from '../schemas/index.js';
 import { env } from '../config/env.js';
@@ -42,7 +42,7 @@ router.use(authMiddleware);
  * dentro de la carpeta "product-image/" y devuelve la URL pública del blob.
  * El backend hace el PUT a Azure, evitando restricciones CORS del navegador.
  */
-router.post('/upload-image', requireRole('admin'), (req, res, next) => {
+router.post('/upload-image', requirePermission('products', 'edit'), (req, res, next) => {
     try {
         upload.single('image')(req, res, (err) => {
             if (err) {
@@ -132,6 +132,16 @@ router.get('/', validateQuery(productsQuerySchema), async (req, res, next) => {
         next(err);
     }
 });
+// Debe ir antes de GET /:id: de lo contrario Express la interpreta como id="unpositioned".
+router.get('/unpositioned', requireRole('admin', 'almacen'), async (_req, res, next) => {
+    try {
+        const items = await productsService.getUnpositioned();
+        res.json(items);
+    }
+    catch (err) {
+        next(err);
+    }
+});
 router.get('/ref/:ref', async (req, res, next) => {
     try {
         const ref = String(req.params.ref);
@@ -166,7 +176,7 @@ router.post('/import', requireRole('admin'), uploadExcel.single('file'), async (
         next(err);
     }
 });
-router.post('/', requireRole('admin'), validateBody(productCreateSchema), async (req, res, next) => {
+router.post('/', requirePermission('products', 'create'), validateBody(productCreateSchema), async (req, res, next) => {
     try {
         const product = await productsService.createProduct(req.body);
         res.status(201).json(product);
@@ -175,17 +185,26 @@ router.post('/', requireRole('admin'), validateBody(productCreateSchema), async 
         next(err);
     }
 });
-router.put('/:id', requireRole('admin'), validateBody(productUpdateSchema), async (req, res, next) => {
+// Compras solo edita ficha/precio: los campos de ubicación y clasificación de almacén
+// (familyId, reorderPoint, panel, col, row, hidden) se descartan si los envía.
+const WAREHOUSE_ONLY_FIELDS = ['familyId', 'reorderPoint', 'panel', 'col', 'row', 'hidden'];
+router.put('/:id', requirePermission('products', 'edit'), validateBody(productUpdateSchema), async (req, res, next) => {
     try {
         const id = parseInt(String(req.params.id), 10);
-        const product = await productsService.updateProduct(id, req.body);
+        const data = { ...req.body };
+        if (req.user.role === 'compras') {
+            for (const field of WAREHOUSE_ONLY_FIELDS)
+                delete data[field];
+        }
+        const product = await productsService.updateProduct(id, data);
         res.json(product);
     }
     catch (err) {
         next(err);
     }
 });
-router.patch('/:id/hidden', requireRole('admin'), async (req, res, next) => {
+// Ocultar/mostrar es una decisión de disponibilidad de almacén, no de ficha/precio.
+router.patch('/:id/hidden', requireRole('admin', 'almacen'), async (req, res, next) => {
     try {
         const id = parseInt(String(req.params.id), 10);
         const product = await productsService.toggleOculto(id);
@@ -195,7 +214,7 @@ router.patch('/:id/hidden', requireRole('admin'), async (req, res, next) => {
         next(err);
     }
 });
-router.delete('/:id', requireRole('admin'), async (req, res, next) => {
+router.delete('/:id', requirePermission('products', 'delete'), async (req, res, next) => {
     try {
         const id = parseInt(String(req.params.id), 10);
         await productsService.deleteProduct(id);
@@ -205,7 +224,9 @@ router.delete('/:id', requireRole('admin'), async (req, res, next) => {
         next(err);
     }
 });
-router.post('/swap', requireRole('admin'), async (req, res, next) => {
+// swap/assign-position: gestión de ubicación física, fuera del alcance de products.edit
+// (que compras también tiene) — por eso van por rol explícito y no por requirePermission.
+router.post('/swap', requireRole('admin', 'almacen'), async (req, res, next) => {
     try {
         const { id1, id2 } = req.body;
         if (!id1 || !id2) {
@@ -219,16 +240,7 @@ router.post('/swap', requireRole('admin'), async (req, res, next) => {
         next(err);
     }
 });
-router.get('/unpositioned', requireRole('admin'), async (_req, res, next) => {
-    try {
-        const items = await productsService.getUnpositioned();
-        res.json(items);
-    }
-    catch (err) {
-        next(err);
-    }
-});
-router.post('/:id/assign-position', requireRole('admin'), async (req, res, next) => {
+router.post('/:id/assign-position', requireRole('admin', 'almacen'), async (req, res, next) => {
     try {
         const id = parseInt(String(req.params.id), 10);
         const { panel, col, row } = req.body;

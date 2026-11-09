@@ -1,10 +1,29 @@
-export type UserRole = 'admin' | 'almacen' | 'compras' | 'viewer';
+export type UserRole = 'admin' | 'almacen' | 'compras';
 
 /** Compatibilidad temporal con usuarios y JWT creados antes de los roles actuales. */
 export function normalizeUserRole(role: string): UserRole {
-  if (role === 'admin' || role === 'almacen' || role === 'compras' || role === 'viewer') return role;
+  if (role === 'admin' || role === 'almacen' || role === 'compras') return role;
   if (role === 'operario') return 'almacen';
   return 'compras';
+}
+
+// Forma de los permisos de un rol, cargados desde la tabla Roles (ver repositories/roles.ts).
+export type ResourceAction = 'create' | 'view' | 'edit' | 'delete';
+export interface ResourcePerms {
+  create: boolean;
+  view: boolean;
+  edit: boolean;
+  delete: boolean;
+}
+export interface ProductsPerms extends ResourcePerms {
+  viewDataPage: boolean;
+}
+export interface Permissions {
+  admin: boolean;
+  orders: ResourcePerms;
+  products: ProductsPerms;
+  families: ResourcePerms;
+  tarifas: ResourcePerms;
 }
 
 export interface User {

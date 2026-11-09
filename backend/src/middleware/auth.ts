@@ -2,26 +2,8 @@ import type { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { normalizeUserRole, type JwtPayload, type UserRole } from '../types/index.js';
+import { getPermissionsForRole } from '../repositories/roles.js';
 import { AppError } from './errorHandler.js';
-
-// Mapa interno de permisos por rol. Se mantiene solo para no reescribir requirePermission.
-type ResourceAction = 'create' | 'view' | 'edit' | 'delete';
-interface ResourcePerms {
-  create: boolean;
-  view: boolean;
-  edit: boolean;
-  delete: boolean;
-}
-interface ProductsPerms extends ResourcePerms {
-  viewDataPage: boolean;
-}
-interface Permissions {
-  admin: boolean;
-  orders: ResourcePerms;
-  products: ProductsPerms;
-  families: ResourcePerms;
-  tarifas: ResourcePerms;
-}
 
 const COOKIE_NAME = 'see_token';
 
@@ -75,51 +57,13 @@ export function requirePermission(resource: Resource, action: Action) {
       next(new AppError(401, 'No autenticado'));
       return;
     }
-    const perms = getDefaultPermissions(req.user.role);
-    if (perms.admin || (perms[resource] as any)?.[action]) {
+    const perms = getPermissionsForRole(req.user.role);
+    if (perms.admin || (perms[resource] as unknown as Record<string, boolean>)[action]) {
       next();
       return;
     }
     next(new AppError(403, 'No tienes permisos para esta acción'));
   };
-}
-
-function getDefaultPermissions(role: UserRole): Permissions {
-  const full: Permissions = {
-    admin: true,
-    orders: { create: true, view: true, edit: true, delete: true },
-    products: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-    families: { create: true, view: true, edit: true, delete: true },
-    tarifas: { create: true, view: true, edit: true, delete: true },
-  };
-  const compras: Permissions = {
-    admin: false,
-    orders: { create: true, view: true, edit: true, delete: false },
-    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    families: { create: false, view: false, edit: false, delete: false },
-    tarifas: { create: false, view: false, edit: false, delete: false },
-  };
-  const viewer: Permissions = {
-    admin: false,
-    orders: { create: false, view: true, edit: false, delete: false },
-    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    families: { create: false, view: false, edit: false, delete: false },
-    tarifas: { create: false, view: false, edit: false, delete: false },
-  };
-  const almacen: Permissions = {
-    admin: false,
-    orders: { create: true, view: true, edit: true, delete: false },
-    products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-    families: { create: false, view: false, edit: false, delete: false },
-    tarifas: { create: false, view: false, edit: false, delete: false },
-  };
-
-  switch (role) {
-    case 'admin': return full;
-    case 'almacen': return almacen;
-    case 'viewer': return viewer;
-    default: return compras;
-  }
 }
 
 export { COOKIE_NAME };

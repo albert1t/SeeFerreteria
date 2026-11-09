@@ -4,9 +4,20 @@ import { validateBody, validateParams } from '../middleware/validate.js';
 import bcrypt from 'bcryptjs';
 import { userIdSchema, createUserSchema, updateRoleSchema, updateActiveSchema, allowedEmailSchema, allowedEmailUpdateSchema, } from '../schemas/index.js';
 import * as usersRepo from '../repositories/users.js';
+import * as rolesRepo from '../repositories/roles.js';
 import { AppError } from '../middleware/errorHandler.js';
 const router = Router();
 router.use(authMiddleware, requireRole('admin'));
+function assertValidRole(role) {
+    if (!rolesRepo.isValidRole(role)) {
+        throw new AppError(400, `Rol inválido: ${role}`);
+    }
+    return role;
+}
+router.get('/roles', (_req, res) => {
+    const roles = rolesRepo.getAllRolesSync().map((r) => ({ name: r.name, label: r.label }));
+    res.json({ roles });
+});
 router.get('/', async (_req, res, next) => {
     try {
         const users = await usersRepo.findAll();
@@ -18,7 +29,8 @@ router.get('/', async (_req, res, next) => {
 });
 router.post('/', validateBody(createUserSchema), async (req, res, next) => {
     try {
-        const { username, password, name, role } = req.body;
+        const { username, password, name } = req.body;
+        const role = assertValidRole(req.body.role);
         const passwordHash = await bcrypt.hash(password, 10);
         const created = await usersRepo.createUser(username, passwordHash, name, role);
         if (!created) {
@@ -33,7 +45,8 @@ router.post('/', validateBody(createUserSchema), async (req, res, next) => {
 router.patch('/:id/role', validateParams(userIdSchema), validateBody(updateRoleSchema), async (req, res, next) => {
     try {
         const { id } = req.params;
-        const updated = await usersRepo.updateRole(id, req.body.role);
+        const role = assertValidRole(req.body.role);
+        const updated = await usersRepo.updateRole(id, role);
         if (!updated) {
             throw new AppError(404, 'Usuario no encontrado');
         }
@@ -81,7 +94,8 @@ router.get('/allowed-emails', async (_req, res, next) => {
 });
 router.post('/allowed-emails', validateBody(allowedEmailSchema), async (req, res, next) => {
     try {
-        const created = await usersRepo.createAllowedEmail(req.body.email, req.body.role);
+        const role = assertValidRole(req.body.role);
+        const created = await usersRepo.createAllowedEmail(req.body.email, role);
         if (!created) {
             throw new AppError(409, 'El correo ya existe en la lista');
         }
@@ -94,7 +108,8 @@ router.post('/allowed-emails', validateBody(allowedEmailSchema), async (req, res
 router.patch('/allowed-emails/:id', validateParams(userIdSchema), validateBody(allowedEmailUpdateSchema), async (req, res, next) => {
     try {
         const { id } = req.params;
-        const updated = await usersRepo.updateAllowedEmail(id, req.body.role, req.body.isActive);
+        const role = assertValidRole(req.body.role);
+        const updated = await usersRepo.updateAllowedEmail(id, role, req.body.isActive);
         if (!updated) {
             throw new AppError(404, 'Correo no encontrado');
         }

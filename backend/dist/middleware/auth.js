@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 import { normalizeUserRole } from '../types/index.js';
+import { getPermissionsForRole } from '../repositories/roles.js';
 import { AppError } from './errorHandler.js';
 const COOKIE_NAME = 'see_token';
 export function getTokenFromRequest(req) {
@@ -49,48 +50,12 @@ export function requirePermission(resource, action) {
             next(new AppError(401, 'No autenticado'));
             return;
         }
-        const perms = getDefaultPermissions(req.user.role);
-        if (perms.admin || perms[resource]?.[action]) {
+        const perms = getPermissionsForRole(req.user.role);
+        if (perms.admin || perms[resource][action]) {
             next();
             return;
         }
         next(new AppError(403, 'No tienes permisos para esta acción'));
     };
-}
-function getDefaultPermissions(role) {
-    const full = {
-        admin: true,
-        orders: { create: true, view: true, edit: true, delete: true },
-        products: { create: true, view: true, edit: true, delete: true, viewDataPage: true },
-        families: { create: true, view: true, edit: true, delete: true },
-        tarifas: { create: true, view: true, edit: true, delete: true },
-    };
-    const compras = {
-        admin: false,
-        orders: { create: true, view: true, edit: true, delete: false },
-        products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-        families: { create: false, view: false, edit: false, delete: false },
-        tarifas: { create: false, view: false, edit: false, delete: false },
-    };
-    const viewer = {
-        admin: false,
-        orders: { create: false, view: true, edit: false, delete: false },
-        products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-        families: { create: false, view: false, edit: false, delete: false },
-        tarifas: { create: false, view: false, edit: false, delete: false },
-    };
-    const almacen = {
-        admin: false,
-        orders: { create: true, view: true, edit: true, delete: false },
-        products: { create: false, view: true, edit: false, delete: false, viewDataPage: false },
-        families: { create: false, view: false, edit: false, delete: false },
-        tarifas: { create: false, view: false, edit: false, delete: false },
-    };
-    switch (role) {
-        case 'admin': return full;
-        case 'almacen': return almacen;
-        case 'viewer': return viewer;
-        default: return compras;
-    }
 }
 export { COOKIE_NAME };

@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { env } from './config/env.js';
 import { getPool } from './config/db.js';
+import { loadRolesCache } from './repositories/roles.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.js';
 import usersRoutes from './routes/users.js';
@@ -56,6 +57,8 @@ async function start() {
     try {
         await getPool();
         console.log('Connected to database');
+        await loadRolesCache();
+        console.log('Roles/permissions loaded');
     }
     catch (err) {
         console.error('Database connection failed:', err);

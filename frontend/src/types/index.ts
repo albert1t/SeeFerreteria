@@ -1,4 +1,23 @@
-export type UserRole = 'admin' | 'almacen' | 'compras' | 'viewer';
+export type UserRole = 'admin' | 'almacen' | 'compras';
+
+export interface ResourcePerms {
+  create: boolean;
+  view: boolean;
+  edit: boolean;
+  delete: boolean;
+}
+export interface ProductsPerms extends ResourcePerms {
+  viewDataPage: boolean;
+}
+// Lo calcula el backend a partir de la tabla Roles (ver GET /api/auth/me); el frontend no
+// mantiene su propia copia de la matriz de permisos.
+export interface Permissions {
+  admin: boolean;
+  orders: ResourcePerms;
+  products: ProductsPerms;
+  families: ResourcePerms;
+  tarifas: ResourcePerms;
+}
 
 export interface User {
   id: number;
@@ -6,6 +25,12 @@ export interface User {
   name: string;
   role: UserRole;
   isActive: boolean;
+  permissions: Permissions;
+}
+
+export interface Role {
+  name: UserRole;
+  label: string;
 }
 
 export interface AllowedEmail {

@@ -1,8 +1,12 @@
 import { apiFetch } from './client';
-import type { User, AllowedEmail, UserRole } from '../types';
+import type { User, AllowedEmail, Role, UserRole } from '../types';
 
 export function getUsers() {
   return apiFetch<{ users: User[] }>('/api/users');
+}
+
+export function getRoles() {
+  return apiFetch<{ roles: Role[] }>('/api/users/roles');
 }
 
 export function createUser(data: { username: string; password: string; name: string; role: UserRole }) {

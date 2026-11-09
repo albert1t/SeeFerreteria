@@ -79,7 +79,7 @@ router.patch('/:id/status', requirePermission('orders', 'edit'), validateBody(or
 router.put('/:id', requirePermission('orders', 'edit'), validateBody(orderUpdateSchema), async (req, res, next) => {
     try {
         const id = parseInt(String(req.params.id), 10);
-        const order = await ordersService.updatePedido(id, req.body);
+        const order = await ordersService.updatePedido(id, req.body, { userId: req.user.userId, role: req.user.role });
         res.json(order);
     }
     catch (err) {
@@ -89,7 +89,7 @@ router.put('/:id', requirePermission('orders', 'edit'), validateBody(orderUpdate
 router.delete('/:id', requirePermission('orders', 'delete'), async (req, res, next) => {
     try {
         const id = parseInt(String(req.params.id), 10);
-        await ordersService.deletePedido(id);
+        await ordersService.deletePedido(id, { userId: req.user.userId, role: req.user.role });
         res.status(204).end();
     }
     catch (err) {

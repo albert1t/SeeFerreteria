@@ -108,13 +108,11 @@ export function getNextStatus(status) {
         return null;
     return ESTADO_ORDEN[idx + 1];
 }
-export async function updatePedido(id, data) {
+export async function updatePedido(id, data, actingUser) {
     const order = await ordersRepo.findById(id);
     if (!order)
         throw new AppError(404, 'Order no encontrado');
-    if (order.status !== 'Solicitado') {
-        throw new AppError(409, 'Solo se puede editar un pedido en estado "Solicitado"');
-    }
+    assertCanModifyOrder(order, actingUser);
     const updated = await ordersRepo.updatePedido(id, data);
     if (!updated)
         throw new AppError(404, 'Order no encontrado');
@@ -132,14 +130,25 @@ export async function updatePedido(id, data) {
     })();
     return updated;
 }
-export async function deletePedido(id) {
+export async function deletePedido(id, actingUser) {
     const order = await ordersRepo.findById(id);
     if (!order)
         throw new AppError(404, 'Order no encontrado');
-    if (order.status !== 'Solicitado') {
-        throw new AppError(409, 'Solo se puede eliminar un pedido en estado "Solicitado"');
-    }
+    assertCanModifyOrder(order, actingUser);
     await ordersRepo.deletePedido(id);
+}
+// Compras y admin gestionan cualquier pedido sin restricción de fase. Almacén solo puede
+// editar/eliminar los pedidos que ellos mismos solicitaron, y solo mientras sigan "Solicitado"
+// (una vez avanza de fase, ya ni el propio solicitante de almacén puede tocarlo).
+function assertCanModifyOrder(order, actingUser) {
+    if (actingUser.role === 'admin' || actingUser.role === 'compras')
+        return;
+    if (order.requesterId !== actingUser.userId) {
+        throw new AppError(403, 'Solo puedes modificar los pedidos que tú mismo solicitaste');
+    }
+    if (order.status !== 'Solicitado') {
+        throw new AppError(409, 'Solo puedes modificar tu pedido mientras esté en estado "Solicitado"');
+    }
 }
 export async function toggleOcultoPedido(id) {
     const order = await ordersRepo.toggleOculto(id);

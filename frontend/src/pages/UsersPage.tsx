@@ -1,30 +1,30 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
 import { Modal } from '../components/Modal';
+import { CreateAccountModal, type CreateAccountPayload } from '../components/CreateAccountModal';
 import { badgeStyle, btnStyle, colors } from '../styles/theme';
 import * as usersApi from '../api/users';
-import type { User, UserRole } from '../types';
+import type { UserRole } from '../types';
 import { ApiError } from '../api/client';
+import { mergeAccounts, type AccountRow } from '../utils/mergeAccounts';
+import { updateAccount } from '../utils/accountActions';
 
-const ROLE_LABELS: Record<UserRole, string> = {
-  admin: 'Administrador',
-  almacen: 'Almacén',
-  compras: 'Compras',
-  viewer: 'Solo lectura',
-};
+type DeleteTarget = { kind: 'user' | 'allowedEmail'; id: number; label: string };
+
+function toDeleteTarget(account: AccountRow): DeleteTarget {
+  return account.source.kind === 'user'
+    ? { kind: 'user', id: account.source.user.id, label: account.label }
+    : { kind: 'allowedEmail', id: account.source.allowedEmail.id, label: account.label };
+}
 
 export function UsersPage() {
   const { isAdmin } = useAuth();
   const { showToast } = useToast();
   const queryClient = useQueryClient();
-  const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [newEmail, setNewEmail] = useState('');
-  const [newEmailRole, setNewEmailRole] = useState<UserRole>('compras');
-  const [deletingUser, setDeletingUser] = useState<User | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const [showCreate, setShowCreate] = useState(false);
-  const [createForm, setCreateForm] = useState({ username: '', password: '', name: '', role: 'compras' as UserRole });
   const [createError, setCreateError] = useState('');
 
   const { data: users, isLoading: usersLoading } = useQuery({
@@ -43,24 +43,54 @@ export function UsersPage() {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: ({ id, role }: { id: number; role: UserRole }) => usersApi.updateUserRole(id, role),
+  const { data: roles = [] } = useQuery({
+    queryKey: ['roles'],
+    queryFn: async () => {
+      const { roles } = await usersApi.getRoles();
+      return roles;
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+  const roleLabels = useMemo(
+    () => Object.fromEntries(roles.map((r) => [r.name, r.label])) as Record<UserRole, string>,
+    [roles],
+  );
+
+  const invalidateAccounts = () => {
+    queryClient.invalidateQueries({ queryKey: ['users'] });
+    queryClient.invalidateQueries({ queryKey: ['allowed-emails'] });
+  };
+
+  const setRoleMutation = useMutation({
+    mutationFn: (account: AccountRow) => updateAccount(account, { role: account.role }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
+      invalidateAccounts();
       showToast('Rol actualizado', 'success');
-      setEditingUser(null);
+    },
+    onError: (err: Error) => showToast(err.message, 'error'),
+  });
+
+  const setActiveMutation = useMutation({
+    mutationFn: (account: AccountRow) => updateAccount(account, { isActive: account.isActive }),
+    onSuccess: () => {
+      invalidateAccounts();
+      showToast('Estado actualizado', 'success');
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
   const createMutation = useMutation({
-    mutationFn: (data: { username: string; password: string; name: string; role: UserRole }) =>
-      usersApi.createUser(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      showToast('Usuario creado (inactivo). Actívalo para que pueda acceder.', 'success');
+    mutationFn: (payload: CreateAccountPayload) =>
+      payload.type === 'password'
+        ? usersApi.createUser({ username: payload.username, password: payload.password, name: payload.name, role: payload.role })
+        : usersApi.createAllowedEmail(payload.email, payload.role),
+    onSuccess: (_result, payload) => {
+      invalidateAccounts();
+      showToast(
+        payload.type === 'password' ? 'Usuario creado (inactivo). Actívalo para que pueda acceder.' : 'Correo añadido',
+        'success',
+      );
       setShowCreate(false);
-      setCreateForm({ username: '', password: '', name: '', role: 'compras' });
       setCreateError('');
     },
     onError: (err: ApiError) => {
@@ -69,53 +99,21 @@ export function UsersPage() {
     },
   });
 
-  const activeMutation = useMutation({
-    mutationFn: ({ id, isActive }: { id: number; isActive: boolean }) => usersApi.updateUserActive(id, isActive),
+  const deleteMutation = useMutation({
+    mutationFn: (target: DeleteTarget) =>
+      target.kind === 'user' ? usersApi.deleteUser(target.id) : usersApi.deleteAllowedEmail(target.id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      showToast('Estado actualizado', 'success');
+      invalidateAccounts();
+      showToast('Cuenta eliminada', 'success');
+      setDeleteTarget(null);
     },
     onError: (err: Error) => showToast(err.message, 'error'),
   });
 
-  const createEmailMutation = useMutation({
-    mutationFn: ({ email, role }: { email: string; role: UserRole }) => usersApi.createAllowedEmail(email, role),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allowed-emails'] });
-      showToast('Correo añadido', 'success');
-      setNewEmail('');
-    },
-    onError: (err: Error) => showToast(err.message, 'error'),
-  });
-
-  const updateEmailMutation = useMutation({
-    mutationFn: ({ id, role, isActive }: { id: number; role: UserRole; isActive: boolean }) =>
-      usersApi.updateAllowedEmail(id, role, isActive),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allowed-emails'] });
-      showToast('Correo actualizado', 'success');
-    },
-    onError: (err: Error) => showToast(err.message, 'error'),
-  });
-
-  const deleteUserMutation = useMutation({
-    mutationFn: (id: number) => usersApi.deleteUser(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['users'] });
-      showToast('Usuario eliminado', 'success');
-      setDeletingUser(null);
-    },
-    onError: (err: Error) => showToast(err.message, 'error'),
-  });
-
-  const deleteEmailMutation = useMutation({
-    mutationFn: (id: number) => usersApi.deleteAllowedEmail(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['allowed-emails'] });
-      showToast('Correo eliminado', 'success');
-    },
-    onError: (err: Error) => showToast(err.message, 'error'),
-  });
+  const accounts = useMemo(
+    () => (users && allowedEmails ? mergeAccounts(users, allowedEmails) : []),
+    [users, allowedEmails],
+  );
 
   if (!isAdmin) {
     return (
@@ -125,6 +123,8 @@ export function UsersPage() {
     );
   }
 
+  const loading = usersLoading || emailsLoading;
+
   return (
     <div className="users-page" style={{ padding: '1.5rem', color: colors.text }}>
       <div className="users-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -132,56 +132,64 @@ export function UsersPage() {
         <button className="users-new-btn" type="button" onClick={() => setShowCreate(true)} style={btnStyle('primary')}>+ Nuevo usuario</button>
       </div>
 
-      {usersLoading && <div style={{ color: colors.textMuted, marginBottom: '1rem' }}>Cargando usuarios...</div>}
+      {loading && <div style={{ color: colors.textMuted, marginBottom: '1rem' }}>Cargando usuarios...</div>}
 
-      {users && (
-        <div className="users-table-wrapper" style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, marginBottom: '2rem' }}>
+      {!loading && (
+        <div className="users-table-wrapper" style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}` }}>
           <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
             <thead>
               <tr className="users-row" style={{ background: 'var(--bg-table-head)' }}>
                 <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Nombre</th>
                 <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Usuario / Email</th>
+                <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Tipo de acceso</th>
                 <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol</th>
                 <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Estado</th>
                 <th className="users-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user.id} className="users-row" style={{ borderTop: `1px solid ${colors.border}` }}>
-                  <td className="users-cell" data-label="Nombre" style={{ padding: '12px 16px' }}>{user.name}</td>
-                  <td className="users-cell" data-label="Usuario / Email" style={{ padding: '12px 16px', color: colors.textMuted }}>{user.username}</td>
-                  <td className="users-cell" data-label="Rol" style={{ padding: '12px 16px' }}>
-                    <span style={badgeStyle(user.role === 'admin' ? 'Solicitud Express' : 'info')}>
-                      {ROLE_LABELS[user.role]}
+              {accounts.map((account) => (
+                <tr key={account.key} className="users-row" style={{ borderTop: `1px solid ${colors.border}` }}>
+                  <td className="users-cell" data-label="Nombre" style={{ padding: '12px 16px' }}>
+                    {account.name || <em style={{ color: colors.textMuted }}>Pendiente de primer acceso</em>}
+                  </td>
+                  <td className="users-cell" data-label="Usuario / Email" style={{ padding: '12px 16px', color: colors.textMuted }}>{account.label}</td>
+                  <td className="users-cell" data-label="Tipo de acceso" style={{ padding: '12px 16px' }}>
+                    <span style={badgeStyle(account.loginType === 'microsoft' ? 'info' : 'ghost')}>
+                      {account.loginType === 'microsoft' ? 'Microsoft' : 'Contraseña'}
                     </span>
                   </td>
+                  <td className="users-cell" data-label="Rol" style={{ padding: '12px 16px' }}>
+                    <select
+                      value={account.role}
+                      onChange={(e) => setRoleMutation.mutate({ ...account, role: e.target.value as UserRole })}
+                      disabled={setRoleMutation.isPending}
+                      style={{ padding: '6px 10px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
+                    >
+                      {roles.map((role) => (
+                        <option key={role.name} value={role.name}>{role.label}</option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="users-cell" data-label="Estado" style={{ padding: '12px 16px' }}>
-                    <span style={badgeStyle(user.isActive ? 'Reposición' : 'Finalizado')}>
-                      {user.isActive ? 'Activo' : 'Inactivo'}
+                    <span style={badgeStyle(account.isActive ? 'Reposición' : 'Finalizado')}>
+                      {account.isActive ? 'Activo' : 'Inactivo'}
                     </span>
                   </td>
                   <td className="users-cell" data-label="Acciones" style={{ padding: '12px 16px' }}>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                       <button
                         type="button"
-                        onClick={() => setEditingUser(user)}
-                        style={btnStyle('ghost')}
+                        onClick={() => setActiveMutation.mutate({ ...account, isActive: !account.isActive })}
+                        disabled={setActiveMutation.isPending}
+                        style={btnStyle(account.isActive ? 'danger' : 'success')}
                       >
-                        Editar rol
+                        {account.isActive ? 'Desactivar' : 'Activar'}
                       </button>
                       <button
                         type="button"
-                        onClick={() => activeMutation.mutate({ id: user.id, isActive: !user.isActive })}
-                        disabled={activeMutation.isPending}
-                        style={btnStyle(user.isActive ? 'danger' : 'success')}
-                      >
-                        {user.isActive ? 'Desactivar' : 'Activar'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeletingUser(user)}
-                        disabled={deleteUserMutation.isPending}
+                        onClick={() => setDeleteTarget(toDeleteTarget(account))}
+                        disabled={deleteMutation.isPending}
                         style={btnStyle('danger')}
                       >
                         Eliminar
@@ -190,186 +198,45 @@ export function UsersPage() {
                   </td>
                 </tr>
               ))}
+              {accounts.length === 0 && (
+                <tr>
+                  <td colSpan={6} style={{ padding: '12px 16px', textAlign: 'center', color: colors.textMuted }}>
+                    No hay usuarios.
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
       )}
 
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title="Crear usuario">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 320 }}>
-          <div style={{ fontSize: 13, color: 'var(--warning-text-soft)', background: 'var(--bg-danger-soft)', border: '1px solid var(--border-danger)', borderRadius: 8, padding: '0.6rem 0.75rem' }}>
-            El usuario se creará <strong>desactivado</strong> y sin acceso. Para que pueda entrar, un administrador debe <strong>activarlo</strong>.
-          </div>
-          <div>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Usuario</label>
-            <input value={createForm.username} onChange={(e) => setCreateForm({ ...createForm, username: e.target.value })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
-          </div>
-          <div>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Nombre</label>
-            <input value={createForm.name} onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
-          </div>
-          <div>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Contraseña (mín. 6 caracteres)</label>
-            <input type="password" value={createForm.password} onChange={(e) => setCreateForm({ ...createForm, password: e.target.value })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, boxSizing: 'border-box' }} />
-          </div>
-          <div>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 4 }}>Rol</label>
-            <select value={createForm.role} onChange={(e) => setCreateForm({ ...createForm, role: e.target.value as UserRole })}
-              style={{ width: '100%', padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}>
-              <option value="admin">Administrador</option>
-              <option value="almacen">Almacén</option>
-              <option value="compras">Compras</option>
-            </select>
-          </div>
-          {createError && <div style={{ color: 'var(--danger-text)', fontSize: 13, textAlign: 'center' }}>{createError}</div>}
-          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
-            <button style={btnStyle('ghost')} onClick={() => setShowCreate(false)}>Cancelar</button>
-            <button style={btnStyle('primary')} disabled={!createForm.username || !createForm.password || !createForm.name || createForm.password.length < 6 || createMutation.isPending}
-              onClick={() => createMutation.mutate(createForm)}>
-              {createMutation.isPending ? 'Creando...' : 'Crear'}
-            </button>
-          </div>
-        </div>
-      </Modal>
+      <CreateAccountModal
+        open={showCreate}
+        onClose={() => { setShowCreate(false); setCreateError(''); }}
+        onSubmit={(payload) => createMutation.mutate(payload)}
+        pending={createMutation.isPending}
+        error={createError}
+        roles={roles.map((r) => r.name)}
+        roleLabels={roleLabels}
+      />
 
-      <Modal open={!!deletingUser} onClose={() => setDeletingUser(null)} title="Confirmar eliminación">
+      <Modal open={!!deleteTarget} onClose={() => setDeleteTarget(null)} title="Confirmar eliminación">
         <div style={{ textAlign: 'center', padding: '0.5rem 0' }}>
           <p style={{ fontSize: 14, color: 'var(--text-light)', marginBottom: '1.25rem' }}>
-            ¿Eliminar el usuario <strong>{deletingUser?.name}</strong> ({deletingUser?.username})? Esta acción no se puede deshacer.
+            ¿Eliminar la cuenta <strong>{deleteTarget?.label}</strong>? Esta acción no se puede deshacer.
           </p>
           <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }}>
-            <button style={btnStyle('ghost')} onClick={() => setDeletingUser(null)}>Cancelar</button>
+            <button style={btnStyle('ghost')} onClick={() => setDeleteTarget(null)}>Cancelar</button>
             <button
               style={btnStyle('danger')}
-              disabled={deleteUserMutation.isPending}
-              onClick={() => deletingUser && deleteUserMutation.mutate(deletingUser.id)}
+              disabled={deleteMutation.isPending}
+              onClick={() => deleteTarget && deleteMutation.mutate(deleteTarget)}
             >
-              {deleteUserMutation.isPending ? 'Eliminando...' : 'Eliminar'}
+              {deleteMutation.isPending ? 'Eliminando...' : 'Eliminar'}
             </button>
           </div>
         </div>
       </Modal>
-
-      {editingUser && (
-        <div className="user-edit-form" style={{ background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}`, padding: '1.5rem', marginBottom: '2rem' }}>
-          <h3 style={{ margin: '0 0 1rem' }}>Editar rol: {editingUser.name}</h3>
-          <div style={{ marginBottom: '1rem' }}>
-            <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 6 }}>Rol</label>
-            <select
-              value={editingUser.role}
-              onChange={(e) => setEditingUser({ ...editingUser, role: e.target.value as UserRole })}
-              style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
-            >
-              <option value="admin">Administrador</option>
-              <option value="almacen">Almacén</option>
-              <option value="compras">Compras</option>
-              {editingUser.role === 'viewer' && <option value="viewer">Solo lectura (legado)</option>}
-            </select>
-          </div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              type="button"
-              onClick={() => updateMutation.mutate({ id: editingUser.id, role: editingUser.role })}
-              disabled={updateMutation.isPending}
-              style={btnStyle('primary')}
-            >
-              Guardar
-            </button>
-            <button
-              type="button"
-              onClick={() => setEditingUser(null)}
-              style={btnStyle('ghost')}
-            >
-              Cancelar
-            </button>
-          </div>
-        </div>
-      )}
-
-      <h3 style={{ margin: '0 0 1rem', fontSize: 18 }}>Correos autorizados para Microsoft login</h3>
-      <p style={{ color: colors.textMuted, fontSize: 13, marginBottom: '1rem' }}>
-        Solo los correos de esta lista pueden iniciar sesión con Microsoft. Se les asigna el rol configurado al crear su cuenta.
-      </p>
-
-      <div className="emails-add-form" style={{ display: 'flex', gap: 8, marginBottom: '1rem', flexWrap: 'wrap' }}>
-        <input
-          type="email"
-          placeholder="correo@empresa.com"
-          value={newEmail}
-          onChange={(e) => setNewEmail(e.target.value)}
-          style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}`, minWidth: 250 }}
-        />
-        <select
-          value={newEmailRole}
-          onChange={(e) => setNewEmailRole(e.target.value as UserRole)}
-          style={{ padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)', color: colors.text, border: `1px solid ${colors.border}` }}
-        >
-          <option value="admin">Administrador</option>
-          <option value="almacen">Almacén</option>
-          <option value="compras">Compras</option>
-        </select>
-        <button
-          type="button"
-          onClick={() => createEmailMutation.mutate({ email: newEmail, role: newEmailRole })}
-          disabled={!newEmail || createEmailMutation.isPending}
-          style={btnStyle('primary')}
-        >
-          Añadir correo
-        </button>
-      </div>
-
-      {emailsLoading && <div style={{ color: colors.textMuted }}>Cargando correos...</div>}
-
-      {allowedEmails && (
-        <div className="emails-table-wrapper" style={{ overflowX: 'auto', background: colors.bgCard, borderRadius: 12, border: `1px solid ${colors.border}` }}>
-          <table className="emails-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
-            <thead>
-              <tr className="emails-row" style={{ background: 'var(--bg-table-head)' }}>
-                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Email</th>
-                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Rol asignado</th>
-                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Estado</th>
-                <th className="emails-cell" style={{ padding: '12px 16px', textAlign: 'left', color: colors.textMuted, fontWeight: 600 }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {allowedEmails.map((email) => (
-                <tr key={email.id} className="emails-row" style={{ borderTop: `1px solid ${colors.border}` }}>
-                  <td className="emails-cell" data-label="Email" style={{ padding: '12px 16px' }}>{email.email}</td>
-                  <td className="emails-cell" data-label="Rol asignado" style={{ padding: '12px 16px' }}>{ROLE_LABELS[email.role]}</td>
-                  <td className="emails-cell" data-label="Estado" style={{ padding: '12px 16px' }}>
-                    <span style={badgeStyle(email.isActive ? 'Reposición' : 'Finalizado')}>
-                      {email.isActive ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
-                  <td className="emails-cell" data-label="Acciones" style={{ padding: '12px 16px' }}>
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                      <button
-                        type="button"
-                        onClick={() => updateEmailMutation.mutate({ id: email.id, role: email.role, isActive: !email.isActive })}
-                        disabled={updateEmailMutation.isPending}
-                        style={btnStyle(email.isActive ? 'danger' : 'success')}
-                      >
-                        {email.isActive ? 'Desactivar' : 'Activar'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteEmailMutation.mutate(email.id)}
-                        disabled={deleteEmailMutation.isPending}
-                        style={btnStyle('danger')}
-                      >
-                        Eliminar
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
     </div>
   );
 }

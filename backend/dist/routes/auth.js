@@ -5,7 +5,12 @@ import { authMiddleware, COOKIE_NAME } from '../middleware/auth.js';
 import { validateBody } from '../middleware/validate.js';
 import { loginSchema, registerSchema, msalLoginSchema } from '../schemas/index.js';
 import { env } from '../config/env.js';
+import { getPermissionsForRole } from '../repositories/roles.js';
 const router = Router();
+// El frontend deriva `can()` de esto en vez de mantener su propia copia de la matriz de permisos.
+function withPermissions(user) {
+    return { ...user, permissions: getPermissionsForRole(user.role) };
+}
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 20,
@@ -21,7 +26,7 @@ router.post('/login', loginLimiter, validateBody(loginSchema), async (req, res, 
             sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 8 * 60 * 60 * 1000,
         });
-        res.json({ user, token });
+        res.json({ user: withPermissions(user), token });
     }
     catch (err) {
         next(err);
@@ -37,7 +42,7 @@ router.post('/register', loginLimiter, validateBody(registerSchema), async (req,
             sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 8 * 60 * 60 * 1000,
         });
-        res.json({ user, token });
+        res.json({ user: withPermissions(user), token });
     }
     catch (err) {
         next(err);
@@ -53,7 +58,7 @@ router.post('/msal-login', validateBody(msalLoginSchema), async (req, res, next)
             sameSite: env.NODE_ENV === 'production' ? 'none' : 'lax',
             maxAge: 8 * 60 * 60 * 1000,
         });
-        res.json({ user, token });
+        res.json({ user: withPermissions(user), token });
     }
     catch (err) {
         next(err);
@@ -70,7 +75,7 @@ router.post('/logout', (_req, res) => {
 router.get('/me', authMiddleware, async (req, res, next) => {
     try {
         const user = await authService.getMe(req.user.userId);
-        res.json({ user });
+        res.json({ user: withPermissions(user) });
     }
     catch (err) {
         next(err);

@@ -120,7 +120,7 @@ export const userIdSchema = z.object({
 });
 
 export const updateRoleSchema = z.object({
-  role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
+  role: z.string().min(1, 'Rol requerido'),
 });
 
 export const updateActiveSchema = z.object({
@@ -131,16 +131,16 @@ export const createUserSchema = z.object({
   username: z.string().min(1, 'Usuario requerido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
   name: z.string().min(1, 'Nombre requerido'),
-  role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
+  role: z.string().min(1, 'Rol requerido'),
 });
 
 export const allowedEmailSchema = z.object({
   email: z.string().email(),
-  role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
+  role: z.string().min(1, 'Rol requerido'),
 });
 
 export const allowedEmailUpdateSchema = z.object({
-  role: z.enum(['admin', 'almacen', 'compras', 'viewer']),
+  role: z.string().min(1, 'Rol requerido'),
   isActive: z.boolean(),
 });
 
