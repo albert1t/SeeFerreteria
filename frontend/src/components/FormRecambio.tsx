@@ -23,6 +23,15 @@ const labelStyle: React.CSSProperties = {
   fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', marginBottom: 4, display: 'block',
 };
 
+const fieldErrorStyle: React.CSSProperties = {
+  color: 'var(--danger-text)', fontSize: 12, marginTop: 4,
+};
+
+function FieldError({ show, message = 'Este campo es obligatorio' }: { show: boolean; message?: string }) {
+  if (!show) return null;
+  return <p style={fieldErrorStyle}>{message}</p>;
+}
+
 function normalizeFamilyName(name: string): string {
   return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
@@ -64,6 +73,7 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
 
   const [showNewFamily, setShowNewFamily] = useState(false);
   const [newFamilyName, setNewFamilyName] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const createFamiliaMut = useMutation({
     mutationFn: () => catalogosApi.createFamilia(newFamilyName.trim()),
@@ -79,6 +89,17 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
 
   const selectedFamily = families.find((f) => f.id === form.familyId);
   const isTornilleria = !!selectedFamily && normalizeFamilyName(selectedFamily.name).includes('tornilleria');
+
+  const missingCmhReference = !form.cmhReference.trim();
+  const missingName = !form.name.trim();
+  const missingFamily = !form.familyId;
+  const missingPackagingUnit = !(form.packagingUnit ?? '').trim();
+  const missingReorderPoint = !form.reorderPoint;
+  const missingCabeza = isTornilleria && !(form.cabeza ?? '').trim();
+  const missingAcabado = isTornilleria && !(form.acabado ?? '').trim();
+  const missingIso = isTornilleria && !(form.iso ?? '').trim();
+  const hasMissingFields = missingCmhReference || missingName || missingFamily || missingPackagingUnit
+    || missingReorderPoint || missingCabeza || missingAcabado || missingIso;
 
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(form.image || null);
@@ -99,6 +120,14 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
 
   function upd<K extends keyof ProductFormData>(key: K, value: ProductFormData[K]) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function handleSave() {
+    if (hasMissingFields) {
+      setSubmitted(true);
+      return;
+    }
+    saveMut.mutate();
   }
 
   async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -165,7 +194,9 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
             {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
             {canEditWarehouse && <option value="__new__">+ Nueva familia</option>}
           </select>
-        ) : (
+        ) : null}
+        <FieldError show={submitted && missingFamily} />
+        {showNewFamily && (
           <div style={{ display: 'flex', gap: 8 }}>
             <input
               style={inputStyle}
@@ -195,21 +226,36 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
 
       {isTornilleria && (
         <div style={{ gridColumn: '1/-1', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.9rem', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border-soft)' }}>
-          {([['cabeza', 'Cabeza *'], ['acabado', 'Acabado *'], ['iso', 'ISO *']] as const).map(([k, lbl]) => (
+          {([['cabeza', 'Cabeza *', missingCabeza], ['acabado', 'Acabado *', missingAcabado], ['iso', 'ISO *', missingIso]] as const).map(([k, lbl, missing]) => (
             <div key={k}>
               <label style={labelStyle}>{lbl}</label>
               <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} />
+              <FieldError show={submitted && missing} />
             </div>
           ))}
         </div>
       )}
 
-      {([['cmhReference', 'Ref. CMH *'], ['customerReference', 'Ref. Cliente'], ['code', 'Código'], ['name', 'Nombre *'], ['brand', 'Marca']] as const).map(([k, lbl]) => (
+      <div>
+        <label style={labelStyle}>Ref. CMH *</label>
+        <input style={inputStyle} value={form.cmhReference} onChange={(e) => upd('cmhReference', e.target.value)} />
+        <FieldError show={submitted && missingCmhReference} />
+      </div>
+      {([['customerReference', 'Ref. Cliente'], ['code', 'Código']] as const).map(([k, lbl]) => (
         <div key={k}>
           <label style={labelStyle}>{lbl}</label>
           <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} />
         </div>
       ))}
+      <div>
+        <label style={labelStyle}>Nombre *</label>
+        <input style={inputStyle} value={form.name} onChange={(e) => upd('name', e.target.value)} />
+        <FieldError show={submitted && missingName} />
+      </div>
+      <div>
+        <label style={labelStyle}>Marca</label>
+        <input style={inputStyle} value={form.brand ?? ''} onChange={(e) => upd('brand', e.target.value)} />
+      </div>
       <div style={{ gridColumn: '1/-1' }}>
         <label style={labelStyle}>Descripción</label>
         <textarea style={{ ...inputStyle, minHeight: 60, resize: 'vertical' }} value={form.description ?? ''} onChange={(e) => upd('description', e.target.value)} />
@@ -218,16 +264,20 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
         <label style={labelStyle}>Métrica</label>
         <input style={inputStyle} value={form.metric ?? ''} onChange={(e) => upd('metric', e.target.value)} placeholder='Ej: M8x30, 1/2", 35mm²' />
       </div>
-      {([['packagingUnit', 'Unidad de embalaje *'], ['deliveryTime', 'Plazo de entrega']] as const).map(([k, lbl]) => (
-        <div key={k}>
-          <label style={labelStyle}>{lbl}</label>
-          <input style={inputStyle} value={(form[k] as string) ?? ''} onChange={(e) => upd(k, e.target.value)} placeholder={k === 'packagingUnit' ? 'Ej: Unidad' : undefined} />
-        </div>
-      ))}
+      <div>
+        <label style={labelStyle}>Unidad de embalaje *</label>
+        <input style={inputStyle} value={form.packagingUnit ?? ''} onChange={(e) => upd('packagingUnit', e.target.value)} placeholder="Ej: Unidad" />
+        <FieldError show={submitted && missingPackagingUnit} />
+      </div>
+      <div>
+        <label style={labelStyle}>Plazo de entrega</label>
+        <input style={inputStyle} value={form.deliveryTime ?? ''} onChange={(e) => upd('deliveryTime', e.target.value)} />
+      </div>
 
       <div>
-        <label style={labelStyle}>N° Reposición</label>
+        <label style={labelStyle}>N° Reposición *</label>
         <input style={inputStyle} type="number" min="1" disabled={!canEditWarehouse} value={form.reorderPoint ?? ''} onChange={(e) => { const v = e.target.value; upd('reorderPoint', v === '' ? null : parseInt(v, 10)); }} />
+        <FieldError show={submitted && missingReorderPoint} />
       </div>
 
       {!isPositionFixed ? (
@@ -327,12 +377,8 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
         <button style={btnStyle('ghost')} onClick={onCancel}>Cancelar</button>
         <button
           style={btnStyle('primary')}
-          disabled={
-            saveMut.isPending || uploading || !form.cmhReference || !form.name || !form.familyId ||
-            !(form.packagingUnit ?? '').trim() ||
-            (isTornilleria && (!(form.cabeza ?? '').trim() || !(form.acabado ?? '').trim() || !(form.iso ?? '').trim()))
-          }
-          onClick={() => saveMut.mutate()}
+          disabled={saveMut.isPending || uploading}
+          onClick={handleSave}
         >
           {saveMut.isPending ? 'Guardando...' : product ? 'Guardar cambios' : 'Crear producto'}
         </button>

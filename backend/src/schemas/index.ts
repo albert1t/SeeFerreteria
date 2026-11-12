@@ -27,7 +27,10 @@ const baseRecambioSchema = z.object({
   image: z.string().max(500).optional().nullable(),
   deliveryTime: z.string().max(50).optional().nullable(),
   familyId: z.number().int().positive(),
-  reorderPoint: z.number().int().positive().nullable().default(1),
+  // Columna NOT NULL en BD: null pasaba esta validación antes (.nullable() dejaba pasar
+  // explicit null, y .default() solo actúa sobre undefined) y reventaba en el INSERT con
+  // un 500 genérico en vez de un 400 claro.
+  reorderPoint: z.number({ required_error: 'El número de reposición es obligatorio' }).int().positive(),
   panel: z.string().max(10).optional().nullable(),
   col: z.number().int().min(1).max(6).optional().nullable(),
   row: z.number().int().min(1).max(15).optional().nullable(),
