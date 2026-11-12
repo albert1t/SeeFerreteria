@@ -72,7 +72,11 @@
 │   ├── 005_orders_oculto.sql
 │   ├── 006_imports_catalogo.sql
 │   ├── 015_roles_personal_notifications_utc.sql
-│   └── full_schema_ovh.sql  # Esquema completo idempotente
+│   ├── 016_remove_viewer_role.sql
+│   ├── 017_roles_table.sql              # Tabla Roles: permisos por rol en BD
+│   ├── 018_add_notification_email.sql   # Correo personal de notificaciones
+│   ├── 019_order_notification_matrix.sql # Matriz tipo de pedido × evento
+│   └── full_schema_ovh.sql  # Esquema completo idempotente (desactualizado, ver nota abajo)
 ├── .cpanel.yml              # Tareas de deploy de cPanel Git
 ├── .htaccess                # Reglas Apache: SPA frontend + /api al backend
 └── package.json             # Scripts de alto nivel (dev:all, build...)
@@ -90,6 +94,7 @@
   - Requiere TFA; el token de sesión caduca, así que normalmente habrá que pedir un código fresco.
 - **Acceso SSH:** deshabilitado en la cuenta. No se puede entrar por shell.
   - Alternativa: subir scripts PHP temporales a `public_html` para ejecutar comandos como el usuario (`passthru`, `shell_exec`).
+  - **Token de API de cPanel:** existe un token (`cpanel <usuario>:<token>`) que permite llamar a la UAPI de cPanel (`https://cmhautomacion.com:2083/execute/<Módulo>/<función>` con header `Authorization: cpanel usuario:token`) **sin pasar por TFA**. Con `Fileman::upload_files`/`get_file_content`/`list_files` se puede subir el script PHP de deploy, ejecutarlo vía HTTP normal, y luego borrarlo — todo sin intervención humana ni código fresco de TFA. El token no vive en este repo; está en las notas locales del usuario (ver sección de credenciales conocidas que el propio usuario puede compartir).
 - **Repositorio en el servidor:** `/home/cmhautomacion/repositories/SeeFerreteria`
 - **Document root (frontend):** `/home/cmhautomacion/repositories/SeeFerreteria/` (gestionado por cPanel Git).
 - **Aplicación Node.js:**
@@ -97,6 +102,7 @@
   - Archivo de arranque: `dist/index.js`
   - Versión de Node: 24
   - Logs de error: `backend/stderr.log`
+- **Frontend real en producción:** NO se sirve desde este hosting cPanel — vive en un hosting OVH aparte (`www.ferreteria.latecnologiaasumedida.com`, IP `46.105.204.26`, ruta `/home/iyxjhjj/repositories/SeeFerreteria/frontend/dist`), sin credenciales FTP/cPanel conocidas; el usuario lo sube a mano. Se puede verificar si está actualizado comparando el `index.html` servido (`/assets/index-<hash>.js`) contra `frontend/dist/index.html` del commit actual — sin necesitar credenciales.
 
 ### English
 - **API domain:** `https://cmhautomacion.com`
@@ -106,6 +112,7 @@
   - Requires TFA; the session token expires, so a fresh code is usually needed.
 - **SSH access:** disabled for this account. Shell login is not possible.
   - Alternative: upload temporary PHP scripts to `public_html` to run commands as the user (`passthru`, `shell_exec`).
+  - **cPanel API token:** a token (`cpanel <user>:<token>`) exists that calls cPanel's UAPI (`https://cmhautomacion.com:2083/execute/<Module>/<function>` with header `Authorization: cpanel user:token`) **without TFA**. Using `Fileman::upload_files`/`get_file_content`/`list_files` you can upload the deploy PHP script, run it over plain HTTP, and delete it afterward — fully unattended, no fresh TFA code needed. The token itself is not in this repo; it lives in the user's local notes (ask the user to share it).
 - **Repository on server:** `/home/cmhautomacion/repositories/SeeFerreteria`
 - **Document root (frontend):** `/home/cmhautomacion/repositories/SeeFerreteria/` (managed by cPanel Git).
 - **Node.js application:**
@@ -113,6 +120,7 @@
   - Startup file: `dist/index.js`
   - Node version: 24
   - Error logs: `backend/stderr.log`
+- **Actual production frontend:** NOT served from this cPanel hosting — it lives on a separate OVH host (`www.ferreteria.latecnologiaasumedida.com`, IP `46.105.204.26`, path `/home/iyxjhjj/repositories/SeeFerreteria/frontend/dist`), with no known FTP/cPanel credentials; the user uploads it manually. Check whether it's up to date by comparing the served `index.html` (`/assets/index-<hash>.js`) against the current commit's `frontend/dist/index.html` — no credentials needed for that check.
 
 
 ---
@@ -151,9 +159,10 @@ The backend validates variables with `zod` in `backend/src/config/env.ts`.
 | `SMTP_PASS` | No | Contraseña SMTP | *(en cPanel)* |
 | `MAIL_FROM` | No | Remitente | `noreply@cmhautomacion.com` |
 | `MAIL_REPLY_TO` | No | Reply-To | `comercial@cmhautomacion.com` |
-| `NOTIFY_EMAIL` | No | Correo de notificaciones de orders | `danexthegamer@gmail.com` (cambiar a `comercial@cmhautomacion.com` si se prefiere) |
+| `NOTIFY_EMAIL` | No | Correo de notificaciones de orders (valor inicial; editable en `/admin/ajustes`) | `danexthegamer@gmail.com` (cambiar a `comercial@cmhautomacion.com` si se prefiere) |
 | `MAIL_ENABLED` | No | Activa/desactiva envíos | `true` |
 | `NOTIFY_ADMIN_ON_REGISTER` | No | Notificar al admin cuando un nuevo usuario se registra | `true` |
+| `EMAIL_ORDERS_MODE` | No | Solo usado como valor inicial (all→todo activado, none→todo desactivado) la primera vez que se calcula la matriz de notificaciones global; una vez existe la fila `orderNotificationMatrix` en `Settings`, esta variable ya no tiene efecto | `all` |
 
 ### Variables del frontend / Frontend variables
 
@@ -176,25 +185,33 @@ Viven en `frontend/.env.production` para el build de producción.
 Producción usa **MySQL** en OVH CloudDB. El pool se crea en `backend/src/config/db.ts`.
 
 Tablas principales:
-- `Users` — usuarios locales (`username`, `passwordHash`, `name`, `role`, `isActive`).
-- `AllowedEmails` — whitelist para login con Microsoft.
+- `Users` — usuarios locales (`username`, `passwordHash`, `name`, `role`, `isActive`, `notificationEmail` [correo propio para cuentas de contraseña; las de Microsoft usan `username` directo], `orderNotificationPrefs` [JSON, matriz tipo de pedido × evento]).
+- `AllowedEmails` — whitelist para login con Microsoft. El primer login MSAL crea un `User` real pero **no borra** la fila de `AllowedEmails` correspondiente; la pantalla `/usuarios` fusiona ambas fuentes visualmente (`frontend/src/utils/mergeAccounts.ts`), deduplicando por email.
+- `Roles` — permisos por rol (`name`, `label`, `permissions` JSON con la forma `{admin, orders, products, families, tarifas}`). Se carga en memoria al arrancar el backend (`backend/src/repositories/roles.ts`); si se edita a mano en BD, hace falta reiniciar el proceso Node para que se note el cambio (no hay invalidación de caché en caliente).
+- `Settings` — clave/valor genérico (`settingKey`, `settingValue`). Guarda, entre otras, `mailEnabled`, `notifyEmail`, `notifyAdminOnRegister`, `orderNotificationMatrix` (JSON).
 - `Families` / `Subcategories` — clasificación de productos.
 - `Products` — piezas del almacén (referencia, imagen, posición `panel/col/row`, `hidden`, stock, etc.).
 - `Orders` — pedidos de reposición/solicitud.
 - `OrderStatusHistory` — histórico de cambios de estado.
 - `CatalogImports` — log de importaciones masivas.
 
+> **Nota:** `database/full_schema_ovh.sql` quedó desactualizado (no incluye `Roles`, ni las columnas nuevas de `Users`); para levantar un esquema desde cero hay que aplicarlo y luego correr en orden las migraciones `001` a la última.
+
 ### English
 Production uses **MySQL** on OVH CloudDB. The pool is created in `backend/src/config/db.ts`.
 
 Main tables:
-- `Users` — local users (`username`, `passwordHash`, `name`, `role`, `isActive`).
-- `AllowedEmails` — whitelist for Microsoft login.
+- `Users` — local users (`username`, `passwordHash`, `name`, `role`, `isActive`, `notificationEmail` [own address for password accounts; Microsoft accounts use `username` directly], `orderNotificationPrefs` [JSON, order-type × event matrix]).
+- `AllowedEmails` — whitelist for Microsoft login. The first MSAL login creates a real `User` but **never deletes** the matching `AllowedEmails` row; the `/usuarios` screen merges both sources visually (`frontend/src/utils/mergeAccounts.ts`), deduped by email.
+- `Roles` — permissions per role (`name`, `label`, `permissions` JSON shaped `{admin, orders, products, families, tarifas}`). Loaded into memory at backend startup (`backend/src/repositories/roles.ts`); editing it directly in the DB needs a Node process restart to take effect (no hot cache invalidation).
+- `Settings` — generic key/value (`settingKey`, `settingValue`). Stores, among others, `mailEnabled`, `notifyEmail`, `notifyAdminOnRegister`, `orderNotificationMatrix` (JSON).
 - `Families` / `Subcategories` — spare-part classification.
 - `Products` — warehouse items (reference, image, position `panel/col/row`, `hidden`, stock, etc.).
 - `Orders` — replacement/orders.
 - `OrderStatusHistory` — status change history.
 - `CatalogImports` — bulk import log.
+
+> **Note:** `database/full_schema_ovh.sql` is stale (no `Roles` table, no new `Users` columns); to stand up a schema from scratch, apply it and then run every migration from `001` through the latest, in order.
 
 ---
 
@@ -205,32 +222,46 @@ Main tables:
 - Registro público: `POST /api/auth/register`.
 - Login Microsoft: `POST /api/auth/msal-login` (requiere que el email esté en `AllowedEmails`).
 - El token JWT se devuelve en la respuesta y se puede enviar como cookie `see_token` o header `Authorization: Bearer <token>`.
-- Roles actuales: `admin`, `almacen`, `compras`. `operario` y `user` son alias heredados (`almacen` y `compras`); `viewer` se conserva para compatibilidad.
-- Permisos por rol se definen en backend (`getDefaultPermissions`) y frontend (`ROLE_PERMISSIONS`). `compras` no puede abrir `/almacen` ni marcar pedidos como recibidos; esa acción corresponde a `almacen` y `admin`.
+- Roles actuales: `admin`, `almacen`, `compras`. `operario` y `user` son alias heredados que se normalizan a `almacen`/`compras` (`normalizeUserRole`); el rol `viewer` se eliminó por completo (migración `016`, cualquier fila existente se reasignó a `compras`).
+- **Los permisos ya no están hardcodeados**: viven en la tabla `Roles` (columna `permissions`, JSON), cargada en memoria al arrancar (`backend/src/repositories/roles.ts`, `getPermissionsForRole`). `GET /api/users/roles` expone la lista de roles al frontend (usado por el desplegable de rol en `/usuarios`), y `/api/auth/me` (y login/register/msal-login) devuelven `user.permissions` ya resuelto, así que el frontend no mantiene su propia copia de la matriz (`useAuth.tsx` → `can()` lee directamente de ahí).
+- Matriz de permisos actual (resumen):
+  - **admin**: todo.
+  - **almacen**: control total de `products` y `families` (crear/editar/eliminar); en `orders`, el permiso base es total pero con una regla de negocio en código (no en la tabla `Roles`, porque depende de cada fila): solo puede editar/eliminar pedidos que **él mismo solicitó** y mientras sigan en `Solicitado` (`ordersService.assertCanModifyOrder`, espejado en frontend por `PedidosPage.tsx` → `modificable`). Puede marcar pedidos como `Pedido recibido` sin esa restricción de propiedad.
+  - **compras**: gestiona cualquier pedido sin restricción de fase ni propiedad (crear/editar/eliminar), pero **no puede marcar un pedido como `Pedido recibido`** (bloqueado explícitamente en `ordersService.advanceStatus`, no es un permiso de la tabla `Roles`). Edita ficha/precio de productos (`products.edit=true`) pero el backend descarta silenciosamente los campos de almacén (`panel`, `col`, `row`, `familyId`, `reorderPoint`, `hidden`) si los envía — no puede crear/eliminar productos ni entrar en `/almacen`.
+- Rutas de solo-almacén (`/swap`, `/unpositioned`, `/:id/assign-position` en `products.ts`) usan `requireRole('admin','almacen')` explícito en vez de `requirePermission('products', ...)`, precisamente para excluir a `compras` aunque tenga `products.edit=true`.
 
 ### English
 - Local login: `POST /api/auth/login` with `username` and `password`.
 - Public registration: `POST /api/auth/register`.
 - Microsoft login: `POST /api/auth/msal-login` (email must be in `AllowedEmails`).
 - JWT is returned in the response and can be sent as cookie `see_token` or header `Authorization: Bearer <token>`.
-- Roles: `admin`, `operario`, `user`, `viewer`.
-- Permissions are stored as JSON in `Users.permissions`; `getDefaultPermissions(role)` provides defaults.
+- Current roles: `admin`, `almacen`, `compras`. `operario` and `user` are legacy aliases normalized to `almacen`/`compras` (`normalizeUserRole`); the `viewer` role was fully removed (migration `016`, any existing row was reassigned to `compras`).
+- **Permissions are no longer hardcoded**: they live in the `Roles` table (`permissions` column, JSON), loaded into memory at startup (`backend/src/repositories/roles.ts`, `getPermissionsForRole`). `GET /api/users/roles` exposes the role list to the frontend (used by the role dropdown in `/usuarios`), and `/api/auth/me` (plus login/register/msal-login) return a resolved `user.permissions`, so the frontend keeps no local copy of the matrix (`useAuth.tsx` → `can()` reads it directly).
+- Current permission matrix (summary):
+  - **admin**: everything.
+  - **almacen**: full control of `products` and `families` (create/edit/delete); for `orders`, the base permission is unrestricted but a business rule in code (not in the `Roles` table, since it's per-row) limits them to editing/deleting only orders **they themselves requested**, and only while still `Solicitado` (`ordersService.assertCanModifyOrder`, mirrored in the frontend by `PedidosPage.tsx` → `modificable`). They can mark orders `Pedido recibido` without that ownership restriction.
+  - **compras**: manages any order with no phase or ownership restriction (create/edit/delete), but **cannot mark an order `Pedido recibido`** (explicitly blocked in `ordersService.advanceStatus`, not a `Roles`-table permission). Edits product sheet/price (`products.edit=true`) but the backend silently drops warehouse fields (`panel`, `col`, `row`, `familyId`, `reorderPoint`, `hidden`) if sent — cannot create/delete products or enter `/almacen`.
+- Warehouse-only routes (`/swap`, `/unpositioned`, `/:id/assign-position` in `products.ts`) use explicit `requireRole('admin','almacen')` instead of `requirePermission('products', ...)`, specifically to exclude `compras` even though it has `products.edit=true`.
 
 ---
 
 ## 8. Notificaciones por email / Email Notifications
 
 ### Español
-Implementadas en `backend/src/services/mailService.ts`.
+Implementadas en `backend/src/services/mailService.ts`. Desde la migración `019`, el antiguo modo único (`all`/`urgent_only`/`none`) desapareció: ahora hay una **matriz configurable tipo de pedido × evento** (`OrderNotificationMatrix` en `backend/src/types/index.ts`), con exactamente los mismos dos canales de siempre pero cada uno con su propia matriz:
+
+- **Global** (tabla `Settings`, clave `orderNotificationMatrix`; se edita en `/admin/ajustes`, solo admin): decide qué eventos avisan a `notifyEmail`.
+- **Personal** (columna `Users.orderNotificationPrefs`; se edita en `/mis-ajustes`, cualquier usuario): decide qué eventos avisan al propio usuario.
+
+Los eventos son: `created` (alta del pedido) y cada estado al que puede avanzar (`Pedido realizado`, `Pedido recibido`, `Finalizado`); el tipo de pedido es `Reposición` / `Solicitud` / `Solicitud Express`. El antiguo "solo urgentes" ya no existe como concepto — el mismo efecto se logra activando solo las casillas de `Solicitud Express`.
+
+**Correo de destino personal:** si el `username` del usuario es un email válido (cuentas Microsoft), los avisos van ahí directo y no es configurable. Si no (cuentas de contraseña), el usuario configura un correo propio en `Users.notificationEmail` desde `/mis-ajustes`; si no lo ha puesto, no recibe nada aunque tenga eventos activados (`mailService.resolveNotificationEmail`).
 
 **Disparadores:**
-- `createOrder` en `backend/src/services/ordersService.ts`:
-  - Envía acuse al solicitante **solo si su `username` tiene formato de email válido**.
-  - Notifica siempre a `NOTIFY_EMAIL`.
-- `advanceStatus`:
-  - Envía seguimiento al solicitante si su `username` es un email válido y su preferencia individual lo permite.
-- `register` en `backend/src/services/authService.ts`:
-  - Notifica a `NOTIFY_EMAIL` cuando se registra un nuevo usuario, si `NOTIFY_ADMIN_ON_REGISTER=true`.
+- `createOrder` en `ordersService.ts`: evalúa el evento `created` contra la matriz personal del solicitante (acuse) y contra la matriz global (`notificarEventoPedido`).
+- `advanceStatus`: evalúa `newStatus` (que nunca es `Solicitado`, siempre coincide con un evento válido) contra ambas matrices — **ahora también notifica a la empresa en cambios de estado**, no solo al crear (antes solo se notificaba al solicitante).
+- `updatePedido` (editar cantidad/plazo/notas mientras sigue en `Solicitado`): se trata como parte del evento `created` a efectos de la matriz personal; no dispara aviso a la empresa.
+- `register` en `authService.ts`: notifica a `NOTIFY_EMAIL` si `NOTIFY_ADMIN_ON_REGISTER=true` (sin cambios, no usa la matriz).
 
 **Endpoint de prueba:**
 ```bash
@@ -242,16 +273,20 @@ curl -X POST https://cmhautomacion.com/api/orders/test-email \
 Si el `username` del usuario autenticado es un email válido, el correo se envía a ese email; si no, a `NOTIFY_EMAIL`.
 
 ### English
-Implemented in `backend/src/services/mailService.ts`.
+Implemented in `backend/src/services/mailService.ts`. As of migration `019`, the old single mode (`all`/`urgent_only`/`none`) is gone: there's now a **configurable order-type × event matrix** (`OrderNotificationMatrix` in `backend/src/types/index.ts`), with the same two channels as before, each with its own matrix:
+
+- **Global** (`Settings` table, key `orderNotificationMatrix`; edited at `/admin/ajustes`, admin only): decides which events notify `notifyEmail`.
+- **Personal** (`Users.orderNotificationPrefs` column; edited at `/mis-ajustes`, any user): decides which events notify that user.
+
+Events are: `created` (order placed) and each status it can advance to (`Pedido realizado`, `Pedido recibido`, `Finalizado`); order type is `Reposición` / `Solicitud` / `Solicitud Express`. The old "urgent only" no longer exists as a concept — the same effect is achieved by only enabling the `Solicitud Express` row.
+
+**Personal destination email:** if the user's `username` is a valid email (Microsoft accounts), alerts go there directly and it's not configurable. Otherwise (password accounts), the user sets their own address in `Users.notificationEmail` from `/mis-ajustes`; if unset, they get nothing even with events enabled (`mailService.resolveNotificationEmail`).
 
 **Triggers:**
-- `createOrder` in `backend/src/services/ordersService.ts`:
-  - Sends acknowledgment to the requester **only if their `username` is a valid email**.
-  - Always notifies `NOTIFY_EMAIL`.
-- `advanceStatus`:
-  - Sends status update to the requester if their `username` is a valid email.
-- `register` in `backend/src/services/authService.ts`:
-  - Notifies `NOTIFY_EMAIL` when a new user registers, if `NOTIFY_ADMIN_ON_REGISTER=true`.
+- `createOrder` in `ordersService.ts`: evaluates the `created` event against the requester's personal matrix (acknowledgment) and against the global matrix (`notificarEventoPedido`).
+- `advanceStatus`: evaluates `newStatus` (never `Solicitado`, always a valid event) against both matrices — **now also notifies the company on status changes**, not just on creation (previously only the requester was notified there).
+- `updatePedido` (editing quantity/deadline/notes while still `Solicitado`): treated as part of the `created` event for the personal matrix; does not notify the company.
+- `register` in `authService.ts`: notifies `NOTIFY_EMAIL` if `NOTIFY_ADMIN_ON_REGISTER=true` (unchanged, doesn't use the matrix).
 
 **Test endpoint:**
 ```bash
@@ -301,6 +336,15 @@ kill -9 <pid>
   `/opt/alt/alt-nodejs24/root/usr/bin/node /opt/alt/alt-nodejs24/root/usr/lib/node_modules/npm/bin/npm-cli.js install --omit=dev`
 - No usar `touch tmp/restart.txt`; creaba `backend/tmp/` sin trackear y bloqueaba el deploy.
 
+**Deploy desatendido con el token de API de cPanel (probado y funcional):**
+1. Subir un script PHP (p.ej. a `public_html/deploy_run.php`) vía `Fileman::upload_files` que haga `git reset --hard origin/main`, `git clean -fd`, y el `npm install --omit=dev` de arriba.
+2. Ejecutarlo con un `curl` normal a `https://cmhautomacion.com/deploy_run.php` (devuelve el log por `passthru`).
+3. Reiniciar: otro script que mate el PID de `ps aux | grep lsnode:.../backend/` y llame a `cloudlinux-selector start` (ver comandos de arriba).
+4. Verificar con `/api/health` y, si hace falta, leyendo `backend/stderr.log` o el contenido de `dist/` vía `Fileman::get_file_content`.
+5. Borrar los scripts temporales de `public_html` al terminar (`unlink`), incluido el propio script de limpieza.
+
+Todo esto sin TFA ni sesión de navegador — solo el token de API.
+
 ### English
 Deployment no longer uses **cPanel Git Version Control** (it was removed). Deploy via a temporary PHP script uploaded to `public_html` that runs `git fetch/reset`, applies SQL migrations, runs `npm install`, and restarts the app.
 
@@ -334,6 +378,15 @@ kill -9 <pid>
 - The default `npm` from the `nodevenv` fails when `node_modules` is a symlink; use the direct Node 24 `npm-cli.js` path:
   `/opt/alt/alt-nodejs24/root/usr/bin/node /opt/alt/alt-nodejs24/root/usr/lib/node_modules/npm/bin/npm-cli.js install --omit=dev`
 - Do not use `touch tmp/restart.txt`; it created an untracked `backend/tmp/` and blocked deployment.
+
+**Unattended deploy with the cPanel API token (tested, works):**
+1. Upload a PHP script (e.g. to `public_html/deploy_run.php`) via `Fileman::upload_files` that runs `git reset --hard origin/main`, `git clean -fd`, and the `npm install --omit=dev` above.
+2. Run it with a plain `curl` to `https://cmhautomacion.com/deploy_run.php` (output streams back via `passthru`).
+3. Restart: another script that kills the PID from `ps aux | grep lsnode:.../backend/` and calls `cloudlinux-selector start` (commands above).
+4. Verify with `/api/health` and, if needed, by reading `backend/stderr.log` or `dist/` file contents via `Fileman::get_file_content`.
+5. Delete the temporary scripts from `public_html` afterward (`unlink`), including the cleanup script itself.
+
+All of this with no TFA and no browser session — just the API token.
 
 
 ---
@@ -402,8 +455,9 @@ npm run dev:all
 | POST | `/api/orders/test-email` | Probar SMTP |
 | PATCH | `/api/orders/:id/status` | Avanzar estado (dispara email) |
 | GET | `/api/users` | Gestión de usuarios |
-| GET/PUT | `/api/settings/notifications` | Ajustes globales de notificaciones (admin) |
-| GET/PUT | `/api/settings/my-notifications` | Preferencias personales de correo |
+| GET | `/api/users/roles` | Lista de roles con permisos (admin) |
+| GET/PUT | `/api/settings/notifications` | Ajustes globales de notificaciones: `orderNotificationMatrix` (admin) |
+| GET/PUT | `/api/settings/my-notifications` | Preferencias personales: `orderNotificationMatrix` + `notificationEmail` |
 | GET/POST | `/api/catalogs` | Catálogos |
 | GET/POST | `/api/imports` | Importaciones masivas |
 
@@ -412,6 +466,13 @@ npm run dev:all
 ## 12. Cambios recientes / Recent Changes
 
 ### Español
+- **Rework de roles/permisos y notificaciones (noviembre 2026):**
+  - Pantalla `/usuarios` fusiona `Users` + `AllowedEmails` en una sola tabla (columna "tipo de acceso").
+  - `almacen` gana control total de productos/familias; `compras` gestiona cualquier pedido sin restricción de fase (antes solo podía editar/eliminar en `Solicitado`) pero sigue sin poder marcar `Pedido recibido`; `almacen` queda restringido a editar/eliminar solo sus propios pedidos mientras sigan `Solicitado`.
+  - Rol `viewer` eliminado (migración `016`).
+  - Permisos movidos de código hardcodeado a la tabla `Roles` (migración `017`); el frontend ya no mantiene su propia copia de la matriz.
+  - Notificaciones: correo personal configurable para cuentas de contraseña (migración `018`), y el modo simple de pedidos sustituido por una matriz tipo de pedido × evento, tanto global como personal (migración `019`); la empresa ahora también recibe avisos en cambios de estado, no solo al crear.
+  - Corregido bug de arrastre: `GET /api/products/unpositioned` nunca había sido alcanzable porque `GET /:id` (registrada antes) la interceptaba.
 - **Full English refactor:** tablas, columnas, endpoints y tipos renombrados a inglés (`Products`, `Orders`, `OrderStatusHistory`, `CatalogImports`, etc.).
 - **Migración de BD:** `database/008_standardize_english_names.sql` renombra todas las tablas/columnas de producción.
 - **Notificaciones por email:** implementadas con Nodemailer; emails en nuevo pedido, acuse al solicitante y seguimiento de estado.
@@ -424,6 +485,13 @@ npm run dev:all
 - **Despliegue manual:** cPanel Git eliminado; deploy vía script PHP temporal + `kill -9` del proceso `lsnode` para forzar recarga.
 
 ### English
+- **Roles/permissions and notifications rework (November 2026):**
+  - `/usuarios` screen merges `Users` + `AllowedEmails` into one table (an "access type" column).
+  - `almacen` gains full control of products/families; `compras` now manages any order with no phase restriction (previously could only edit/delete while `Solicitado`) but still cannot mark `Pedido recibido`; `almacen` is now restricted to editing/deleting only its own orders while still `Solicitado`.
+  - `viewer` role removed (migration `016`).
+  - Permissions moved from hardcoded code to the `Roles` table (migration `017`); the frontend no longer keeps its own copy of the matrix.
+  - Notifications: configurable personal email for password accounts (migration `018`), and the simple order-email mode replaced by an order-type × event matrix, both global and personal (migration `019`); the company now also gets notified on status changes, not just on creation.
+  - Fixed a drag-along bug: `GET /api/products/unpositioned` had never been reachable because `GET /:id` (registered earlier) was shadowing it.
 - **Full English refactor:** tables, columns, endpoints and types renamed to English (`Products`, `Orders`, `OrderStatusHistory`, `CatalogImports`, etc.).
 - **DB migration:** `database/008_standardize_english_names.sql` renames all production tables/columns.
 - **Email notifications:** order creation, status update and new-user registration (toggleable via `NOTIFY_ADMIN_ON_REGISTER`).
@@ -470,6 +538,10 @@ npm run dev:all
 - Revisar `backend/stderr.log` en busca de líneas `[mail] ...`.
 - Verificar `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`.
 - Probar con `POST /api/orders/test-email`.
+- Revisar `orderNotificationMatrix` (global en `/admin/ajustes`, personal en `/mis-ajustes`): si el evento/tipo de pedido correspondiente está desactivado, no se envía nada aunque SMTP funcione.
+
+**Una ruta nueva con GET y segmento literal (ej. `/unpositioned`) nunca responde / cae en el handler equivocado**
+- En Express, las rutas se evalúan en el orden en que se registran. Un `GET /:id` registrado antes intercepta cualquier GET literal posterior (`id` acaba valiendo el string literal, típicamente produce un error o `NaN`). Las rutas GET con segmento fijo deben registrarse **antes** que `GET /:id` en el mismo router (ver `backend/src/routes/products.ts`, donde `/unpositioned` tuvo este bug durante meses sin que nadie lo notara).
 
 ### English
 
@@ -501,6 +573,10 @@ npm run dev:all
 - Check `backend/stderr.log` for `[mail] ...` lines.
 - Verify `SMTP_HOST`, `SMTP_USER`, `SMTP_PASS`, `SMTP_SECURE`.
 - Test with `POST /api/orders/test-email`.
+- Check `orderNotificationMatrix` (global at `/admin/ajustes`, personal at `/mis-ajustes`): if the relevant event/order-type is off, nothing sends even with working SMTP.
+
+**A new GET route with a literal segment (e.g. `/unpositioned`) never responds / hits the wrong handler**
+- Express evaluates routes in registration order. A `GET /:id` registered earlier intercepts any later literal GET (`id` ends up as the literal string, usually producing an error or `NaN`). Fixed-segment GET routes must be registered **before** `GET /:id` in the same router (see `backend/src/routes/products.ts`, where `/unpositioned` had this exact bug for months unnoticed).
 
 ---
 

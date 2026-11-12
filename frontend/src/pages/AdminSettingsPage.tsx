@@ -4,13 +4,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/Toast';
 import { btnStyle, colors } from '../styles/theme';
 import * as settingsApi from '../api/settings';
-import type { EmailOrdersMode } from '../api/settings';
-
-const MODE_LABELS: Record<EmailOrdersMode, string> = {
-  all: 'Todos los pedidos',
-  urgent_only: 'Solo pedidos urgentes',
-  none: 'Ninguno (desactivar emails de pedidos)',
-};
+import { OrderNotificationMatrixEditor } from '../components/OrderNotificationMatrixEditor';
 
 export function AdminSettingsPage() {
   const { isAdmin } = useAuth();
@@ -83,20 +77,12 @@ export function AdminSettingsPage() {
 
           <div style={{ marginBottom: '1.25rem' }}>
             <label style={{ color: colors.textMuted, fontSize: 12, display: 'block', marginBottom: 6 }}>
-              Enviar emails de pedidos
+              Qué eventos de pedido avisan a este correo, por tipo de pedido
             </label>
-            <select
-              value={current.emailOrdersMode}
-              onChange={(e) => toggle('emailOrdersMode', e.target.value as EmailOrdersMode)}
-              style={{
-                padding: '8px 12px', borderRadius: 6, background: 'var(--bg-input-dark)',
-                color: colors.text, border: `1px solid ${colors.border}`,
-              }}
-            >
-              <option value="all">{MODE_LABELS.all}</option>
-              <option value="urgent_only">{MODE_LABELS.urgent_only}</option>
-              <option value="none">{MODE_LABELS.none}</option>
-            </select>
+            <OrderNotificationMatrixEditor
+              value={current.orderNotificationMatrix}
+              onChange={(next) => toggle('orderNotificationMatrix', next)}
+            />
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: '1rem' }}>

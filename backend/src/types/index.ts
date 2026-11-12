@@ -48,6 +48,42 @@ export interface AllowedEmail {
 export type OrderType = 'Reposición' | 'Solicitud' | 'Solicitud Express';
 export type OrderStatus = 'Solicitado' | 'Pedido realizado' | 'Pedido recibido' | 'Finalizado';
 
+export const ORDER_TYPES: OrderType[] = ['Reposición', 'Solicitud', 'Solicitud Express'];
+
+// 'created' = alta del pedido; el resto son los estados a los que puede avanzar
+// (no incluye 'Solicitado', que es el estado inicial, nunca un destino de avance).
+export const ORDER_NOTIFICATION_EVENTS = ['created', 'Pedido realizado', 'Pedido recibido', 'Finalizado'] as const;
+export type OrderNotificationEvent = (typeof ORDER_NOTIFICATION_EVENTS)[number];
+
+// Preferencias de notificación de pedidos: qué eventos avisan, por cada tipo de pedido.
+// La misma forma sirve para los ajustes globales (un notifyEmail) y para cada usuario.
+export type OrderNotificationMatrix = Record<OrderType, Record<OrderNotificationEvent, boolean>>;
+
+export function defaultOrderNotificationMatrix(value: boolean): OrderNotificationMatrix {
+  const perType = Object.fromEntries(ORDER_NOTIFICATION_EVENTS.map((event) => [event, value])) as Record<OrderNotificationEvent, boolean>;
+  return Object.fromEntries(ORDER_TYPES.map((type) => [type, { ...perType }])) as OrderNotificationMatrix;
+}
+
+// Defensivo: el valor viene de una columna JSON / un ajuste guardado como texto, puede
+// faltar, estar incompleto (tras añadir un tipo/evento nuevo) o venir corrupto.
+export function normalizeOrderNotificationMatrix(raw: unknown): OrderNotificationMatrix {
+  const result = defaultOrderNotificationMatrix(true);
+  if (!raw || typeof raw !== 'object') return result;
+  const input = raw as Record<string, Record<string, unknown>>;
+  for (const type of ORDER_TYPES) {
+    const row = input[type];
+    if (!row || typeof row !== 'object') continue;
+    for (const event of ORDER_NOTIFICATION_EVENTS) {
+      if (typeof row[event] === 'boolean') result[type][event] = row[event];
+    }
+  }
+  return result;
+}
+
+export function shouldNotifyOrderEvent(matrix: OrderNotificationMatrix, type: OrderType, event: OrderNotificationEvent): boolean {
+  return matrix[type]?.[event] ?? false;
+}
+
 export interface Product {
   id: number;
   cmhReference: string;

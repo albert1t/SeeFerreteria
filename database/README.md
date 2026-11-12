@@ -1,6 +1,6 @@
 # Base de datos — Azure SQL
 
-> La producción actual funciona con MySQL. Antes de desplegar la versión que introduce los roles `almacen`/`compras` y las preferencias individuales de correo, ejecuta una vez `015_roles_personal_notifications_utc.sql` en la base MySQL de OVH. Esta migración no está escrita para SQL Server.
+> La producción actual funciona con MySQL. Antes de desplegar, ejecuta en orden en la base MySQL de OVH las migraciones pendientes: `015_roles_personal_notifications_utc.sql`, `016_remove_viewer_role.sql`, `017_roles_table.sql` (crea la tabla `Roles` con los permisos por rol — el backend no arranca sin ella), `018_add_notification_email.sql` y `019_order_notification_matrix.sql`. Ninguna de estas migraciones está escrita para SQL Server.
 
 ## Requisitos
 

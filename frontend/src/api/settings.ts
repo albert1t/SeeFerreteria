@@ -1,23 +1,24 @@
 import { apiFetch } from './client';
-
-export type EmailOrdersMode = 'all' | 'urgent_only' | 'none';
+import type { OrderNotificationMatrix } from '../types';
 
 export interface NotificationSettings {
   mailEnabled: boolean;
   notifyEmail: string;
   notifyAdminOnRegister: boolean;
-  emailOrdersMode: EmailOrdersMode;
+  orderNotificationMatrix: OrderNotificationMatrix;
 }
 
 export interface UserNotificationSettings {
-  emailOrdersMode: EmailOrdersMode;
+  orderNotificationMatrix: OrderNotificationMatrix;
+  notificationEmail: string | null;
+  isEmailEditable: boolean;
 }
 
 export function getMyNotificationSettings() {
   return apiFetch<UserNotificationSettings>('/api/settings/my-notifications');
 }
 
-export function updateMyNotificationSettings(settings: UserNotificationSettings) {
+export function updateMyNotificationSettings(settings: { orderNotificationMatrix: OrderNotificationMatrix; notificationEmail?: string | null }) {
   return apiFetch<UserNotificationSettings>('/api/settings/my-notifications', {
     method: 'PUT',
     body: JSON.stringify(settings),

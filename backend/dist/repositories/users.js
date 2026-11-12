@@ -1,5 +1,5 @@
 import { getPool } from '../config/db.js';
-import { normalizeUserRole } from '../types/index.js';
+import { normalizeUserRole, normalizeOrderNotificationMatrix, } from '../types/index.js';
 function mapUser(record) {
     return {
         id: record.id,
@@ -64,15 +64,26 @@ export async function updateActive(id, isActive) {
     const [result] = await pool.query('UPDATE Users SET isActive = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [isActive ? 1 : 0, id]);
     return result.affectedRows > 0;
 }
-export async function getEmailOrdersMode(id) {
+export async function getOrderNotificationPrefs(id) {
     const pool = await getPool();
-    const [rows] = await pool.query('SELECT emailOrdersMode FROM Users WHERE id = ?', [id]);
-    const value = rows[0]?.emailOrdersMode;
-    return value === 'urgent_only' || value === 'none' ? value : 'all';
+    const [rows] = await pool.query('SELECT orderNotificationPrefs FROM Users WHERE id = ?', [id]);
+    const raw = rows[0]?.orderNotificationPrefs;
+    return normalizeOrderNotificationMatrix(typeof raw === 'string' ? JSON.parse(raw) : raw);
 }
-export async function updateEmailOrdersMode(id, mode) {
+export async function updateOrderNotificationPrefs(id, matrix) {
     const pool = await getPool();
-    await pool.query('UPDATE Users SET emailOrdersMode = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [mode, id]);
+    await pool.query('UPDATE Users SET orderNotificationPrefs = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [JSON.stringify(matrix), id]);
+}
+// Solo relevante para cuentas de contraseña (username no es un email); las de Microsoft
+// usan directamente su username como destino, ver mailService.resolveNotificationEmail.
+export async function getNotificationEmail(id) {
+    const pool = await getPool();
+    const [rows] = await pool.query('SELECT notificationEmail FROM Users WHERE id = ?', [id]);
+    return rows[0]?.notificationEmail ?? null;
+}
+export async function updateNotificationEmail(id, email) {
+    const pool = await getPool();
+    await pool.query('UPDATE Users SET notificationEmail = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [email, id]);
 }
 export async function deleteUser(id, reassignToId) {
     const pool = await getPool();

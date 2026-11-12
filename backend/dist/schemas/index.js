@@ -131,12 +131,24 @@ export const allowedEmailUpdateSchema = z.object({
 export const importBrandSchema = z.object({
     brand: z.string().min(1).max(50),
 });
+const orderEventPrefsSchema = z.object({
+    created: z.boolean(),
+    'Pedido realizado': z.boolean(),
+    'Pedido recibido': z.boolean(),
+    Finalizado: z.boolean(),
+});
+const orderNotificationMatrixSchema = z.object({
+    'Reposición': orderEventPrefsSchema,
+    'Solicitud': orderEventPrefsSchema,
+    'Solicitud Express': orderEventPrefsSchema,
+});
 export const notificationSettingsSchema = z.object({
     mailEnabled: z.boolean().optional(),
     notifyEmail: z.string().email().optional(),
     notifyAdminOnRegister: z.boolean().optional(),
-    emailOrdersMode: z.enum(['all', 'urgent_only', 'none']).optional(),
+    orderNotificationMatrix: orderNotificationMatrixSchema.optional(),
 });
 export const userNotificationSettingsSchema = z.object({
-    emailOrdersMode: z.enum(['all', 'urgent_only', 'none']),
+    orderNotificationMatrix: orderNotificationMatrixSchema,
+    notificationEmail: z.string().email().optional().nullable(),
 });

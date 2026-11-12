@@ -43,6 +43,16 @@ export interface AllowedEmail {
 export type OrderType = 'Reposición' | 'Solicitud' | 'Solicitud Express';
 export type OrderStatus = 'Solicitado' | 'Pedido realizado' | 'Pedido recibido' | 'Finalizado';
 
+export const ORDER_TYPES: OrderType[] = ['Reposición', 'Solicitud', 'Solicitud Express'];
+export const ORDER_NOTIFICATION_EVENTS = ['created', 'Pedido realizado', 'Pedido recibido', 'Finalizado'] as const;
+export type OrderNotificationEvent = (typeof ORDER_NOTIFICATION_EVENTS)[number];
+export type OrderNotificationMatrix = Record<OrderType, Record<OrderNotificationEvent, boolean>>;
+
+export function defaultOrderNotificationMatrix(value: boolean): OrderNotificationMatrix {
+  const perType = Object.fromEntries(ORDER_NOTIFICATION_EVENTS.map((event) => [event, value])) as Record<OrderNotificationEvent, boolean>;
+  return Object.fromEntries(ORDER_TYPES.map((type) => [type, { ...perType }])) as OrderNotificationMatrix;
+}
+
 export interface Product {
   id: number;
   cmhReference: string;

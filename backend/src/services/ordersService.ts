@@ -6,12 +6,27 @@ import {
   enviarAcuseSolicitante,
   enviarActualizacionPedido,
   enviarSeguimientoEstado,
-  esEmailValido,
-  notificarNuevoPedido,
+  notificarEventoPedido,
+  resolveNotificationEmail,
 } from './mailService.js';
-import type { Order, OrderStatus, OrderHistory, OrderType, UserRole } from '../types/index.js';
+import {
+  shouldNotifyOrderEvent,
+  type Order,
+  type OrderStatus,
+  type OrderHistory,
+  type OrderType,
+  type OrderNotificationEvent,
+  type UserRole,
+} from '../types/index.js';
 
 const ESTADO_ORDEN: OrderStatus[] = ['Solicitado', 'Pedido realizado', 'Pedido recibido', 'Finalizado'];
+
+async function resolveRequesterEmail(requesterId: number): Promise<string | null> {
+  const requester = await usersRepo.findById(requesterId);
+  if (!requester) return null;
+  const notificationEmail = await usersRepo.getNotificationEmail(requesterId);
+  return resolveNotificationEmail(requester.username, notificationEmail);
+}
 
 export async function listOrders(filters: {
   busqueda?: string;
@@ -91,12 +106,12 @@ export async function createOrder(
   // Notificaciones asíncronas: nunca deben afectar la respuesta de la API
   (async () => {
     try {
-      const requester = await usersRepo.findById(requesterId);
-      const emailMode = await usersRepo.getEmailOrdersMode(requesterId);
-      if (requester && esEmailValido(requester.username)) {
-        await enviarAcuseSolicitante(order, requester.username, emailMode);
+      const prefs = await usersRepo.getOrderNotificationPrefs(requesterId);
+      if (shouldNotifyOrderEvent(prefs, order.type, 'created')) {
+        const destino = await resolveRequesterEmail(requesterId);
+        if (destino) await enviarAcuseSolicitante(order, destino);
       }
-      await notificarNuevoPedido(order);
+      await notificarEventoPedido(order, 'created');
     } catch (err) {
       console.error('[ordersService] Error en notificaciones de createOrder:', err);
     }
@@ -122,14 +137,18 @@ export async function advanceStatus(id: number, newStatus: OrderStatus, userId: 
   const updated = await ordersRepo.updateStatus(id, newStatus, userId);
   if (!updated) throw new AppError(404, 'Order no encontrado');
 
-  // Notificación de seguimiento al requester (sin bloquear la respuesta)
+  // Notificaciones asíncronas: al solicitante y a la empresa (sin bloquear la respuesta).
+  // newStatus nunca es 'Solicitado' aquí (ver comprobación de newIdx arriba), por eso
+  // coincide siempre con un OrderNotificationEvent válido.
   (async () => {
     try {
-      const requester = await usersRepo.findById(updated.requesterId);
-      if (requester && esEmailValido(requester.username)) {
-        const emailMode = await usersRepo.getEmailOrdersMode(updated.requesterId);
-        await enviarSeguimientoEstado(updated, requester.username, newStatus, emailMode);
+      const event = newStatus as OrderNotificationEvent;
+      const prefs = await usersRepo.getOrderNotificationPrefs(updated.requesterId);
+      if (shouldNotifyOrderEvent(prefs, updated.type, event)) {
+        const destino = await resolveRequesterEmail(updated.requesterId);
+        if (destino) await enviarSeguimientoEstado(updated, destino, newStatus);
       }
+      await notificarEventoPedido(updated, event);
     } catch (err) {
       console.error('[ordersService] Error en notificaciones de advanceStatus:', err);
     }
@@ -155,12 +174,13 @@ export async function updatePedido(
   const updated = await ordersRepo.updatePedido(id, data);
   if (!updated) throw new AppError(404, 'Order no encontrado');
 
+  // Un pedido editado sigue en "Solicitado"; se trata como parte del evento 'created'.
   (async () => {
     try {
-      const requester = await usersRepo.findById(updated.requesterId);
-      if (requester && esEmailValido(requester.username)) {
-        const emailMode = await usersRepo.getEmailOrdersMode(updated.requesterId);
-        await enviarActualizacionPedido(updated, requester.username, emailMode);
+      const prefs = await usersRepo.getOrderNotificationPrefs(updated.requesterId);
+      if (shouldNotifyOrderEvent(prefs, updated.type, 'created')) {
+        const destino = await resolveRequesterEmail(updated.requesterId);
+        if (destino) await enviarActualizacionPedido(updated, destino);
       }
     } catch (err) {
       console.error('[ordersService] Error en notificaciones de updatePedido:', err);

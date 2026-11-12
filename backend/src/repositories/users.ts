@@ -1,5 +1,13 @@
 import { getPool, sql } from '../config/db.js';
-import { normalizeUserRole, type User, type UserWithHash, type AllowedEmail, type UserRole } from '../types/index.js';
+import {
+  normalizeUserRole,
+  normalizeOrderNotificationMatrix,
+  type User,
+  type UserWithHash,
+  type AllowedEmail,
+  type UserRole,
+  type OrderNotificationMatrix,
+} from '../types/index.js';
 
 function mapUser(record: Record<string, unknown>): User {
   return {
@@ -111,16 +119,32 @@ export async function updateActive(id: number, isActive: boolean): Promise<boole
   return (result as any).affectedRows > 0;
 }
 
-export async function getEmailOrdersMode(id: number): Promise<'all' | 'urgent_only' | 'none'> {
+export async function getOrderNotificationPrefs(id: number): Promise<OrderNotificationMatrix> {
   const pool = await getPool();
-  const [rows] = await pool.query('SELECT emailOrdersMode FROM Users WHERE id = ?', [id]);
-  const value = (rows as any[])[0]?.emailOrdersMode;
-  return value === 'urgent_only' || value === 'none' ? value : 'all';
+  const [rows] = await pool.query('SELECT orderNotificationPrefs FROM Users WHERE id = ?', [id]);
+  const raw = (rows as any[])[0]?.orderNotificationPrefs;
+  return normalizeOrderNotificationMatrix(typeof raw === 'string' ? JSON.parse(raw) : raw);
 }
 
-export async function updateEmailOrdersMode(id: number, mode: 'all' | 'urgent_only' | 'none'): Promise<void> {
+export async function updateOrderNotificationPrefs(id: number, matrix: OrderNotificationMatrix): Promise<void> {
   const pool = await getPool();
-  await pool.query('UPDATE Users SET emailOrdersMode = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [mode, id]);
+  await pool.query(
+    'UPDATE Users SET orderNotificationPrefs = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?',
+    [JSON.stringify(matrix), id]
+  );
+}
+
+// Solo relevante para cuentas de contraseña (username no es un email); las de Microsoft
+// usan directamente su username como destino, ver mailService.resolveNotificationEmail.
+export async function getNotificationEmail(id: number): Promise<string | null> {
+  const pool = await getPool();
+  const [rows] = await pool.query('SELECT notificationEmail FROM Users WHERE id = ?', [id]);
+  return (rows as any[])[0]?.notificationEmail ?? null;
+}
+
+export async function updateNotificationEmail(id: number, email: string | null): Promise<void> {
+  const pool = await getPool();
+  await pool.query('UPDATE Users SET notificationEmail = ?, updatedAt = UTC_TIMESTAMP(6) WHERE id = ?', [email, id]);
 }
 
 export async function deleteUser(id: number, reassignToId: number): Promise<boolean> {

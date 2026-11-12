@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer';
 import { z } from 'zod';
 import { env } from '../config/env.js';
 import * as settingsService from './settingsService.js';
+import { shouldNotifyOrderEvent } from '../types/index.js';
 const emailSchema = z.string().email();
 function smtpConfigured() {
     return Boolean(env.SMTP_HOST && env.SMTP_USER && env.SMTP_PASS);
@@ -27,15 +28,18 @@ const transporter = createTransporter();
 export function esEmailValido(value) {
     return emailSchema.safeParse(value).success;
 }
+// Cuentas Microsoft: el username ya es el email real, se usa tal cual. Cuentas de
+// contraseña: usan el correo de notificación que el propio usuario configuró en
+// "Mis avisos" (null si no lo ha configurado o no es válido).
+export function resolveNotificationEmail(username, notificationEmail) {
+    if (esEmailValido(username))
+        return username;
+    return notificationEmail && esEmailValido(notificationEmail) ? notificationEmail : null;
+}
 export async function getMailConfigStatus() {
-    const settings = await settingsService.getNotificationSettings().catch(() => ({
-        mailEnabled: env.MAIL_ENABLED,
-        notifyEmail: env.NOTIFY_EMAIL,
-        notifyAdminOnRegister: env.NOTIFY_ADMIN_ON_REGISTER,
-        emailOrdersMode: env.EMAIL_ORDERS_MODE,
-    }));
+    const settings = await settingsService.getNotificationSettings().catch(() => null);
     return {
-        enabled: settings.mailEnabled,
+        enabled: settings?.mailEnabled ?? env.MAIL_ENABLED,
         configured: smtpConfigured(),
         host: env.SMTP_HOST ?? null,
         port: env.SMTP_PORT,
@@ -43,9 +47,9 @@ export async function getMailConfigStatus() {
         user: env.SMTP_USER ?? null,
         from: env.MAIL_FROM,
         replyTo: env.MAIL_REPLY_TO,
-        notifyTo: settings.notifyEmail,
-        notifyAdminOnRegister: settings.notifyAdminOnRegister,
-        emailOrdersMode: settings.emailOrdersMode,
+        notifyTo: settings?.notifyEmail ?? env.NOTIFY_EMAIL,
+        notifyAdminOnRegister: settings?.notifyAdminOnRegister ?? env.NOTIFY_ADMIN_ON_REGISTER,
+        orderNotificationMatrix: settings?.orderNotificationMatrix ?? null,
     };
 }
 async function enviarCorreo({ to, subject, html, }) {
@@ -89,7 +93,6 @@ export async function enviarCorreoDePrueba(to) {
         <li>Usuario: ${status.user}</li>
         <li>From: ${status.from}</li>
         <li>Reply-To: ${status.replyTo}</li>
-        <li>Modo pedidos: ${status.emailOrdersMode}</li>
       </ul>
     `);
     const info = await transporter.sendMail({
@@ -162,27 +165,27 @@ function envolverHtml(titulo, contenido) {
 </html>
   `.trim();
 }
-export async function notificarNuevoPedido(order) {
+// Notificación a la empresa (notifyEmail global); se llama tanto al crear un pedido como
+// al avanzar de estado, y cada uno se filtra por su propia casilla en orderNotificationMatrix.
+export async function notificarEventoPedido(order, event) {
     const settings = await settingsService.getNotificationSettings().catch(() => null);
     if (!settings || !settings.mailEnabled)
         return;
-    if (!settingsService.shouldSendOrderEmail(order, settings.emailOrdersMode))
+    if (!shouldNotifyOrderEvent(settings.orderNotificationMatrix, order.type, event))
         return;
-    const subject = `${prefijoUrgente(order)}Nuevo pedido #${order.id} - ${asuntoPedido(order)}`;
-    const html = envolverHtml(`Nuevo pedido #${order.id}`, `
-      <p>Se ha creado un nuevo pedido en SeeFerreteria.</p>
+    const esCreacion = event === 'created';
+    const subject = esCreacion
+        ? `${prefijoUrgente(order)}Nuevo pedido #${order.id} - ${asuntoPedido(order)}`
+        : `${prefijoUrgente(order)}Pedido #${order.id} - ${event} - ${asuntoPedido(order)}`;
+    const html = envolverHtml(esCreacion ? `Nuevo pedido #${order.id}` : `Pedido #${order.id} ha pasado a: ${event}`, `
+      <p>${esCreacion ? 'Se ha creado un nuevo pedido en SeeFerreteria.' : `El pedido #${order.id} ha cambiado de estado.`}</p>
       <ul>
         ${datosPedido(order)}
       </ul>
     `);
     await enviarCorreo({ to: settings.notifyEmail, subject, html });
 }
-export async function enviarAcuseSolicitante(order, emailSolicitante, emailMode) {
-    const settings = await settingsService.getNotificationSettings().catch(() => null);
-    if (!settings || !settings.mailEnabled)
-        return;
-    if (!settingsService.shouldSendOrderEmail(order, emailMode))
-        return;
+export async function enviarAcuseSolicitante(order, emailSolicitante) {
     const subject = `${prefijoUrgente(order)}Confirmación de tu pedido #${order.id} - ${asuntoPedido(order)}`;
     const html = envolverHtml(`Hemos recibido tu pedido #${order.id}`, `
       <p>Hola,</p>
@@ -194,12 +197,7 @@ export async function enviarAcuseSolicitante(order, emailSolicitante, emailMode)
     `);
     await enviarCorreo({ to: emailSolicitante, subject, html });
 }
-export async function enviarSeguimientoEstado(order, emailSolicitante, newStatus, emailMode) {
-    const settings = await settingsService.getNotificationSettings().catch(() => null);
-    if (!settings || !settings.mailEnabled)
-        return;
-    if (!settingsService.shouldSendOrderEmail(order, emailMode))
-        return;
+export async function enviarSeguimientoEstado(order, emailSolicitante, newStatus) {
     const subject = `${prefijoUrgente(order)}Actualización de tu pedido #${order.id} - ${newStatus} - ${asuntoPedido(order)}`;
     const html = envolverHtml(`Tu pedido #${order.id} ha pasado a: ${newStatus}`, `
       <p>Hola,</p>
@@ -212,10 +210,7 @@ export async function enviarSeguimientoEstado(order, emailSolicitante, newStatus
     `);
     await enviarCorreo({ to: emailSolicitante, subject, html });
 }
-export async function enviarActualizacionPedido(order, emailSolicitante, emailMode) {
-    const settings = await settingsService.getNotificationSettings().catch(() => null);
-    if (!settings || !settings.mailEnabled || !settingsService.shouldSendOrderEmail(order, emailMode))
-        return;
+export async function enviarActualizacionPedido(order, emailSolicitante) {
     const subject = `${prefijoUrgente(order)}Pedido #${order.id} actualizado - ${asuntoPedido(order)}`;
     const html = envolverHtml(`Tu pedido #${order.id} ha sido actualizado`, `
       <p>Se han actualizado los datos de tu pedido. Este es el desglose actual:</p>
