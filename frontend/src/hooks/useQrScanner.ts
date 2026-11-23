@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { DecodeHintType } from '@zxing/library';
 
 const DEFAULT_COOLDOWN_MS = 2500;
+
+interface ScannerControls {
+  stop: () => void;
+}
 
 function isBackCamera(label: string): boolean {
   const lower = label.toLowerCase();
@@ -18,9 +23,10 @@ export interface UseQrScannerOptions {
 
 export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoStart = true }: UseQrScannerOptions) {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const controlsRef = useRef<any>(null);
+  const controlsRef = useRef<ScannerControls | null>(null);
   const scanCooldownRef = useRef<Map<string, number>>(new Map());
   const processingRef = useRef(false);
+  const startRequestRef = useRef(0);
 
   const [cameraState, setCameraState] = useState<'idle' | 'loading' | 'active' | 'error'>('idle');
   const [errorMsg, setErrorMsg] = useState('');
@@ -29,8 +35,12 @@ export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoSta
   const [hasMultipleCameras, setHasMultipleCameras] = useState(false);
   const [torchSupported, setTorchSupported] = useState(false);
   const [torchOn, setTorchOn] = useState(false);
+  const [zoomRange, setZoomRange] = useState<{ min: number; max: number; step: number } | null>(null);
+  const [zoom, setZoom] = useState(1);
 
   const stopCamera = useCallback(() => {
+    startRequestRef.current += 1;
+    scanCooldownRef.current.clear();
     try {
       controlsRef.current?.stop();
     } catch {
@@ -43,6 +53,8 @@ export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoSta
     setCameraState('idle');
     setTorchSupported(false);
     setTorchOn(false);
+    setZoomRange(null);
+    setZoom(1);
   }, []);
 
   const applyTrackConstraints = useCallback(async (constraints: MediaTrackConstraintSet) => {
@@ -76,6 +88,7 @@ export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoSta
     async (deviceId?: string) => {
       if (!videoRef.current) return;
       stopCamera();
+      const requestId = startRequestRef.current;
       setCameraState('loading');
       setErrorMsg('');
 
@@ -84,39 +97,62 @@ export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoSta
           ? {
               video: {
                 deviceId: { exact: deviceId },
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                frameRate: { ideal: 30, max: 30 },
               },
             }
           : {
               video: {
                 facingMode: { ideal: 'environment' },
-                width: { ideal: 1280 },
-                height: { ideal: 720 },
+                width: { ideal: 1920 },
+                height: { ideal: 1080 },
+                frameRate: { ideal: 30, max: 30 },
               },
             };
 
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
 
-        if (!videoRef.current) {
+        if (!videoRef.current || requestId !== startRequestRef.current) {
           stream.getTracks().forEach((t) => t.stop());
           return;
         }
 
         videoRef.current.srcObject = stream;
         await videoRef.current.play();
+        if (requestId !== startRequestRef.current) return;
 
         await applyTrackConstraints({ focusMode: 'continuous' } as MediaTrackConstraintSet);
+        if (requestId !== startRequestRef.current) return;
 
         const track = stream.getVideoTracks()[0];
-        const capabilities = track.getCapabilities?.() as MediaTrackCapabilities | undefined;
+        const capabilities = track.getCapabilities?.() as
+          | (MediaTrackCapabilities & { torch?: boolean; zoom?: { min: number; max: number; step?: number } })
+          | undefined;
         if (capabilities && 'torch' in capabilities) {
           setTorchSupported(true);
         }
+        if (capabilities?.zoom) {
+          const range = {
+            min: capabilities.zoom.min,
+            max: capabilities.zoom.max,
+            step: capabilities.zoom.step || 0.1,
+          };
+          const initialZoom = Math.min(range.max, Math.max(range.min, 1));
+          setZoomRange(range);
+          const zoomApplied = await applyTrackConstraints({ zoom: initialZoom } as MediaTrackConstraintSet);
+          if (zoomApplied) setZoom(initialZoom);
+          if (requestId !== startRequestRef.current) return;
+        }
 
         const { BrowserQRCodeReader } = await import('@zxing/browser');
-        const reader = new BrowserQRCodeReader();
+        const hints = new Map([[DecodeHintType.TRY_HARDER, true]]);
+        const reader = new BrowserQRCodeReader(hints, {
+          delayBetweenScanAttempts: 200,
+          delayBetweenScanSuccess: 500,
+        });
         const controls = await reader.decodeFromVideoElement(videoRef.current, (result: { getText(): string } | null | undefined) => {
+          if (requestId !== startRequestRef.current) return;
           if (!result) return;
           const text = result.getText();
           if (!text || processingRef.current) return;
@@ -136,15 +172,22 @@ export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoSta
               processingRef.current = false;
             });
         });
+        if (requestId !== startRequestRef.current) {
+          controls.stop();
+          return;
+        }
         controlsRef.current = controls;
         setCameraState('active');
 
         const backs = await detectBackCameras();
-        if (backs.length > 1 && deviceId) {
-          const idx = backs.findIndex((c) => c.deviceId === deviceId);
+        if (requestId !== startRequestRef.current) return;
+        if (backs.length > 1) {
+          const activeDeviceId = track.getSettings().deviceId || deviceId;
+          const idx = backs.findIndex((c) => c.deviceId === activeDeviceId);
           setCurrentCameraIndex(idx >= 0 ? idx : 0);
         }
       } catch (err: unknown) {
+        if (requestId !== startRequestRef.current) return;
         let message = 'No se pudo acceder a la cámara';
         if (err instanceof DOMException) {
           if (err.name === 'NotAllowedError') {
@@ -180,6 +223,13 @@ export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoSta
     if (ok) setTorchOn(next);
   }, [torchOn, applyTrackConstraints]);
 
+  const changeZoom = useCallback(async (nextZoom: number) => {
+    if (!zoomRange) return;
+    const clamped = Math.min(zoomRange.max, Math.max(zoomRange.min, nextZoom));
+    const ok = await applyTrackConstraints({ zoom: clamped } as MediaTrackConstraintSet);
+    if (ok) setZoom(clamped);
+  }, [zoomRange, applyTrackConstraints]);
+
   useEffect(() => {
     if (!autoStart) return;
     const timer = setTimeout(() => startCamera(), 300);
@@ -199,6 +249,9 @@ export function useQrScanner({ onScan, cooldownMs = DEFAULT_COOLDOWN_MS, autoSta
     toggleTorch,
     torchSupported,
     torchOn,
+    zoomRange,
+    zoom,
+    changeZoom,
     hasMultipleCameras,
   };
 }

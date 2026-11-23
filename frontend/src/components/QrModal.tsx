@@ -1,10 +1,10 @@
-import { useState, useCallback } from 'react';
-import { SwitchCamera, Flashlight, FlashlightOff, CameraOff } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { SwitchCamera, Flashlight, FlashlightOff, CameraOff, ZoomIn, ZoomOut } from 'lucide-react';
 import { Modal } from './Modal';
 import { btnStyle } from '../styles/theme';
 import * as recambiosApi from '../api/products';
-import { useToast } from './Toast';
 import { useQrScanner } from '../hooks/useQrScanner';
+import { ReferenceCandidateList } from './ReferenceCandidateList';
 import type { Product } from '../types';
 
 interface QrModalProps {
@@ -18,20 +18,37 @@ const QR_BOX_SIZE = 220;
 
 export function QrModal({ open, onClose, onFound }: QrModalProps) {
   const [manualRef, setManualRef] = useState('');
-  const { showToast } = useToast();
+  const [lookupRef, setLookupRef] = useState('');
+  const [candidates, setCandidates] = useState<Product[]>([]);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState('');
+  const stopCameraRef = useRef<() => void>(() => undefined);
 
-  const handleScan = useCallback(async (ref: string) => {
+  const lookupCandidates = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
-    if (!trimmed) return;
-    try {
-      const product = await recambiosApi.getRecambioByRef(trimmed);
-      setManualRef('');
-      onFound(product);
-      onClose();
-    } catch {
-      showToast(`Referencia no encontrada: ${trimmed}`);
+    setLookupRef(trimmed);
+    setCandidates([]);
+    setLookupError('');
+    if (trimmed.length < 2) {
+      setLookupError('Introduce o escanea al menos 2 caracteres.');
+      return;
     }
-  }, [onFound, onClose, showToast]);
+
+    setLookupLoading(true);
+    try {
+      setCandidates(await recambiosApi.getReferenceCandidates(trimmed));
+    } catch (err) {
+      setLookupError(err instanceof Error ? err.message : 'No se pudo consultar el catálogo.');
+    } finally {
+      setLookupLoading(false);
+    }
+  }, []);
+
+  const handleScan = useCallback(async (text: string) => {
+    setManualRef(text);
+    stopCameraRef.current();
+    await lookupCandidates(text);
+  }, [lookupCandidates]);
 
   const {
     videoRef,
@@ -42,15 +59,44 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
     toggleTorch,
     torchSupported,
     torchOn,
+    zoomRange,
+    zoom,
+    changeZoom,
     hasMultipleCameras,
+    stopCamera,
   } = useQrScanner({ onScan: handleScan, cooldownMs: SCAN_COOLDOWN_MS, autoStart: open });
+  useEffect(() => {
+    stopCameraRef.current = stopCamera;
+  }, [stopCamera]);
+
+  const handleClose = useCallback(() => {
+    setManualRef('');
+    setLookupRef('');
+    setCandidates([]);
+    setLookupError('');
+    onClose();
+  }, [onClose]);
 
   const handleManual = useCallback(() => {
-    handleScan(manualRef);
-  }, [handleScan, manualRef]);
+    stopCamera();
+    void lookupCandidates(manualRef);
+  }, [lookupCandidates, manualRef, stopCamera]);
+
+  const handleSelect = useCallback((product: Product) => {
+    onFound(product);
+    handleClose();
+  }, [onFound, handleClose]);
+
+  const scanAnother = useCallback(() => {
+    setManualRef('');
+    setLookupRef('');
+    setCandidates([]);
+    setLookupError('');
+    void startCamera();
+  }, [startCamera]);
 
   return (
-    <Modal open={open} onClose={onClose} title="Búsqueda por QR / Referencia">
+    <Modal open={open} onClose={handleClose} title="Búsqueda por QR / Referencia">
       <p style={{ color: 'var(--text-muted)', fontSize: 13, marginTop: 0 }}>
         Escanea el QR con la cámara o introduce la referencia manualmente:
       </p>
@@ -117,7 +163,7 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
             position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'rgba(255,255,255,0.5)', fontSize: 13,
           }}>
-            Preparando cámara...
+            {lookupRef ? 'Referencia recibida' : 'Preparando cámara...'}
           </div>
         )}
 
@@ -138,6 +184,36 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
               >
                 {torchOn ? <FlashlightOff size={18} /> : <Flashlight size={18} />}
               </button>
+            )}
+            {zoomRange && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => void changeZoom(zoom - zoomRange.step)}
+                  title="Alejar"
+                  aria-label="Alejar cámara"
+                  style={{
+                    width: 36, height: 36, borderRadius: '50%', border: 'none',
+                    background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  }}
+                >
+                  <ZoomOut size={18} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void changeZoom(zoom + zoomRange.step)}
+                  title="Acercar"
+                  aria-label="Acercar cámara"
+                  style={{
+                    width: 36, height: 36, borderRadius: '50%', border: 'none',
+                    background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
+                    alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+                  }}
+                >
+                  <ZoomIn size={18} />
+                </button>
+              </>
             )}
             {hasMultipleCameras && (
               <button
@@ -182,8 +258,20 @@ export function QrModal({ open, onClose, onFound }: QrModalProps) {
         <button style={btnStyle('primary')} onClick={handleManual}>
           Buscar
         </button>
-        <button style={btnStyle('ghost')} onClick={onClose}>Cancelar</button>
+        {lookupRef && !lookupLoading && (
+          <button style={btnStyle('ghost')} onClick={scanAnother}>
+            Escanear otro QR
+          </button>
+        )}
+        <button style={btnStyle('ghost')} onClick={handleClose}>Cancelar</button>
       </div>
+      <ReferenceCandidateList
+        scannedRef={lookupRef}
+        products={candidates}
+        loading={lookupLoading}
+        error={lookupError}
+        onSelect={handleSelect}
+      />
 
       <style>{`
         @keyframes qr-scan-line {

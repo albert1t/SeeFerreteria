@@ -160,6 +160,16 @@ router.get('/unpositioned', requireRole('admin', 'almacen'), async (_req, res, n
   }
 });
 
+router.get('/ref-candidates', async (req, res, next) => {
+  try {
+    const ref = typeof req.query.ref === 'string' ? req.query.ref : '';
+    const products = await productsService.getReferenceCandidates(ref);
+    res.json(products);
+  } catch (err) {
+    next(err);
+  }
+});
+
 router.get('/ref/:ref', async (req, res, next) => {
   try {
     const ref = String(req.params.ref);

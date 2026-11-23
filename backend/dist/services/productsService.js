@@ -20,6 +20,13 @@ export async function getRecambioByRef(ref) {
         throw new AppError(404, 'Referencia no encontrada');
     return product;
 }
+export async function getReferenceCandidates(ref) {
+    const normalizedRef = ref.trim();
+    if (normalizedRef.length < 2) {
+        throw new AppError(400, 'Introduce o escanea al menos 2 caracteres de referencia');
+    }
+    return productsRepo.findReferenceCandidates(normalizedRef);
+}
 function normalizeFamilyName(name) {
     return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }

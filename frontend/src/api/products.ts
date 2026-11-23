@@ -25,6 +25,11 @@ export function getRecambioByRef(ref: string) {
   return apiFetch<Product>(`/api/products/ref/${encodeURIComponent(ref)}`);
 }
 
+export function getReferenceCandidates(ref: string) {
+  const params = new URLSearchParams({ ref });
+  return apiFetch<Product[]>(`/api/products/ref-candidates?${params}`);
+}
+
 export function createProduct(data: ProductFormData) {
   return apiFetch<Product>('/api/products', {
     method: 'POST',

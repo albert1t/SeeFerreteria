@@ -7,7 +7,9 @@ import { Modal } from '../components/Modal';
 import { FichaTecnica } from '../components/FichaTecnica';
 import { useToast } from '../components/Toast';
 import { ScrewIcon } from '../components/PlaceholderImage';
+import { ReferenceCandidateList } from '../components/ReferenceCandidateList';
 import { useQrScanner } from '../hooks/useQrScanner';
+import { Flashlight, FlashlightOff, SwitchCamera, ZoomIn, ZoomOut } from 'lucide-react';
 import { btnStyle } from '../styles/theme';
 import * as panelesApi from '../api/panels';
 import * as recambiosApi from '../api/products';
@@ -114,6 +116,12 @@ interface AlmacenOutletContext {
   setCrearRecambio: Dispatch<SetStateAction<false | true | { panel: string; col: number; row: number }>>;
 }
 
+const cameraControlStyle = {
+  width: 36, height: 36, borderRadius: '50%', border: 'none',
+  background: 'rgba(0,0,0,0.5)', color: '#fff', display: 'flex',
+  alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+} as const;
+
 function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
   panel: string; col: number; row: number;
   onClose: () => void; onAssigned: () => void;
@@ -125,7 +133,11 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
     from: { panel: string; col: number; row: number };
     to: { panel: string; col: number; row: number };
   } | null>(null);
-  const confirmingRef = useRef(false);
+  const [lookupRef, setLookupRef] = useState('');
+  const [candidates, setCandidates] = useState<Product[]>([]);
+  const [lookupLoading, setLookupLoading] = useState(false);
+  const [lookupError, setLookupError] = useState('');
+  const stopCameraRef = useRef<() => void>(() => undefined);
 
   const doAssign = useCallback(async (product: Product) => {
     await recambiosApi.assignPosition(product.id, panel, col, row);
@@ -134,34 +146,61 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
     onClose();
   }, [panel, col, row, onAssigned, onClose, showToast]);
 
-  const assignProduct = useCallback(async (ref: string) => {
+  const lookupCandidates = useCallback(async (ref: string) => {
     const trimmed = ref.trim();
-    if (!trimmed || confirmingRef.current) return;
+    setLookupRef(trimmed);
+    setCandidates([]);
+    setLookupError('');
+    if (trimmed.length < 2) {
+      setLookupError('Introduce o escanea al menos 2 caracteres.');
+      return;
+    }
+
+    setLookupLoading(true);
     try {
-      const product = await recambiosApi.getRecambioByRef(trimmed);
-      if (product.panel && product.col != null && product.row != null) {
-        confirmingRef.current = true;
-        setConfirmMove({
-          product,
-          from: { panel: product.panel, col: product.col, row: product.row },
-          to: { panel, col, row },
-        });
-        return;
-      }
+      setCandidates(await recambiosApi.getReferenceCandidates(trimmed));
+    } catch (err) {
+      setLookupError(err instanceof Error ? err.message : 'No se pudo consultar el catálogo.');
+    } finally {
+      setLookupLoading(false);
+    }
+  }, []);
+
+  const handleScan = useCallback(async (ref: string) => {
+    setManualRef(ref);
+    stopCameraRef.current();
+    await lookupCandidates(ref);
+  }, [lookupCandidates]);
+
+  const selectProduct = useCallback(async (product: Product) => {
+    if (product.panel && product.col != null && product.row != null) {
+      setConfirmMove({
+        product,
+        from: { panel: product.panel, col: product.col, row: product.row },
+        to: { panel, col, row },
+      });
+      return;
+    }
+    try {
       await doAssign(product);
-    } catch {
-      showToast(`Referencia no encontrada: ${trimmed}`);
+    } catch (err) {
+      showToast(err instanceof Error ? err.message : 'No se pudo asignar el producto.');
     }
   }, [panel, col, row, doAssign, showToast]);
 
+  const handleManual = useCallback(() => {
+    stopCameraRef.current();
+    void lookupCandidates(manualRef);
+  }, [lookupCandidates, manualRef]);
+
   const handleMove = useCallback(() => {
     if (!confirmMove) return;
-    confirmingRef.current = false;
-    doAssign(confirmMove.product);
-  }, [confirmMove, doAssign]);
+    void doAssign(confirmMove.product).catch((err: unknown) => {
+      showToast(err instanceof Error ? err.message : 'No se pudo asignar el producto.');
+    });
+  }, [confirmMove, doAssign, showToast]);
 
   const handleKeep = useCallback(() => {
-    confirmingRef.current = false;
     setConfirmMove(null);
   }, []);
 
@@ -170,7 +209,28 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
     cameraState,
     errorMsg,
     startCamera,
-  } = useQrScanner({ onScan: assignProduct, cooldownMs: 3000, autoStart: true });
+    stopCamera,
+    switchCamera,
+    toggleTorch,
+    torchSupported,
+    torchOn,
+    zoomRange,
+    zoom,
+    changeZoom,
+    hasMultipleCameras,
+  } = useQrScanner({ onScan: handleScan, cooldownMs: 3000, autoStart: true });
+
+  useEffect(() => {
+    stopCameraRef.current = stopCamera;
+  }, [stopCamera]);
+
+  const scanAnother = useCallback(() => {
+    setManualRef('');
+    setLookupRef('');
+    setCandidates([]);
+    setLookupError('');
+    void startCamera();
+  }, [startCamera]);
 
   if (confirmMove) {
     return (
@@ -210,11 +270,29 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
             <div style={{ width: 160, height: 160, border: '3px solid rgba(255,255,255,0.7)', borderRadius: 12, boxShadow: '0 0 0 9999px rgba(0,0,0,0.35)' }} />
           </div>
         )}
+        {(cameraState === 'active' || cameraState === 'loading') && (
+          <div style={{ position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6, zIndex: 2 }}>
+            {torchSupported && (
+              <button type="button" onClick={toggleTorch} title={torchOn ? 'Apagar linterna' : 'Encender linterna'} style={cameraControlStyle}>
+                {torchOn ? <FlashlightOff size={17} /> : <Flashlight size={17} />}
+              </button>
+            )}
+            {zoomRange && (
+              <>
+                <button type="button" onClick={() => void changeZoom(zoom - zoomRange.step)} title="Alejar" style={cameraControlStyle}><ZoomOut size={17} /></button>
+                <button type="button" onClick={() => void changeZoom(zoom + zoomRange.step)} title="Acercar" style={cameraControlStyle}><ZoomIn size={17} /></button>
+              </>
+            )}
+            {hasMultipleCameras && (
+              <button type="button" onClick={switchCamera} title="Cambiar cámara trasera" style={cameraControlStyle}><SwitchCamera size={17} /></button>
+            )}
+          </div>
+        )}
         {cameraState === 'loading' && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: 13 }}>Abriendo camara...</div>
         )}
         {cameraState === 'idle' && (
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>Preparando camara...</div>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>{lookupRef ? 'Referencia recibida' : 'Preparando camara...'}</div>
         )}
         {cameraState === 'error' && (
           <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 20, textAlign: 'center' }}>
@@ -226,14 +304,22 @@ function AssignProductModal({ panel, col, row, onClose, onAssigned }: {
       <div style={{ marginBottom: '1rem' }}>
         <label style={{ fontSize: 12, color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Referencia manual</label>
         <input value={manualRef} onChange={(e) => setManualRef(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && assignProduct(manualRef)}
+          onKeyDown={(e) => e.key === 'Enter' && handleManual()}
           placeholder="CMH00001" inputMode="text" autoComplete="off"
           style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-input)', borderRadius: 8, color: 'var(--text)', fontSize: 14 }} />
       </div>
       <div style={{ display: 'flex', gap: 8 }}>
-        <button style={btnStyle('primary')} onClick={() => assignProduct(manualRef)}>Asignar</button>
+        <button style={btnStyle('primary')} onClick={handleManual}>Buscar</button>
+        {lookupRef && !lookupLoading && <button style={btnStyle('ghost')} onClick={scanAnother}>Escanear otro QR</button>}
         <button style={btnStyle('ghost')} onClick={onClose}>Cancelar</button>
       </div>
+      <ReferenceCandidateList
+        scannedRef={lookupRef}
+        products={candidates}
+        loading={lookupLoading}
+        error={lookupError}
+        onSelect={(product) => void selectProduct(product)}
+      />
     </Modal>
   );
 }

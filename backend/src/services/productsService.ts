@@ -28,6 +28,14 @@ export async function getRecambioByRef(ref: string): Promise<Product> {
   return product;
 }
 
+export async function getReferenceCandidates(ref: string): Promise<Product[]> {
+  const normalizedRef = ref.trim();
+  if (normalizedRef.length < 2) {
+    throw new AppError(400, 'Introduce o escanea al menos 2 caracteres de referencia');
+  }
+  return productsRepo.findReferenceCandidates(normalizedRef);
+}
+
 function normalizeFamilyName(name: string): string {
   return name.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }

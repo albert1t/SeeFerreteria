@@ -107,6 +107,62 @@ export async function findByReferencia(ref: string): Promise<Product | null> {
   return row ? mapRecambio(row) : null;
 }
 
+export async function findReferenceCandidates(ref: string): Promise<Product[]> {
+  const pool = await getPool();
+  const normalizedRef = ref.trim().toUpperCase();
+  if (normalizedRef.length < 2) return [];
+
+  // Try the scanned reference as-is and with one leading character removed.
+  // Compare in both directions so partial QR values and an omitted leading
+  // character in either the QR or database can be reviewed by the user.
+  const scannedVariants = [normalizedRef, normalizedRef.slice(1)];
+  const referenceFields = ['r.cmhReference', 'r.customerReference'];
+  const conditions: string[] = [];
+  const params: string[] = [];
+
+  for (const field of referenceFields) {
+    const trimmedField = `TRIM(${field})`;
+    const fieldVariants = [trimmedField, `SUBSTRING(${trimmedField}, 2)`];
+    for (const scanned of scannedVariants) {
+      for (const candidate of fieldVariants) {
+        conditions.push(`(
+          LEFT(UPPER(${candidate}), CHAR_LENGTH(?)) = ?
+          OR LEFT(?, CHAR_LENGTH(${candidate})) = UPPER(${candidate})
+        )`);
+        params.push(scanned, scanned, scanned);
+      }
+    }
+  }
+
+  const upperRef = normalizedRef;
+  const [rows] = await pool.query(
+    `${SELECT_BASE} WHERE (${conditions.join(' OR ')})
+     ORDER BY CASE
+       WHEN UPPER(TRIM(r.cmhReference)) = ? OR UPPER(TRIM(r.customerReference)) = ? THEN 0
+       WHEN LEFT(UPPER(TRIM(r.cmhReference)), CHAR_LENGTH(?)) = ?
+         OR LEFT(UPPER(TRIM(r.customerReference)), CHAR_LENGTH(?)) = ?
+         OR LEFT(?, CHAR_LENGTH(TRIM(r.cmhReference))) = UPPER(TRIM(r.cmhReference))
+         OR LEFT(?, CHAR_LENGTH(TRIM(r.customerReference))) = UPPER(TRIM(r.customerReference)) THEN 1
+       ELSE 2
+     END, r.cmhReference
+     LIMIT 30`,
+    [...params, upperRef, upperRef, upperRef, upperRef, upperRef, upperRef, upperRef, upperRef],
+  );
+  const products = (rows as any[]).map(mapRecambio);
+
+  const rank = (product: Product) => {
+    const references = [product.cmhReference, product.customerReference]
+      .filter((value): value is string => Boolean(value))
+      .map((value) => value.trim().toUpperCase());
+
+    if (references.some((value) => value === normalizedRef)) return 0;
+    if (references.some((value) => value.startsWith(normalizedRef) || normalizedRef.startsWith(value))) return 1;
+    return 2;
+  };
+
+  return products.sort((a, b) => rank(a) - rank(b) || a.cmhReference.localeCompare(b.cmhReference));
+}
+
 export async function findExistingReferencias(refs: string[]): Promise<Set<string>> {
   if (refs.length === 0) return new Set();
   const pool = await getPool();
