@@ -3,6 +3,7 @@ import { AppError } from '../middleware/errorHandler.js';
 import * as xlsx from 'xlsx';
 import type { Product, ProductPreview } from '../types/index.js';
 import * as catalogsRepo from '../repositories/catalogs.js';
+import { getPanelDimensions } from '../utils/panelDimensions.js';
 
 export async function listProducts(filters: {
   panel?: string;
@@ -53,19 +54,9 @@ function validateTornilleriaFields(data: { cabeza?: string | null; acabado?: str
 }
 
 async function validateUbicacion(panel: string, col: number, row: number, excludeId?: number): Promise<void> {
-  const p = panel.toUpperCase();
-  const match = p.match(/^A(\d+)$/);
-  if (match) {
-    const num = parseInt(match[1], 10);
-    if (num >= 1 && num <= 9) {
-      if (col < 1 || col > 6 || row < 1 || row > 15) {
-        throw new AppError(400, `Ubicación fuera de rango para panel ${panel} (límite: 6x15)`, 'UBICACION_RANGO_INVALIDO');
-      }
-    } else if (num >= 10 && num <= 25) {
-      if (col < 1 || col > 5 || row < 1 || row > 10) {
-        throw new AppError(400, `Ubicación fuera de rango para panel ${panel} (límite: 5x10)`, 'UBICACION_RANGO_INVALIDO');
-      }
-    }
+  const { cols, rows } = getPanelDimensions(panel);
+  if (col < 1 || col > cols || row < 1 || row > rows) {
+    throw new AppError(400, `Ubicación fuera de rango para panel ${panel} (límite: ${cols}x${rows})`, 'UBICACION_RANGO_INVALIDO');
   }
 
   const ocupada = await productsRepo.findByUbicacion(panel, col, row, excludeId);
