@@ -6,6 +6,7 @@ import { useToast } from './Toast';
 import * as recambiosApi from '../api/products';
 import * as catalogosApi from '../api/catalogs';
 import type { Product, ProductFormData } from '../types';
+import { getPanelDimensions } from '../utils/panelDimensions';
 
 interface FormRecambioProps {
   product?: Product;
@@ -161,18 +162,7 @@ export function FormRecambio({ product, prefilledPosition, onSave, onCancel }: F
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
-  // Determinar el tamaño del panel, de A1-A9{6X15}, el resto {5X10} cubetas
-  const panelLimits = (() => {
-    const p = form.panel ?? '';
-    const match = p.trim().toUpperCase().match(/^A(\d+)$/);
-    if (match) {
-      const num = parseInt(match[1], 10);
-      if (num >= 1 && num <= 9) {
-        return { cols: 6, rows: 15 };
-      }
-    }
-    return { cols: 5, rows: 10 };
-  })();
+  const panelLimits = getPanelDimensions(form.panel ?? '');
 
   const isPositionFixed = !!prefilledPosition;
 
